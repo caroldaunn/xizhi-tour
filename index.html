@@ -14,6 +14,20 @@
         .tag { display: inline-block; background: #e9ecef; color: #495057; padding: 4px 10px; border-radius: 20px; font-size: 12px; margin-bottom: 15px; font-weight: bold; }
         p { color: #555; line-height: 1.7; font-size: 15px; margin-bottom: 30px; text-align: justify; }
         
+        /* 新增：交通工具箱樣式 */
+        .transport-box { background: #f0f4f8; border-radius: 16px; padding: 16px; margin-bottom: 24px; border: 1px solid #e1e8ed; }
+        .transport-title { font-size: 14px; font-weight: bold; color: #555; margin: 0 0 12px 0; display: flex; align-items: center; }
+        .transport-icons { display: flex; gap: 10px; margin-bottom: 12px; }
+        .t-btn { flex: 1; padding: 10px 5px; border-radius: 8px; text-align: center; text-decoration: none; font-size: 13px; font-weight: bold; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.2s; }
+        .t-btn:active { opacity: 0.7; }
+        .t-btn i { font-size: 18px; margin-bottom: 4px; font-style: normal; }
+        
+        /* 交通按鈕顏色 */
+        .bg-ubike { background-color: #f39c12; } /* 橘色 */
+        .bg-bus { background-color: #3498db; }   /* 藍色 */
+        .bg-uber { background-color: #2c3e50; }  /* 黑色 */
+
+        .transport-tip { font-size: 13px; color: #666; background: white; padding: 10px; border-radius: 8px; line-height: 1.5; border-left: 4px solid #f39c12; margin: 0; }
         /* 按鈕群組 */
         .btn-group { display: flex; gap: 12px; margin-bottom: 20px; }
         .btn { flex: 1; padding: 14px; border-radius: 12px; text-align: center; text-decoration: none; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: transform 0.1s; }
@@ -39,6 +53,24 @@
             <span class="tag">汐止深度遊</span>
             <h1 id="spot-title"></h1>
             <p id="spot-desc"></p>
+            <p id="spot-desc"></p>
+
+            <div class="transport-box">
+                <div class="transport-title">🚀 交通工具箱</div>
+                <div class="transport-icons">
+                    <a href="https://www.youbike.com.tw/region/ntpc/stations/" target="_blank" class="t-btn bg-ubike">
+                        <i>🚲</i> YouBike
+                    </a>
+                    <a href="https://ebus.gov.taipei/" target="_blank" class="t-btn bg-bus">
+                        <i>🚌</i> 公車動態
+                    </a>
+                    <a href="https://m.uber.com/ul" target="_blank" class="t-btn bg-uber">
+                        <i>🚕</i> 叫 Uber
+                    </a>
+                </div>
+                <p id="spot-transport-tip" class="transport-tip">載入交通資訊中...</p>
+            </div>
+            <div class="btn-group">
 
             <div class="btn-group">
                 <a id="map-btn" href="#" class="btn btn-map" target="_blank">
@@ -59,6 +91,7 @@
                 img: "./spot1.jpg",
                 desc: "汐止的交通心臟，也是美食的一級戰區。站前廣場經常舉辦活動，周邊巷弄隱藏著許多在地人推薦的古早味小吃，是開始這趟旅程的最佳起點。",
                 query: "汐止火車站"
+                transport: "💡 小撇步：出站即達！若要轉乘前往其他景點，站外有多路公車與 YouBike 站點可利用。"
             },
             "spot2": {
                 title: "中正老街",
@@ -132,6 +165,7 @@
                 document.getElementById('spot-img').src = data.img;
                 document.getElementById('spot-title').innerText = data.title;
                 document.getElementById('spot-desc').innerText = data.desc;
+                document.getElementById('spot-transport-tip').innerText = data.transport;
 
                 // 設定按鈕連結 (使用 Google Maps Universal Link)
                 // 導航：直接搜尋地點
@@ -153,4 +187,5 @@
 </body>
 
 </html>
+
 
