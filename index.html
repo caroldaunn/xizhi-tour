@@ -24,54 +24,66 @@
         h1 { margin: 0 0 5px 0; font-size: 24px; font-weight: 800; color: #2c3e50; }
         .sub-tag { display: inline-block; font-size: 12px; color: #888; background: #eee; padding: 3px 8px; border-radius: 4px; margin-bottom: 15px; }
 
-        /* --- 摺疊簡介 (修改重點：顯示4行) --- */
+        /* --- 簡介區 (優化版：確保顯示4行) --- */
         .desc-box { margin-bottom: 25px; position: relative; }
         .desc-text { 
             font-size: 15px; line-height: 1.6; color: #555; 
-            max-height: 100px; /* 約 4 行的高度 */
+            /* 設定最大高度：1.6em * 4行 = 6.4em */
+            max-height: 6.4em; 
             overflow: hidden; 
             transition: max-height 0.4s ease; 
         }
-        .desc-text.expanded { max-height: 1000px; } 
+        .desc-text.expanded { max-height: none; overflow: visible; } 
         
-        /* 漸層遮罩 (調整為不那麼擋字) */
+        /* 漸層遮罩 (調整透明度，避免太突兀) */
         .desc-mask { 
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 25px; 
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 30px; 
             background: linear-gradient(to bottom, rgba(255,255,255,0), white); 
             pointer-events: none; transition: opacity 0.3s; 
         }
-        .desc-text.expanded + .desc-mask { opacity: 0; } /* 展開時隱藏遮罩 */
+        .desc-text.expanded + .desc-mask { opacity: 0; }
         
-        .read-more-btn { display: block; width: 100%; text-align: center; padding-top: 8px; color: #007bff; font-weight: bold; font-size: 13px; cursor: pointer; }
+        .read-more-btn { display: block; width: 100%; text-align: center; padding-top: 10px; color: #007bff; font-weight: bold; font-size: 13px; cursor: pointer; }
 
-        /* --- 交通工具箱 (補回公車) --- */
-        .transport-grid { display: flex; gap: 10px; margin-bottom: 30px; }
-        .t-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 10px; border-radius: 12px; text-decoration: none; color: white; font-weight: bold; font-size: 13px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s; }
+        /* --- 交通工具箱 --- */
+        .transport-grid { display: flex; gap: 10px; margin-bottom: 20px; }
+        .t-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 10px; border-radius: 12px; text-decoration: none; color: white; font-weight: bold; font-size: 13px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s; position: relative; overflow: hidden; }
         .t-btn:active { transform: scale(0.96); }
         .t-btn i { font-style: normal; font-size: 18px; }
         
+        /* 點擊後的波紋效果 */
+        .t-btn::after { content: ''; position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; background: rgba(255,255,255,0.5); opacity: 0; border-radius: 100%; transform: scale(1, 1) translate(-50%); transform-origin: 50% 50%; }
+        
         .bg-ubike { background: linear-gradient(135deg, #fce38a 0%, #f38181 100%); color: #555; }
-        .bg-bus   { background: #3498db; } /* 藍色 */
+        .bg-bus   { background: #3498db; }
         .bg-uber  { background: #2c3e50; } 
 
-        /* --- 互動集章區 --- */
+        /* --- 互動集章區 (功能探索任務) --- */
         .game-section { background: #fff8e1; border: 2px dashed #ffc107; border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 20px; }
-        .game-title { font-weight: bold; color: #d35400; margin-bottom: 10px; font-size: 16px; }
-        .stamp-container { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
-        .stamp { width: 30px; height: 30px; border-radius: 50%; background: #e0e0e0; color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; }
-        .stamp.active { background: #ff512f; box-shadow: 0 2px 8px rgba(255, 81, 47, 0.4); transform: scale(1.1); }
+        .game-title { font-weight: bold; color: #d35400; margin-bottom: 15px; font-size: 16px; }
         
-        /* --- 多功能按鈕 (綠 -> 灰 -> 紫) --- */
-        .action-btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: all 0.3s; color: white; text-decoration: none; }
-        
-        /* 狀態：未打卡 (綠色) */
-        .btn-checkin { background: #27ae60; }
-        /* 狀態：已打卡 (灰色) */
-        .btn-disabled { background: #bdc3c7; cursor: default; box-shadow: none; }
-        /* 狀態：已完賽 (紫色) */
-        .btn-survey { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); animation: pulse 2s infinite; }
-        
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+        /* 任務列表呈現 */
+        .task-grid { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
+        .stamp-box { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 50px; }
+        .stamp { width: 35px; height: 35px; border-radius: 50%; background: #e0e0e0; color: #999; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; border: 2px solid #ddd; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .stamp.active { background: #ff512f; color: white; border-color: #ff512f; transform: scale(1.1); box-shadow: 0 3px 8px rgba(255, 81, 47, 0.3); }
+        .stamp-label { font-size: 10px; color: #888; }
+        .stamp.active + .stamp-label { color: #d35400; font-weight: bold; }
+
+        /* --- FB 分享按鈕 (移出框框) --- */
+        .fb-share-btn { 
+            width: 100%; padding: 14px; margin-top: 10px;
+            background: #1877F2; color: white; 
+            border: none; border-radius: 12px; font-size: 16px; font-weight: bold; 
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; 
+            box-shadow: 0 4px 10px rgba(24, 119, 242, 0.3); text-decoration: none;
+        }
+        .fb-share-btn:active { background: #1464c4; }
+
+        /* --- 問卷區塊 (集滿 5 點顯示) --- */
+        #survey-box { display: none; margin-top: 20px; animation: popUp 0.5s ease; }
+        .survey-btn { display: block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4); }
+        @keyframes popUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         /* --- 底部固定導航 --- */
         .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px 15px; box-sizing: border-box; display: flex; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
@@ -79,9 +91,9 @@
         .btn-map { background: #f1f3f5; color: #495057; }
         .btn-food { background: #ff6b6b; color: white; }
 
-        /* --- 測試用重置按鈕 --- */
-        .reset-link { margin-top: 20px; text-align: center; font-size: 12px; color: #999; text-decoration: underline; cursor: pointer; }
-
+        /* --- 測試用重置 --- */
+        .reset-link { margin-top: 30px; text-align: center; font-size: 12px; color: #ccc; text-decoration: underline; cursor: pointer; }
+        
         #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; align-items: center; justify-content: center; z-index: 3000; flex-direction: column; color: #888; }
     </style>
 </head>
@@ -106,56 +118,75 @@
                 <div id="spot-desc-container" class="desc-text">
                     <span id="spot-desc"></span>
                 </div>
-                <div class="desc-mask"></div> <div id="read-more-btn" class="read-more-btn" onclick="toggleDesc()">▼ 了解更多故事</div>
+                <div class="desc-mask"></div>
+                <div id="read-more-btn" class="read-more-btn" onclick="toggleDesc()">▼ 了解更多故事</div>
             </div>
 
             <div class="transport-grid">
-                <a href="https://www.google.com/maps/search/YouBike/" target="_blank" class="t-btn bg-ubike" onclick="trackAction('click_ubike')">
+                <a href="https://www.google.com/maps/search/YouBike/" target="_blank" class="t-btn bg-ubike" onclick="collectAction('ubike')">
                     <i>🚲</i> YouBike
                 </a>
-                <a href="https://www.google.com/maps/search/公車站/" target="_blank" class="t-btn bg-bus" onclick="trackAction('click_bus')">
-                    <i>🚌</i> 找公車站
+                <a href="https://www.google.com/maps/search/公車站/" target="_blank" class="t-btn bg-bus" onclick="collectAction('bus')">
+                    <i>🚌</i> 找公車
                 </a>
-                <a href="https://m.uber.com/ul" target="_blank" class="t-btn bg-uber" onclick="trackAction('click_uber')">
+                <a href="https://m.uber.com/ul" target="_blank" class="t-btn bg-uber" onclick="collectAction('uber')">
                     <i>🚕</i> 叫 Uber
                 </a>
             </div>
 
             <div class="game-section">
-                <div class="game-title">🏆 探險家集章 (目標: 3站)</div>
-                <div id="stamp-container" class="stamp-container"></div>
+                <div class="game-title">🏆 功能探索任務 (進度: <span id="progress-text">0/5</span>)</div>
                 
-                <button id="action-btn" class="action-btn btn-checkin" onclick="handleAction()">
-                    📍 抵達打卡 (+1)
-                </button>
+                <div class="task-grid">
+                    <div class="stamp-box"><div class="stamp" id="stamp-ubike">🚲</div><div class="stamp-label">YouBike</div></div>
+                    <div class="stamp-box"><div class="stamp" id="stamp-bus">🚌</div><div class="stamp-label">公車</div></div>
+                    <div class="stamp-box"><div class="stamp" id="stamp-uber">🚕</div><div class="stamp-label">Uber</div></div>
+                    <div class="stamp-box"><div class="stamp" id="stamp-map">📍</div><div class="stamp-label">帶我去</div></div>
+                    <div class="stamp-box"><div class="stamp" id="stamp-food">🍴</div><div class="stamp-label">美食</div></div>
+                </div>
+
+                <div style="font-size: 12px; color:#888; margin-top:5px;">💡 試著點擊上方交通按鈕或下方導航，解鎖所有印章！</div>
             </div>
 
-            <div class="reset-link" onclick="resetProgress()">↺ 重置測試進度 (測試用)</div>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://caroldaunn.github.io/xizhi-tour/" target="_blank" class="fb-share-btn">
+                👍 打卡並分享 (FB)
+            </a>
+
+            <div id="survey-box">
+                <a href="https://forms.gle/您的問卷連結" target="_blank" class="survey-btn" onclick="trackAction('click_survey')">
+                    🎓 任務達成！領取完賽證書
+                </a>
+                <p style="text-align: center; color: #888; font-size: 12px; margin-top: 8px;">填寫完畢可獲得汐止美食優惠券</p>
+            </div>
+
+            <div class="reset-link" onclick="resetProgress()">↺ 重置測試進度 (Clear Cache)</div>
 
         </div>
     </div>
 
     <div class="sticky-footer">
-        <a id="map-btn" href="#" class="footer-btn btn-map" target="_blank" onclick="trackAction('click_map')">📍 帶我去</a>
-        <a id="food-btn" href="#" class="footer-btn btn-food" target="_blank" onclick="trackAction('click_food')">🍴 附近美食</a>
+        <a id="map-btn" href="#" class="footer-btn btn-map" target="_blank" onclick="collectAction('map')">📍 帶我去</a>
+        <a id="food-btn" href="#" class="footer-btn btn-food" target="_blank" onclick="collectAction('food')">🍴 附近美食</a>
     </div>
 
     <script>
         // ================= 設定區 =================
         const MY_LIFF_ID = "2008941841-8KQq29wn"; 
         const WEBHOOK_URL = ""; 
-        const SURVEY_URL = "https://forms.gle/您的問卷連結"; // ★ 請替換問卷連結
-        const WIN_THRESHOLD = 3; // ★ 測試門檻：改為 3 個
+        const SURVEY_URL = "https://forms.gle/您的問卷連結"; 
+        
+        // 定義 5 個任務代號
+        const TASKS = ['ubike', 'bus', 'uber', 'map', 'food'];
 
         const spotsData = {
-            "spot1": { id: 1, title: "汐止火車站", img: "./spot1.jpg", desc: "汐止的交通心臟，也是美食的一級戰區。站前廣場經常舉辦活動，周邊巷弄隱藏著許多在地人推薦的古早味小吃。這裡是旅程的起點，建議先在此補給水分與糧食。", query: "汐止火車站" },
-            "spot2": { id: 2, title: "中正老街", img: "./spot2.jpg", desc: "舊稱「水返腳街」，這裡是汐止最早的發源地。雖然商業氣息已淡，但走在狹窄的街道上，仍能看見幾棟保留完整的紅磚古厝與傳統市場的熱鬧喧囂，彷彿穿越回百年前。", query: "汐止中正老街" },
-            "spot3": { id: 3, title: "蘇家古厝", img: "./spot3.jpg", desc: "隱身於現代建築之中，這座擁有百年歷史的紅磚拱廊建築，展示了優雅的巴洛克式風格。它是汐止望族蘇家的宅邸，見證了當地的興衰，紅磚牆上的雕花依然清晰可見。", query: "汐止蘇家古厝" },
-            "spot4": { id: 4, title: "建順茶行", img: "./spot4.jpg", desc: "汐止曾是北台灣重要的茶葉集散地。建順茶行傳承百年，店內至今仍保留著傳統的製茶工具與檜木茶箱，一走進去就能聞到濃郁的茶香，老闆也常熱情解說茶葉知識。", query: "汐止建順茶行" },
-            "spot5": { id: 5, title: "茄苳腳鐵路遺跡", img: "./spot5.jpg", desc: "位於高架鐵路下方，這裡保留了清朝至日治時期的鐵路基座遺跡。看著斑駁的石塊，彷彿能聽見百年前火車轟隆駛過的聲音，是鐵道迷不可錯過的隱藏景點。", query: "汐止茄苳腳鐵路遺蹟" },
-            "spot6": { id: 6, title: "五堵隧道", img: "./spot6.jpg", desc: "這是一座穿越時空的隧道。原本是舊火車隧道，荒廢多年後改建為自行車道。保留了燻黑的紅磚牆與復古燈光，騎行其中別有一番風味，彷彿進入了神隱少女的場景。", query: "五堵台鐵舊隧道" },
-            "spot7": { id: 7, title: "星光橋", img: "./spot7.jpg", desc: "橫跨基隆河的單斜塔景觀橋，造型像一支巨大的麥克風。白天視野開闊，可以遠眺群山，夜晚點燈後光影變幻，是攝影愛好者與情侶散步的熱門景點。", query: "汐止星光橋" },
-            "spot8": { id: 8, title: "星座公園", img: "./spot8.jpg", desc: "以12星座為主題的大型河濱公園，設有沙坑、遊樂設施與廣大的草皮。這裡是親子同樂的天堂，也是這趟旅程完美的休止符，適合在此野餐休息。", query: "汐止星座公園" }
+            "spot1": { id: 1, title: "汐止火車站", img: "./spot1.jpg", desc: "汐止的交通心臟，也是美食的一級戰區。站前廣場經常舉辦活動，周邊巷弄隱藏著許多在地人推薦的古早味小吃。這裡是旅程的起點，建議先在此補給水分與糧食，準備開始一場深度的在地探索之旅。周邊還有許多歷史悠久的建築與文化景點等待您的發掘。", query: "汐止火車站" },
+            "spot2": { id: 2, title: "中正老街", img: "./spot2.jpg", desc: "舊稱「水返腳街」，這裡是汐止最早的發源地。雖然商業氣息已淡，但走在狹窄的街道上，仍能看見幾棟保留完整的紅磚古厝與傳統市場的熱鬧喧囂，彷彿穿越回百年前。這裡的每一塊磚瓦都訴說著當年的繁華故事。", query: "汐止中正老街" },
+            "spot3": { id: 3, title: "蘇家古厝", img: "./spot3.jpg", desc: "隱身於現代建築之中，這座擁有百年歷史的紅磚拱廊建築，展示了優雅的巴洛克式風格。它是汐止望族蘇家的宅邸，見證了當地的興衰，紅磚牆上的雕花依然清晰可見，是攝影愛好者絕佳的取景地點。", query: "汐止蘇家古厝" },
+            "spot4": { id: 4, title: "建順茶行", img: "./spot4.jpg", desc: "汐止曾是北台灣重要的茶葉集散地。建順茶行傳承百年，店內至今仍保留著傳統的製茶工具與檜木茶箱，一走進去就能聞到濃郁的茶香，老闆也常熱情解說茶葉知識，讓您深入了解台灣茶文化的精隨。", query: "汐止建順茶行" },
+            "spot5": { id: 5, title: "茄苳腳鐵路遺跡", img: "./spot5.jpg", desc: "位於高架鐵路下方，這裡保留了清朝至日治時期的鐵路基座遺跡。看著斑駁的石塊，彷彿能聽見百年前火車轟隆駛過的聲音，是鐵道迷不可錯過的隱藏景點。旁邊的公園也是當地居民休閒的好去處。", query: "汐止茄苳腳鐵路遺蹟" },
+            "spot6": { id: 6, title: "五堵隧道", img: "./spot6.jpg", desc: "這是一座穿越時空的隧道。原本是舊火車隧道，荒廢多年後改建為自行車道。保留了燻黑的紅磚牆與復古燈光，騎行其中別有一番風味，彷彿進入了神隱少女的場景。隧道內涼爽宜人，是夏日避暑的好去處。", query: "五堵台鐵舊隧道" },
+            "spot7": { id: 7, title: "星光橋", img: "./spot7.jpg", desc: "橫跨基隆河的單斜塔景觀橋，造型像一支巨大的麥克風。白天視野開闊，可以遠眺群山，夜晚點燈後光影變幻，是攝影愛好者與情侶散步的熱門景點。橋上設有休憩座椅，適合發呆吹風。", query: "汐止星光橋" },
+            "spot8": { id: 8, title: "星座公園", img: "./spot8.jpg", desc: "以12星座為主題的大型河濱公園，設有沙坑、遊樂設施與廣大的草皮。這裡是親子同樂的天堂，也是這趟旅程完美的休止符，適合在此野餐休息。夜晚時分，這裡也是觀星的好地點。", query: "汐止星座公園" }
         };
 
         window.onload = function() {
@@ -179,7 +210,7 @@
                 document.getElementById('map-btn').href = `https://www.google.com/maps/search/?api=1&query={encodeURIComponent(data.query)}`;
                 document.getElementById('food-btn').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.query + " 美食")}`;
 
-                initStamps(spotKey);
+                initTaskProgress();
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('main-content').style.display = 'block';
             }
@@ -195,86 +226,66 @@
             
             if (container.classList.contains('expanded')) {
                 btn.innerText = "▲ 收起簡介";
-                mask.style.opacity = '0'; // 隱藏遮罩
+                mask.style.opacity = '0'; 
                 trackAction('expand_desc');
             } else {
                 btn.innerText = "▼ 了解更多故事";
-                mask.style.opacity = '1'; // 顯示遮罩
+                mask.style.opacity = '1'; 
             }
         }
 
-        // 集章系統
-        function initStamps(currentSpotKey) {
-            let collected = JSON.parse(localStorage.getItem('xizhi_stamps')) || [];
-            const container = document.getElementById('stamp-container');
-            container.innerHTML = ''; 
+        // --- 核心邏輯修改：功能點擊集點 ---
+        
+        function collectAction(taskName) {
+            // 1. 讀取目前進度 (使用新的 key 避免與舊邏輯衝突)
+            let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
             
-            // 繪製 8 個圈圈 (但目標是 3)
-            for(let i=1; i<=8; i++) {
-                let spotId = 'spot' + i;
-                let div = document.createElement('div');
-                div.className = collected.includes(spotId) ? 'stamp active' : 'stamp';
-                div.innerText = i;
-                container.appendChild(div);
-            }
-
-            // 更新進度條 (分母為 3)
-            let progressPercent = Math.min((collected.length / WIN_THRESHOLD) * 100, 100);
-            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
-
-            updateActionButton(collected, currentSpotKey);
-        }
-
-        // 按鈕狀態管理 (核心修改)
-        function updateActionButton(collected, currentSpotKey) {
-            const btn = document.getElementById('action-btn');
-            const title = document.querySelector('.game-title');
-            title.innerHTML = `🏆 探險家集章 (進度: ${collected.length}/${WIN_THRESHOLD})`;
-
-            // 狀態 3: 已集滿 3 個 -> 變身問卷按鈕
-            if (collected.length >= WIN_THRESHOLD) {
-                btn.className = "action-btn btn-survey";
-                btn.innerHTML = "🎓 恭喜達標！領取完賽證書";
-                btn.onclick = function() {
-                    trackAction('click_survey');
-                    window.open(SURVEY_URL, '_blank');
-                };
-                return;
-            }
-
-            // 狀態 2: 尚未集滿，但本站已打卡 -> 灰色停用
-            if (collected.includes(currentSpotKey)) {
-                btn.className = "action-btn btn-disabled";
-                btn.innerHTML = "✅ 本站已打卡";
-                btn.onclick = null;
-            } 
-            // 狀態 1: 尚未打卡 -> 綠色打卡
-            else {
-                btn.className = "action-btn btn-checkin";
-                btn.innerHTML = "📍 抵達打卡 (+1)";
-                btn.onclick = handleAction;
-            }
-        }
-
-        function handleAction() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const currentSpotKey = urlParams.get('id') || 'spot1';
-            let collected = JSON.parse(localStorage.getItem('xizhi_stamps')) || [];
-            
-            if (!collected.includes(currentSpotKey)) {
-                collected.push(currentSpotKey);
-                localStorage.setItem('xizhi_stamps', JSON.stringify(collected));
+            // 2. 如果沒收集過，加入清單
+            if (!collected.includes(taskName)) {
+                collected.push(taskName);
+                localStorage.setItem('xizhi_action_stamps', JSON.stringify(collected));
                 
-                alert("🎉 打卡成功！");
-                trackAction('check_in');
-                initStamps(currentSpotKey); // 重新渲染按鈕狀態
+                // 3. 追蹤數據
+                trackAction('collect_' + taskName);
+                
+                // 4. 更新畫面 (因為是開啟新分頁，所以要在點擊瞬間更新 UI)
+                initTaskProgress();
             }
         }
 
-        // 測試用重置
+        function initTaskProgress() {
+            let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
+            
+            // 更新 5 個圈圈的狀態
+            TASKS.forEach(task => {
+                const el = document.getElementById('stamp-' + task);
+                if (collected.includes(task)) {
+                    el.classList.add('active');
+                    el.innerText = '✓'; // 打勾
+                } else {
+                    el.classList.remove('active');
+                    // 還原原本的圖示
+                    if(task==='ubike') el.innerText = '🚲';
+                    if(task==='bus') el.innerText = '🚌';
+                    if(task==='uber') el.innerText = '🚕';
+                    if(task==='map') el.innerText = '📍';
+                    if(task==='food') el.innerText = '🍴';
+                }
+            });
+
+            // 更新文字與進度條
+            document.getElementById('progress-text').innerText = `${collected.length}/5`;
+            document.getElementById('progress-bar').style.width = `${(collected.length/5)*100}%`;
+
+            // 如果集滿 5 個，顯示問卷
+            if (collected.length >= 5) {
+                document.getElementById('survey-box').style.display = 'block';
+            }
+        }
+
         function resetProgress() {
-            if(confirm("確定要重置所有進度嗎？(測試用)")) {
-                localStorage.removeItem('xizhi_stamps');
+            if(confirm("確定要重置測試進度嗎？")) {
+                localStorage.removeItem('xizhi_action_stamps');
                 location.reload();
             }
         }
