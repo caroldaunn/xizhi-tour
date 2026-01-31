@@ -14,7 +14,7 @@
         .tag { display: inline-block; background: #e9ecef; color: #495057; padding: 4px 10px; border-radius: 20px; font-size: 12px; margin-bottom: 15px; font-weight: bold; }
         p { color: #555; line-height: 1.7; font-size: 15px; margin-bottom: 30px; text-align: justify; }
         
-        /* 新增：交通工具箱樣式 */
+        /* 交通工具箱樣式 */
         .transport-box { background: #f0f4f8; border-radius: 16px; padding: 16px; margin-bottom: 24px; border: 1px solid #e1e8ed; }
         .transport-title { font-size: 14px; font-weight: bold; color: #555; margin: 0 0 12px 0; display: flex; align-items: center; }
         .transport-icons { display: flex; gap: 10px; margin-bottom: 12px; }
@@ -28,6 +28,7 @@
         .bg-uber { background-color: #2c3e50; }  /* 黑色 */
 
         .transport-tip { font-size: 13px; color: #666; background: white; padding: 10px; border-radius: 8px; line-height: 1.5; border-left: 4px solid #f39c12; margin: 0; }
+        
         /* 按鈕群組 */
         .btn-group { display: flex; gap: 12px; margin-bottom: 20px; }
         .btn { flex: 1; padding: 14px; border-radius: 12px; text-align: center; text-decoration: none; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: transform 0.1s; }
@@ -53,7 +54,6 @@
             <span class="tag">汐止深度遊</span>
             <h1 id="spot-title"></h1>
             <p id="spot-desc"></p>
-            <p id="spot-desc"></p>
 
             <div class="transport-box">
                 <div class="transport-title">🚀 交通工具箱</div>
@@ -70,7 +70,6 @@
                 </div>
                 <p id="spot-transport-tip" class="transport-tip">載入交通資訊中...</p>
             </div>
-            <div class="btn-group">
 
             <div class="btn-group">
                 <a id="map-btn" href="#" class="btn btn-map" target="_blank">
@@ -84,108 +83,19 @@
     </div>
 
     <script>
-        // 1. 景點資料庫 (對應 Make 中的 ID)
+        // 1. 景點資料庫
         const spotsData = {
             "spot1": {
                 title: "汐止火車站",
                 img: "./spot1.jpg",
                 desc: "汐止的交通心臟，也是美食的一級戰區。站前廣場經常舉辦活動，周邊巷弄隱藏著許多在地人推薦的古早味小吃，是開始這趟旅程的最佳起點。",
-                query: "汐止火車站"
+                query: "汐止火車站",
                 transport: "💡 小撇步：出站即達！若要轉乘前往其他景點，站外有多路公車與 YouBike 站點可利用。"
             },
             "spot2": {
                 title: "中正老街",
                 img: "https://newtaipei.travel/content/images/attractions/26786/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg",
-                desc: "舊稱「水返腳街」，這裡是汐止最早的發源地。雖然商業氣息已淡，但走在狹窄的街道上，仍能看見幾棟保留完整的紅磚古厝與傳統市場的熱鬧喧囂。",
-                query: "汐止中正老街"
-            },
-            "spot3": {
-                title: "蘇家古厝",
-                img: "https://tour.ntpc.gov.tw/Content/Upload/Place/6d368051-9e7f-44e8-8a4e-1b8f5745778a.jpg",
-                desc: "隱身於現代建築之中，這座擁有百年歷史的紅磚拱廊建築，展示了優雅的巴洛克式風格。它是汐止望族蘇家的宅邸，見證了當地的興衰。",
-                query: "汐止蘇家古厝"
-            },
-            "spot4": {
-                title: "建順茶行",
-                img: "https://tour.ntpc.gov.tw/Content/Upload/Place/ed979927-567c-48c9-947b-1178c520857b.jpg",
-                desc: "汐止曾是北台灣重要的茶葉集散地。建順茶行傳承百年，店內至今仍保留著傳統的製茶工具與檜木茶箱，一走進去就能聞到濃郁的茶香。",
-                query: "汐止建順茶行"
-            },
-            "spot5": {
-                title: "茄苳腳鐵路遺跡",
-                img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/TRA_Xizhi_Station_202308.jpg/800px-TRA_Xizhi_Station_202308.jpg",
-                desc: "位於高架鐵路下方，這裡保留了清朝至日治時期的鐵路基座遺跡。看著斑駁的石塊，彷彿能聽見百年前火車轟隆駛過的聲音。",
-                query: "汐止茄苳腳鐵路遺蹟"
-            },
-            "spot6": {
-                title: "五堵隧道",
-                img: "https://newtaipei.travel/content/images/attractions/26786/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg",
-                desc: "這是一座穿越時空的隧道。原本是舊火車隧道，荒廢多年後改建為自行車道。保留了燻黑的紅磚牆與復古燈光，騎行其中別有一番風味。",
-                query: "五堵台鐵舊隧道"
-            },
-            "spot7": {
-                title: "星光橋",
-                img: "https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg",
-                desc: "橫跨基隆河的單斜塔景觀橋，造型像一支巨大的麥克風。白天視野開闊，夜晚點燈後光影變幻，是攝影愛好者與情侶散步的熱門景點。",
-                query: "汐止星光橋"
-            },
-            "spot8": {
-                title: "星座公園",
-                img: "https://newtaipei.travel/content/images/attractions/41830/1024x768_attractions-image-1.jpg",
-                desc: "以12星座為主題的大型河濱公園，設有沙坑、遊樂設施與廣大的草皮。這裡是親子同樂的天堂，也是這趟旅程完美的休止符。",
-                query: "汐止星座公園"
-            }
-        };
+                desc: "舊稱「水返腳街」，這裡是汐止最早的發源地。雖然商業氣息已淡，但走在狹
 
-        // 2. 初始化 LIFF
-        document.addEventListener("DOMContentLoaded", function() {
-            // 請填入您的 LIFF ID
-            const myLiffId = "2008941841-8KQq29wn"; 
-
-            liff.init({ liffId: myLiffId }).then(() => {
-                renderContent();
-            }).catch(err => {
-                console.error("LIFF Init Failed", err);
-                // 即使 LIFF 失敗 (例如在瀏覽器測試)，也嘗試顯示內容
-                renderContent();
-            });
-        });
-
-        // 3. 渲染內容邏輯
-        function renderContent() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const spotId = urlParams.get('id'); // 取得 ?id=spot1
-            const data = spotsData[spotId];
-
-            const loadingEl = document.getElementById('loading');
-            const contentEl = document.getElementById('main-content');
-
-            if (data) {
-                // 填入資料
-                document.getElementById('spot-img').src = data.img;
-                document.getElementById('spot-title').innerText = data.title;
-                document.getElementById('spot-desc').innerText = data.desc;
-                document.getElementById('spot-transport-tip').innerText = data.transport;
-
-                // 設定按鈕連結 (使用 Google Maps Universal Link)
-                // 導航：直接搜尋地點
-                document.getElementById('map-btn').href = 
-                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.query)}`;
-                
-                // 美食：地點 + 美食
-                document.getElementById('food-btn').href = 
-                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.query + " 美食")}`;
-
-                // 顯示內容
-                loadingEl.style.display = 'none';
-                contentEl.style.display = 'block';
-            } else {
-                loadingEl.innerText = "找不到此景點資料，請檢查連結。";
-            }
-        }
-    </script>
-</body>
-
-</html>
 
 
