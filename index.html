@@ -3,195 +3,299 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>汐止景點介紹</title>
+    <title>汐止深度導覽</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; padding: 0; background-color: #f8f9fa; color: #333; }
-        .hero-container { position: relative; width: 100%; height: 60vh; overflow: hidden; }
-        .hero-img { width: 100%; height: 100%; object-fit: cover; }
-        .content-container { position: relative; background: white; border-radius: 24px 24px 0 0; margin-top: -30px; padding: 25px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); min-height: 50vh; }
-        h1 { margin: 0 0 10px 0; font-size: 26px; font-weight: 800; color: #1a1a1a; }
-        .tag { display: inline-block; background: #e9ecef; color: #495057; padding: 4px 10px; border-radius: 20px; font-size: 12px; margin-bottom: 15px; font-weight: bold; }
-        p { color: #555; line-height: 1.7; font-size: 15px; margin-bottom: 30px; text-align: justify; }
+        /* --- 基礎設定 --- */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; padding-bottom: 80px; /* 留給底部導航空間 */ }
         
-        /* 交通工具箱樣式 */
-        .transport-box { background: #f0f4f8; border-radius: 16px; padding: 16px; margin-bottom: 24px; border: 1px solid #e1e8ed; }
-        .transport-title { font-size: 14px; font-weight: bold; color: #555; margin: 0 0 12px 0; display: flex; align-items: center; }
-        .transport-icons { display: flex; gap: 10px; margin-bottom: 12px; }
-        .t-btn { flex: 1; padding: 10px 5px; border-radius: 8px; text-align: center; text-decoration: none; font-size: 13px; font-weight: bold; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.2s; }
-        .t-btn:active { opacity: 0.7; }
-        .t-btn i { font-size: 18px; margin-bottom: 4px; font-style: normal; }
-        
-        /* 交通按鈕顏色 */
-        .bg-ubike { background-color: #f39c12; } /* 橘色 */
-        .bg-bus { background-color: #3498db; }   /* 藍色 */
-        .bg-uber { background-color: #2c3e50; }  /* 黑色 */
+        /* --- 頂部進度條 --- */
+        .progress-container { position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: #e0e0e0; z-index: 2000; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #ff8a00, #e52e71); width: 0%; transition: width 0.5s ease; border-radius: 0 3px 3px 0; }
 
-        .transport-tip { font-size: 13px; color: #666; background: white; padding: 10px; border-radius: 8px; line-height: 1.5; border-left: 4px solid #f39c12; margin: 0; }
+        /* --- Hero 圖片區 --- */
+        .hero-container { position: relative; width: 100%; height: 35vh; overflow: hidden; }
+        .hero-img { width: 100%; height: 100%; object-fit: cover; }
         
-        /* 按鈕群組 */
-        .btn-group { display: flex; gap: 12px; margin-bottom: 20px; }
-        .btn { flex: 1; padding: 14px; border-radius: 12px; text-align: center; text-decoration: none; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: transform 0.1s; }
-        .btn:active { transform: scale(0.98); }
-        .btn-icon { margin-right: 6px; font-size: 18px; }
+        /* --- 主要內容卡片 --- */
+        .content-card { position: relative; background: white; border-radius: 24px 24px 0 0; margin-top: -25px; padding: 25px; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); min-height: 60vh; }
         
-        /* 顏色設定 */
-        .btn-map { background: linear-gradient(135deg, #06C755 0%, #05b54d 100%); color: white; }
-        .btn-food { background: linear-gradient(135deg, #FF9900 0%, #e68a00 100%); color: white; }
+        /* --- 標題與標籤 --- */
+        h1 { margin: 0 0 5px 0; font-size: 24px; font-weight: 800; color: #2c3e50; }
+        .sub-tag { display: inline-block; font-size: 12px; color: #888; background: #eee; padding: 3px 8px; border-radius: 4px; margin-bottom: 15px; }
+
+        /* --- 摺疊簡介 --- */
+        .desc-box { margin-bottom: 25px; }
+        .desc-text { font-size: 15px; line-height: 1.6; color: #555; max-height: 80px; overflow: hidden; transition: max-height 0.4s ease; position: relative; }
+        .desc-text.expanded { max-height: 1000px; } /* 展開後的高度 */
+        /* 漸層遮罩 (未展開時顯示) */
+        .desc-mask { position: absolute; bottom: 0; left: 0; width: 100%; height: 40px; background: linear-gradient(to bottom, transparent, white); pointer-events: none; transition: opacity 0.3s; }
+        .desc-text.expanded .desc-mask { opacity: 0; }
         
-        .loading { text-align: center; padding: 50px; color: #888; }
+        .read-more-btn { display: block; width: 100%; text-align: center; padding-top: 5px; color: #007bff; font-weight: bold; font-size: 13px; cursor: pointer; }
+
+        /* --- 交通工具箱 (中層工具) --- */
+        .transport-grid { display: flex; gap: 10px; margin-bottom: 30px; }
+        .t-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border-radius: 12px; text-decoration: none; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s; }
+        .t-btn:active { transform: scale(0.96); }
+        .bg-ubike { background: linear-gradient(135deg, #fce38a 0%, #f38181 100%); color: #555; } /* 亮黃暖色 */
+        .bg-uber { background: #2c3e50; } /* 黑色 */
+
+        /* --- 互動集章區 (遊戲層) --- */
+        .game-section { background: #fff8e1; border: 2px dashed #ffc107; border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 20px; }
+        .game-title { font-weight: bold; color: #d35400; margin-bottom: 10px; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .stamp-container { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+        .stamp { width: 30px; height: 30px; border-radius: 50%; background: #e0e0e0; color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; }
+        .stamp.active { background: #ff512f; box-shadow: 0 2px 8px rgba(255, 81, 47, 0.4); transform: scale(1.1); }
+        
+        .checkin-btn { width: 100%; padding: 14px; background: #27ae60; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); }
+        .checkin-btn:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
+
+        /* --- 問卷區塊 (隱藏獎勵) --- */
+        #survey-box { display: none; margin-top: 20px; animation: popUp 0.5s ease; }
+        .survey-btn { display: block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4); }
+        @keyframes popUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- 底部固定導航 (Action Bar) --- */
+        .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px 15px; box-sizing: border-box; display: flex; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+        .footer-btn { flex: 1; padding: 12px; border-radius: 10px; text-align: center; text-decoration: none; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-map { background: #f1f3f5; color: #495057; }
+        .btn-food { background: #ff6b6b; color: white; }
+
+        /* --- 載入畫面 --- */
+        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; align-items: center; justify-content: center; z-index: 3000; flex-direction: column; color: #888; }
     </style>
 </head>
 <body>
 
-    <div id="loading" class="loading">資料載入中...</div>
+    <div id="loading">
+        <div style="font-size: 24px; margin-bottom: 10px;">⏳</div>
+        <div>載入景點資料中...</div>
+    </div>
+
+    <div class="progress-container">
+        <div id="progress-bar" class="progress-bar"></div>
+    </div>
 
     <div id="main-content" style="display: none;">
+        
         <div class="hero-container">
             <img id="spot-img" class="hero-img" src="" alt="景點圖片">
         </div>
-        <div class="content-container">
-            <span class="tag">汐止深度遊</span>
+
+        <div class="content-card">
+            <span class="sub-tag">汐止深度導覽 NO.<span id="spot-index">1</span></span>
             <h1 id="spot-title"></h1>
-            <p id="spot-desc"></p>
 
-            <div class="transport-box">
-                <div class="transport-title">🚀 交通工具箱</div>
-                <div class="transport-icons">
-                    <a href="https://www.google.com/maps/search/YouBike/" target="_blank" class="t-btn bg-ubike">
-                        <i>🚲</i> YouBike
-                    </a>
-                    <a href="https://ebus.gov.taipei/" target="_blank" class="t-btn bg-bus">
-                        <i>🚌</i> 公車動態
-                    </a>
-                    <a href="https://m.uber.com/ul" target="_blank" class="t-btn bg-uber">
-                        <i>🚕</i> 叫 Uber
-                    </a>
+            <div class="desc-box">
+                <div id="spot-desc-container" class="desc-text">
+                    <span id="spot-desc"></span>
+                    <div class="desc-mask"></div>
                 </div>
-                <p id="spot-transport-tip" class="transport-tip">載入交通資訊中...</p>
+                <div id="read-more-btn" class="read-more-btn" onclick="toggleDesc()">▼ 了解更多故事</div>
             </div>
 
-            <div class="btn-group">
-                <a id="map-btn" href="#" class="btn btn-map" target="_blank">
-                    <span class="btn-icon">📍</span> 帶我去
+            <div class="transport-grid">
+                <a href="https://www.google.com/maps/search/?api=1&query=..." target="_blank" class="t-btn bg-ubike" onclick="trackAction('click_ubike')">
+                    🚲 找 YouBike
                 </a>
-                <a id="food-btn" href="#" class="btn btn-food" target="_blank">
-                    <span class="btn-icon">🍴</span> 附近美食
+                <a href="https://m.uber.com/ul" target="_blank" class="t-btn bg-uber" onclick="trackAction('click_uber')">
+                    🚕 叫 Uber
                 </a>
             </div>
+
+            <div class="game-section">
+                <div class="game-title">🏆 探險家集章 (進度: <span id="progress-text">0/8</span>)</div>
+                <div id="stamp-container" class="stamp-container">
+                    </div>
+                
+                <button id="checkin-btn" class="checkin-btn" onclick="doCheckIn()">
+                    📍 抵達打卡 (+1)
+                </button>
+            </div>
+
+            <div id="survey-box">
+                <a href="https://forms.gle/您的問卷連結在這裡" target="_blank" class="survey-btn" onclick="trackAction('click_survey')">
+                    🎓 領取完賽證書 (填寫後測問卷)
+                </a>
+                <p style="text-align: center; color: #888; font-size: 12px; margin-top: 8px;">填寫完畢可獲得汐止美食優惠券</p>
+            </div>
+
         </div>
     </div>
 
+    <div class="sticky-footer">
+        <a id="map-btn" href="#" class="footer-btn btn-map" target="_blank" onclick="trackAction('click_map')">
+            📍 帶我去
+        </a>
+        <a id="food-btn" href="#" class="footer-btn btn-food" target="_blank" onclick="trackAction('click_food')">
+            🍴 附近美食
+        </a>
+    </div>
+
     <script>
-        // 1. 景點資料庫
+        // ==========================================
+        // 🛠️ 設定區 (請修改這裡)
+        // ==========================================
+        const MY_LIFF_ID = "2008941841-8KQq29wn"; // 您的 LIFF ID
+        const WEBHOOK_URL = ""; // 【重要】請填入 Make 的 Webhook 網址，若還沒做可先留空
+
+        // ==========================================
+        // 📦 資料庫 (8 個景點)
+        // ==========================================
         const spotsData = {
-            "spot1": {
-                title: "汐止火車站",
-                img: "./spot1.jpg",
-                desc: "汐止的交通心臟，也是美食的一級戰區。站前廣場經常舉辦活動，周邊巷弄隱藏著許多在地人推薦的古早味小吃，是開始這趟旅程的最佳起點。",
-                query: "汐止火車站",
-                transport: "💡 小撇步：出站即達！若要轉乘前往其他景點，站外有多路公車與 YouBike 站點可利用。"
-            },
-            "spot2": {
-                title: "中正老街",
-                img: "https://newtaipei.travel/content/images/attractions/26786/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg",
-                desc: "舊稱「水返腳街」，這裡是汐止最早的發源地。雖然商業氣息已淡，但走在狹窄的街道上，仍能看見幾棟保留完整的紅磚古厝與傳統市場的熱鬧喧囂。",
-                query: "汐止中正老街",
-                transport: "💡 小撇步：距離汐止站步行僅 5 分鐘。老街路幅較窄，強烈建議步行，感受市場氛圍。"
-            },
-            "spot3": {
-                title: "蘇家古厝",
-                img: "https://tour.ntpc.gov.tw/Content/Upload/Place/6d368051-9e7f-44e8-8a4e-1b8f5745778a.jpg",
-                desc: "隱身於現代建築之中，這座擁有百年歷史的紅磚拱廊建築，展示了優雅的巴洛克式風格。它是汐止望族蘇家的宅邸，見證了當地的興衰。",
-                query: "汐止蘇家古厝",
-                transport: "💡 小撇步：位於中正老街巷弄內，建議車輛停在火車站周邊，步行前往。"
-            },
-            "spot4": {
-                title: "建順茶行",
-                img: "https://tour.ntpc.gov.tw/Content/Upload/Place/ed979927-567c-48c9-947b-1178c520857b.jpg",
-                desc: "汐止曾是北台灣重要的茶葉集散地。建順茶行傳承百年，店內至今仍保留著傳統的製茶工具與檜木茶箱，一走進去就能聞到濃郁的茶香。",
-                query: "汐止建順茶行",
-                transport: "💡 小撇步：位於老街區域，巷弄狹小，不建議開車進入，步行參觀最佳。"
-            },
-            "spot5": {
-                title: "茄苳腳鐵路遺跡",
-                img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/TRA_Xizhi_Station_202308.jpg/800px-TRA_Xizhi_Station_202308.jpg",
-                desc: "位於高架鐵路下方，這裡保留了清朝至日治時期的鐵路基座遺跡。看著斑駁的石塊，彷彿能聽見百年前火車轟隆駛過的聲音。",
-                query: "汐止茄苳腳鐵路遺蹟",
-                transport: "💡 小撇步：從汐止站沿著鐵路高架下方公園，步行約 10-15 分鐘即可看見。"
-            },
-            "spot6": {
-                title: "五堵隧道",
-                img: "https://newtaipei.travel/content/images/attractions/26786/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg",
-                desc: "這是一座穿越時空的隧道。原本是舊火車隧道，荒廢多年後改建為自行車道。保留了燻黑的紅磚牆與復古燈光，騎行其中別有一番風味。",
-                query: "五堵台鐵舊隧道",
-                transport: "💡 小撇步：距離較遠，建議騎乘 YouBike 前往（五堵車站有站點），或搭乘社區巴士 F906。"
-            },
-            "spot7": {
-                title: "星光橋",
-                img: "https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg",
-                desc: "橫跨基隆河的單斜塔景觀橋，造型像一支巨大的麥克風。白天視野開闊，夜晚點燈後光影變幻，是攝影愛好者與情侶散步的熱門景點。",
-                query: "汐止星光橋",
-                transport: "💡 小撇步：從五堵火車站步行約 10 分鐘。亦可租借 YouBike 沿河濱自行車道騎行抵達。"
-            },
-            "spot8": {
-                title: "星座公園",
-                img: "https://newtaipei.travel/content/images/attractions/41830/1024x768_attractions-image-1.jpg",
-                desc: "以12星座為主題的大型河濱公園，設有沙坑、遊樂設施與廣大的草皮。這裡是親子同樂的天堂，也是這趟旅程完美的休止符。",
-                query: "汐止星座公園",
-                transport: "💡 小撇步：地點較偏，若有攜帶幼童，建議直接叫 Uber 或計程車前往最方便。"
-            }
+            "spot1": { id: 1, title: "汐止火車站", img: "./spot1.jpg", desc: "汐止的交通心臟，也是美食的一級戰區。站前廣場經常舉辦活動，周邊巷弄隱藏著許多在地人推薦的古早味小吃。這裡是旅程的起點，建議先在此補給水分與糧食。", query: "汐止火車站" },
+            "spot2": { id: 2, title: "中正老街", img: "./spot2.jpg", desc: "舊稱「水返腳街」，這裡是汐止最早的發源地。雖然商業氣息已淡，但走在狹窄的街道上，仍能看見幾棟保留完整的紅磚古厝與傳統市場的熱鬧喧囂，彷彿穿越回百年前。", query: "汐止中正老街" },
+            "spot3": { id: 3, title: "蘇家古厝", img: "./spot3.jpg", desc: "隱身於現代建築之中，這座擁有百年歷史的紅磚拱廊建築，展示了優雅的巴洛克式風格。它是汐止望族蘇家的宅邸，見證了當地的興衰，紅磚牆上的雕花依然清晰可見。", query: "汐止蘇家古厝" },
+            "spot4": { id: 4, title: "建順茶行", img: "./spot4.jpg", desc: "汐止曾是北台灣重要的茶葉集散地。建順茶行傳承百年，店內至今仍保留著傳統的製茶工具與檜木茶箱，一走進去就能聞到濃郁的茶香，老闆也常熱情解說茶葉知識。", query: "汐止建順茶行" },
+            "spot5": { id: 5, title: "茄苳腳鐵路遺跡", img: "./spot5.jpg", desc: "位於高架鐵路下方，這裡保留了清朝至日治時期的鐵路基座遺跡。看著斑駁的石塊，彷彿能聽見百年前火車轟隆駛過的聲音，是鐵道迷不可錯過的隱藏景點。", query: "汐止茄苳腳鐵路遺蹟" },
+            "spot6": { id: 6, title: "五堵隧道", img: "./spot6.jpg", desc: "這是一座穿越時空的隧道。原本是舊火車隧道，荒廢多年後改建為自行車道。保留了燻黑的紅磚牆與復古燈光，騎行其中別有一番風味，彷彿進入了神隱少女的場景。", query: "五堵台鐵舊隧道" },
+            "spot7": { id: 7, title: "星光橋", img: "./spot7.jpg", desc: "橫跨基隆河的單斜塔景觀橋，造型像一支巨大的麥克風。白天視野開闊，可以遠眺群山，夜晚點燈後光影變幻，是攝影愛好者與情侶散步的熱門景點。", query: "汐止星光橋" },
+            "spot8": { id: 8, title: "星座公園", img: "./spot8.jpg", desc: "以12星座為主題的大型河濱公園，設有沙坑、遊樂設施與廣大的草皮。這裡是親子同樂的天堂，也是這趟旅程完美的休止符，適合在此野餐休息。", query: "汐止星座公園" }
         };
 
-        // 2. 初始化 LIFF
-        document.addEventListener("DOMContentLoaded", function() {
-            // 您的 LIFF ID
-            const myLiffId = "2008941841-8KQq29wn"; 
-
-            liff.init({ liffId: myLiffId }).then(() => {
-                renderContent();
+        // ==========================================
+        // 🚀 核心邏輯
+        // ==========================================
+        
+        // 1. 初始化
+        window.onload = function() {
+            liff.init({ liffId: MY_LIFF_ID }).then(() => {
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                } else {
+                    renderContent();
+                    trackAction('view_page'); // 追蹤頁面瀏覽
+                }
             }).catch(err => {
-                console.error("LIFF Init Failed", err);
-                renderContent();
+                console.error(err);
+                // 即使 LIFF 失敗也嘗試渲染，方便電腦測試
+                renderContent(); 
             });
-        });
+        };
 
-        // 3. 渲染內容邏輯
+        // 2. 渲染畫面
         function renderContent() {
             const urlParams = new URLSearchParams(window.location.search);
-            const spotId = urlParams.get('id');
-            const data = spotsData[spotId];
-
-            const loadingEl = document.getElementById('loading');
-            const contentEl = document.getElementById('main-content');
+            const spotKey = urlParams.get('id') || 'spot1'; // 預設顯示第1站
+            const data = spotsData[spotKey];
 
             if (data) {
-                // 填入資料
-                document.getElementById('spot-img').src = data.img;
+                // 填入文字與圖片
+                document.getElementById('spot-index').innerText = data.id;
                 document.getElementById('spot-title').innerText = data.title;
                 document.getElementById('spot-desc').innerText = data.desc;
-                
-                // 確保 transport 有值，如果沒有則顯示預設文字
-                const transportText = data.transport ? data.transport : "💡 建議使用 Google Maps 規劃最佳路線。";
-                document.getElementById('spot-transport-tip').innerText = transportText;
+                // 圖片路徑處理：如果本地有就用本地，沒有可用 placeholder
+                document.getElementById('spot-img').src = data.img; 
 
-                // 設定按鈕連結 (修復了連結語法)
-                // 導航：直接搜尋地點
-                document.getElementById('map-btn').href = 
-                    `https://www.google.com/maps?q=${encodeURIComponent(data.query)}`;
-                
-                // 美食：地點 + 美食
-                document.getElementById('food-btn').href = 
-                    `https://www.google.com/maps?q=${encodeURIComponent(data.query + " 美食")}`;
+                // 設定底部導航按鈕連結
+                document.getElementById('map-btn').href = `http://googleusercontent.com/maps.google.com/9{encodeURIComponent(data.query)}`;
+                document.getElementById('food-btn').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.query + " 美食")}`;
 
-                // 顯示內容
-                loadingEl.style.display = 'none';
-                contentEl.style.display = 'block';
-            } else {
-                loadingEl.innerText = "找不到此景點資料，請檢查連結。";
+                // 初始化集章狀態
+                initStamps(spotKey);
+
+                // 移除載入動畫
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
             }
+        }
+
+        // 3. 摺疊簡介功能
+        function toggleDesc() {
+            const container = document.getElementById('spot-desc-container');
+            const btn = document.getElementById('read-more-btn');
+            container.classList.toggle('expanded');
+            
+            if (container.classList.contains('expanded')) {
+                btn.innerText = "▲ 收起簡介";
+                trackAction('expand_desc'); // 追蹤：展開簡介
+            } else {
+                btn.innerText = "▼ 了解更多故事";
+            }
+        }
+
+        // 4. 集章系統 (LocalStorage)
+        function initStamps(currentSpotKey) {
+            // 從手機記憶體讀取進度
+            let collected = JSON.parse(localStorage.getItem('xizhi_stamps')) || [];
+            
+            const container = document.getElementById('stamp-container');
+            container.innerHTML = ''; // 清空
+            
+            // 生成 8 個圈圈
+            for(let i=1; i<=8; i++) {
+                let spotId = 'spot' + i;
+                let isCollected = collected.includes(spotId);
+                let div = document.createElement('div');
+                div.className = isCollected ? 'stamp active' : 'stamp';
+                div.innerText = i;
+                container.appendChild(div);
+            }
+
+            // 更新進度文字與頂部進度條
+            document.getElementById('progress-text').innerText = `${collected.length}/8`;
+            document.getElementById('progress-bar').style.width = `${(collected.length/8)*100}%`;
+
+            // 檢查當前景點是否已打卡
+            const btn = document.getElementById('checkin-btn');
+            if (collected.includes(currentSpotKey)) {
+                btn.innerText = "✅ 已完成打卡";
+                btn.disabled = true;
+                btn.style.background = "#ccc";
+            } else {
+                btn.innerText = "📍 抵達打卡 (+1)";
+                btn.disabled = false;
+                btn.style.background = "#27ae60";
+            }
+
+            // 如果集滿 8 個，顯示問卷區塊
+            if (collected.length >= 8) {
+                document.getElementById('survey-box').style.display = 'block';
+            }
+        }
+
+        // 5. 打卡動作
+        function doCheckIn() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentSpotKey = urlParams.get('id') || 'spot1';
+            
+            let collected = JSON.parse(localStorage.getItem('xizhi_stamps')) || [];
+            
+            if (!collected.includes(currentSpotKey)) {
+                collected.push(currentSpotKey);
+                localStorage.setItem('xizhi_stamps', JSON.stringify(collected));
+                
+                // 成功特效與更新
+                alert("🎉 打卡成功！獲得第 " + spotsData[currentSpotKey].id + " 枚印章！");
+                initStamps(currentSpotKey);
+                trackAction('check_in'); // 追蹤：打卡成功
+            }
+        }
+
+        // 6. 行為追蹤 (傳送數據到 Make)
+        function trackAction(actionName) {
+            if (!WEBHOOK_URL) return; // 如果沒設定網址就不執行
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const spotId = urlParams.get('id') || 'spot1';
+            
+            // 嘗試取得 User ID (需登入)
+            let userId = "unknown";
+            try { userId = liff.getContext().userId; } catch(e) {}
+
+            // 使用 fetch 傳送 (不等待回應，避免卡住介面)
+            fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: userId,
+                    action: actionName,
+                    spot: spotId,
+                    timestamp: new Date().toISOString()
+                })
+            }).catch(console.error);
         }
     </script>
 </body>
 </html>
-
