@@ -23,20 +23,23 @@
         h1 { margin: 0 0 5px 0; font-size: 24px; font-weight: 800; color: #2c3e50; }
         .sub-tag { display: inline-block; font-size: 12px; color: #888; background: #eee; padding: 3px 8px; border-radius: 4px; margin-bottom: 15px; }
 
-        /* --- 簡介區 (修正：顯示約 5 行) --- */
+        /* --- 簡介區 (修正：行距與間隔) --- */
         .desc-box { margin-bottom: 25px; }
         .desc-text { 
-            font-size: 15px; line-height: 1.6; color: #555; 
-            /* 修正：1.6 * 5行 = 8.0em */
-            max-height: 8.0em; 
+            font-size: 15px; 
+            line-height: 1.6; 
+            color: #555; 
+            /* 顯示約 5 行: 1.6 * 5 = 8em */
+            max-height: 8em; 
             overflow: hidden; 
             transition: max-height 0.4s ease; 
+            margin-bottom: 8px; /* 增加底部距離，避免按鈕貼太近 */
         }
         .desc-text.expanded { max-height: none; overflow: visible; } 
         
         .read-more-btn { 
             display: block; width: 100%; text-align: left; 
-            padding-top: 8px; 
+            padding: 10px 0; /* 增加點擊區域 */
             color: #007bff; font-weight: bold; font-size: 14px; 
             cursor: pointer; text-decoration: underline;
         }
@@ -57,20 +60,16 @@
         .task-grid { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
         .stamp-box { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 50px; }
         
-        /* 集章樣式 (未完成) */
-        .stamp { width: 40px; height: 40px; border-radius: 50%; background: #e0e0e0; color: #999; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; border: 2px solid #ddd; transition: all 0.3s; }
+        /* 集章樣式 */
+        .stamp { width: 35px; height: 35px; border-radius: 50%; background: #e0e0e0; color: #999; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; border: 2px solid #ddd; transition: all 0.3s; }
         
-        /* 修正：集章樣式 (已完成 - 汐止遊圓戳) */
+        /* 修正：改回打勾樣式 */
         .stamp.active { 
-            background: white; 
-            color: #d35400; 
-            border: 2px solid #d35400; 
+            background: #ff512f; 
+            color: white; 
+            border-color: #ff512f; 
             transform: scale(1.1); 
-            box-shadow: 0 3px 8px rgba(211, 84, 0, 0.2);
-            font-size: 10px; /* 字體縮小以塞入三個字 */
-            line-height: 1.1;
-            padding: 2px;
-            writing-mode: horizontal-tb; /* 確保文字橫排 */
+            box-shadow: 0 3px 8px rgba(255, 81, 47, 0.3);
         }
         
         .stamp-label { font-size: 10px; color: #888; margin-top: 4px;}
@@ -100,7 +99,7 @@
         #survey-box { display: none; margin-top: 25px; animation: popUp 0.5s ease; padding-top: 20px; border-top: 1px solid #eee; }
         .survey-btn { display: block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4); }
 
-        /* --- 紀念照產生器區塊 (次要獎勵) --- */
+        /* --- 紀念照產生器區塊 --- */
         #memorial-box { display: none; margin-top: 25px; text-align: center; background: #fafafa; padding: 20px; border-radius: 12px; }
         .memorial-title { font-size: 16px; font-weight: 800; color: #2c3e50; margin-bottom: 5px; }
         .memorial-desc { font-size: 13px; color: #666; margin-bottom: 15px; }
@@ -109,9 +108,21 @@
         .btn-upload { border: 2px dashed #007bff; color: #007bff; background-color: white; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
         .upload-btn-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
         
-        .canvas-container { margin: 10px auto; width: 100%; max-width: 250px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: none; }
-        #result-canvas { width: 100%; height: auto; display: block; }
-        .download-btn { display: none; background: #28a745; color: white; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-bottom: 10px; font-size: 14px; cursor: pointer;}
+        /* 隱藏 Canvas，改為顯示最終 Image */
+        #result-canvas { display: none; }
+        
+        /* 最終合成圖樣式 */
+        #final-img { 
+            width: 100%; 
+            max-width: 250px; 
+            border: 1px solid #ddd; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            display: none; /* 預設隱藏 */
+            margin: 10px auto;
+            border-radius: 8px;
+        }
+        
+        .download-hint { display: none; color: #28a745; font-weight: bold; font-size: 14px; margin-top: 10px; background: #e8f5e9; padding: 10px; border-radius: 8px;}
         
         /* --- 底部固定導航 --- */
         .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px 15px; box-sizing: border-box; display: flex; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
@@ -147,11 +158,9 @@
                 <a href="https://www.google.com/maps/search/YouBike/" target="_blank" class="t-btn bg-ubike" onclick="collectAction('ubike')">
                     <i>🚲</i> YouBike
                 </a>
-                
                 <a id="bus-btn" href="#" target="_blank" class="t-btn bg-bus" onclick="collectAction('bus')">
                     <i>🚌</i> <span class="bus-label">去下一站</span>
                 </a>
-                
                 <a href="https://m.uber.com/ul" target="_blank" class="t-btn bg-uber" onclick="collectAction('uber')">
                     <i>🚕</i> 叫 Uber
                 </a>
@@ -188,8 +197,12 @@
                     <button class="btn-upload">📸 選擇照片 / 開啟相機</button>
                     <input type="file" id="upload-input" accept="image/*" onchange="handleImageUpload(event)">
                 </div>
-                <div class="canvas-container"><canvas id="result-canvas"></canvas></div>
-                <a id="download-link" class="download-btn" href="#" target="_blank">🔍 預覽大圖 (長按圖片可儲存)</a>
+                
+                <canvas id="result-canvas"></canvas>
+                
+                <img id="final-img" src="" alt="合成照片">
+                
+                <div id="download-msg" class="download-hint">👆 請「長按上方圖片」儲存至手機相簿</div>
             </div>
 
             <div class="reset-link" onclick="resetProgress()">↺ 重置測試進度</div>
@@ -242,11 +255,11 @@
     <script>
         // ================= 設定區 (請確認資料正確) =================
         const MY_LIFF_ID = "2008941841-8KQq29wn"; 
-        const WEBHOOK_URL = ""; // 填入 Make Webhook
-        const SURVEYCAKE_URL = "https://www.surveycake.com/s/您的問卷代碼"; // 請替換問卷 ID
+        const WEBHOOK_URL = ""; 
+        const SURVEYCAKE_URL = "https://www.surveycake.com/s/您的問卷代碼"; 
         const SURVEY_UID_ALIAS = "line_uid"; 
         const TASKS = ['ubike', 'bus', 'uber', 'map', 'food'];
-        const FRAME_IMG_SRC = "./frame.png"; // 請確認 frame.png 已上傳
+        const FRAME_IMG_SRC = "./frame.png"; 
 
         const spotsData = {
             "spot1": { id: 1, title: "汐止火車站", img: "./spot1.jpg", desc: "汐止的交通心臟，也是美食的一級戰區。站前廣場經常舉辦活動，周邊巷弄隱藏著許多在地人推薦的古早味小吃。這裡是旅程的起點，建議先在此補給水分與糧食，準備開始一場深度的在地探索之旅。", query: "汐止火車站" },
@@ -304,20 +317,16 @@
                 document.getElementById('spot-img').src = data.img; 
                 
                 const mapQuery = encodeURIComponent(data.query);
-                // 底部導航
                 document.getElementById('map-btn').href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
                 document.getElementById('food-btn').href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}+美食`;
 
-                // --- 智慧公車導航邏輯 (A點 -> B點) ---
+                // 智慧公車導航
                 const currentIdNum = parseInt(data.id);
                 let nextSpotKey = 'spot' + (currentIdNum + 1);
                 if (currentIdNum >= 8) nextSpotKey = 'spot1'; 
-
                 const nextData = spotsData[nextSpotKey];
                 const busBtn = document.getElementById('bus-btn');
-                
                 if (nextData) {
-                    // Google Map Directions
                     const routeUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(data.query)}&destination=${encodeURIComponent(nextData.query)}&travelmode=transit`;
                     busBtn.href = routeUrl;
                     busBtn.querySelector('.bus-label').innerText = `去${nextData.title}`;
@@ -329,7 +338,6 @@
             }
         }
 
-        // --- 互動集點 ---
         function collectAction(taskName) {
             saveStamp(taskName);
         }
@@ -357,9 +365,8 @@
                 const el = document.getElementById('stamp-' + task);
                 if (collected.includes(task)) {
                     el.classList.add('active');
-                    // 修正：集章後變成「汐止遊」文字
-                    el.innerHTML = '汐止遊'; 
-                    // 修正：重置原始 Icon (如果未完成的話)
+                    // ★ 修正：改回打勾圖示
+                    el.innerText = '✓'; 
                 } else {
                     el.classList.remove('active');
                     if(task==='ubike') el.innerText = '🚲';
@@ -372,14 +379,13 @@
             document.getElementById('progress-text').innerText = `${collected.length}/5`;
             document.getElementById('progress-bar').style.width = `${(collected.length/5)*100}%`;
             
-            // ★ 集滿 5 點
             if (collected.length >= 5) {
                 document.getElementById('survey-box').style.display = 'block';
                 document.getElementById('memorial-box').style.display = 'block';
             }
         }
 
-        // --- 相框合成 ---
+        // --- 相框合成 (修正 Crash 問題) ---
         function handleImageUpload(e) {
             const file = e.target.files[0];
             if(!file) return;
@@ -408,13 +414,14 @@
             frameImg.onload = function() {
                 ctx.drawImage(frameImg, 0, 0, size, size);
                 
-                // 修正：不直接設定 href，而是準備好 DataURL
+                // ★ 關鍵修正：直接顯示圖片，不開新視窗
                 const dataUrl = canvas.toDataURL("image/png");
-                const downloadLink = document.getElementById('download-link');
-                downloadLink.href = dataUrl; // 設定連結以供新視窗開啟
-                downloadLink.style.display = "block";
+                const finalImg = document.getElementById('final-img');
+                finalImg.src = dataUrl;
+                finalImg.style.display = "block";
                 
-                document.querySelector('.canvas-container').style.display = "block";
+                // 顯示提示訊息
+                document.getElementById('download-msg').style.display = "block";
             }
             frameImg.src = FRAME_IMG_SRC;
         }
