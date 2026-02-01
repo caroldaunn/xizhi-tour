@@ -13,31 +13,31 @@
         .progress-container { position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: #e0e0e0; z-index: 2000; }
         .progress-bar { height: 100%; background: linear-gradient(90deg, #ff8a00, #e52e71); width: 0%; transition: width 0.5s ease; border-radius: 0 3px 3px 0; }
 
-        /* --- 虛擬 Beacon 通知 (新增) --- */
+        /* --- 虛擬 Beacon 通知 --- */
         .beacon-banner {
             position: fixed;
-            top: -100px; /* 預設隱藏在上面 */
+            top: -100px; /* 預設隱藏 */
             left: 5%;
             width: 90%;
-            background: rgba(34, 34, 34, 0.95); /* 深色背景 */
+            background: rgba(34, 34, 34, 0.95);
             color: white;
             padding: 12px 15px;
-            border-radius: 50px; /* 圓角膠囊狀 */
+            border-radius: 50px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.3);
             z-index: 5000;
             display: flex;
             align-items: center;
             gap: 12px;
-            transition: top 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 彈性動畫 */
+            transition: top 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
             box-sizing: border-box;
         }
-        .beacon-banner.show { top: 20px; } /* 顯示時的位置 */
+        .beacon-banner.show { top: 20px; } 
         
         .beacon-icon {
             width: 36px;
             height: 36px;
-            background: #06C755; /* LINE 綠 */
+            background: #06C755;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -64,7 +64,7 @@
         .desc-box { margin-bottom: 25px; }
         .desc-text { 
             font-size: 15px; line-height: 1.6; color: #555; 
-            max-height: 8.0em; /* 約5行 */
+            max-height: 8.0em; 
             overflow: hidden; 
             transition: max-height 0.4s ease; 
             margin-bottom: 8px;
@@ -239,42 +239,37 @@
         <div class="share-sheet">
             <div class="share-title">分享這個景點 📢</div>
             <div class="share-grid">
-                
                 <div class="share-item" onclick="shareTo('line')">
                     <div class="share-icon-box" style="background:#06C755;">
                         <svg viewBox="0 0 24 24" fill="white"><path d="M22 10.3c0-4.7-4.3-8.6-10-8.6-5.4 0-10 3.9-10 8.6 0 4.2 3.8 7.8 8.4 8.5.3 0 .7.2.8.5 0 0 .3 1.1.3 1.3-.1.5-.4 1.8-1.7 2.5 1.4 0 4.3-.9 6-3.1 3.5-1.5 6.2-4.8 6.2-9.7zm-14.7.2c0-.3.3-.5.5-.5h4.8c.3 0 .5.2.5.5s-.2.5-.5.5h-4.2v1.3h4.2c.3 0 .5.2.5.5s-.2.5-.5.5h-4.8c-.3 0-.5-.2-.5-.5v-2.1zm8.7 2.1c0 .3-.2.5-.5.5h-1.3v-2.6h.5c.3 0 .5.2.5.5v2.1c.8 0 .8-.5.8-2.6h.6v2.6c0 .3-.2.5-.6.5h-.1zm-2.8-2.6h.5c.3 0 .5.2.5.5v1.3l1.8-1.8h.7l-1.9 1.9 2 2.1h-.7l-1.6-1.7v1.7c0 .3-.2.5-.5.5h-.5v-4.5zm-5.7 4.5h-.5v-4.5h.5v2.3l1.9-2.3h.7l-2.2 2.6 2.3 2.5h-.8l-1.9-2.1v2.1z"/></svg>
                     </div>
                     <span>LINE</span>
                 </div>
-
                 <div class="share-item" onclick="shareTo('fb')">
                     <div class="share-icon-box" style="background:#1877F2;">
                         <svg viewBox="0 0 24 24" fill="white"><path d="M22 12c0-5.5-4.5-10-10-10S2 6.5 2 12c0 5 3.7 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7C18.3 21.1 22 17 22 12z"/></svg>
                     </div>
                     <span>Facebook</span>
                 </div>
-                
                 <div class="share-item" onclick="shareTo('ig')">
                     <div class="share-icon-box" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);">
                         <svg viewBox="0 0 24 24" fill="white"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 3.3.1 4.8 1.7 4.9 4.9.1 1.3.1 1.6.1 4.8 0 3.2 0 3.6-.1 4.9-.1 3.3-1.7 4.8-4.9 4.9-1.3.1-1.6.1-4.8.1-3.2 0-3.6 0-4.9-.1-3.3-.1-4.8-1.7-4.9-4.9-.1-1.3-.1-1.6-.1-4.8 0-3.2 0-3.6.1-4.9.1-3.3 1.7-4.8 4.9-4.9 1.3-.1 1.6-.1 4.8-.1zm0-2.2C8.7 0 8.3 0 7.1.1 2.8.3.3 2.8.1 7.1 0 8.3 0 8.7 0 12s0 3.7.1 4.9c.2 4.4 2.7 6.8 7 7 1.3.1 1.7.1 4.9.1s3.7 0 4.9-.1c4.4-.2 6.8-2.7 7-7 .1-1.3.1-1.7.1-4.9s0-3.7-.1-4.9c-.2-4.4-2.7-6.8-7-7C15.7 0 15.3 0 12 0zm0 5.8c-3.4 0-6.2 2.8-6.2 6.2s2.8 6.2 6.2 6.2 6.2-2.8 6.2-6.2-2.8-6.2-6.2-6.2zm0 10.2c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4zm6.4-10.4c0 .8-.6 1.4-1.4 1.4-.8 0-1.4-.6-1.4-1.4 0-.8.6-1.4 1.4-1.4.8 0 1.4.6 1.4 1.4z"/></svg>
                     </div>
                     <span>Instagram</span>
                 </div>
-
                 <div class="share-item" onclick="shareTo('copy')">
                     <div class="share-icon-box" style="background:#555;">
                         <svg viewBox="0 0 24 24" fill="white"><path d="M3.9 12c0-1.7 1.4-3.1 3.1-3.1h4V7H7c-2.8 0-5 2.2-5 5s2.2 5 5 5h4v-1.9H7c-1.7 0-3.1-1.4-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.7 0 3.1 1.4 3.1 3.1s-1.4 3.1-3.1 3.1h-4V17h4c2.8 0 5-2.2 5-5s-2.2-5-5-5z"/></svg>
                     </div>
                     <span>複製連結</span>
                 </div>
-
             </div>
             <button class="close-share" onclick="closeShareModal(event)">取消</button>
         </div>
     </div>
 
     <script>
-        // ================= 設定區 (請確認資料正確) =================
+        // ================= 設定區 =================
         const MY_LIFF_ID = "2008941841-8KQq29wn"; 
         const WEBHOOK_URL = ""; 
         const SURVEYCAKE_URL = "https://www.surveycake.com/s/您的問卷代碼"; 
@@ -283,19 +278,19 @@
         const FRAME_IMG_SRC = "./frame.png"; 
 
         const spotsData = {
-            "spot1": { id: 1, title: "汐止火車站", img: "./spot1.jpg", desc: "汐止的交通心臟，也是美食的一級戰區。站前廣場經常舉辦活動，周邊巷弄隱藏著許多在地人推薦的古早味小吃。這裡是旅程的起點，建議先在此補給水分與糧食，準備開始一場深度的在地探索之旅。", query: "汐止火車站" },
-            "spot2": { id: 2, title: "中正老街", img: "./spot2.jpg", desc: "舊稱「水返腳街」，這裡是汐止最早的發源地。雖然商業氣息已淡，但走在狹窄的街道上，仍能看見幾棟保留完整的紅磚古厝與傳統市場的熱鬧喧囂，彷彿穿越回百年前。", query: "汐止中正老街" },
-            "spot3": { id: 3, title: "蘇家古厝", img: "./spot3.jpg", desc: "隱身於現代建築之中，這座擁有百年歷史的紅磚拱廊建築，展示了優雅的巴洛克式風格。它是汐止望族蘇家的宅邸，見證了當地的興衰，紅磚牆上的雕花依然清晰可見。", query: "汐止蘇家古厝" },
-            "spot4": { id: 4, title: "建順茶行", img: "./spot4.jpg", desc: "汐止曾是北台灣重要的茶葉集散地。建順茶行傳承百年，店內至今仍保留著傳統的製茶工具與檜木茶箱，一走進去就能聞到濃郁的茶香，老闆也常熱情解說茶葉知識。", query: "汐止建順茶行" },
-            "spot5": { id: 5, title: "茄苳腳鐵路遺跡", img: "./spot5.jpg", desc: "位於高架鐵路下方，這裡保留了清朝至日治時期的鐵路基座遺跡。看著斑駁的石塊，彷彿能聽見百年前火車轟隆駛過的聲音，是鐵道迷不可錯過的隱藏景點。", query: "汐止茄苳腳鐵路遺蹟" },
-            "spot6": { id: 6, title: "五堵隧道", img: "./spot6.jpg", desc: "這是一座穿越時空的隧道。原本是舊火車隧道，荒廢多年後改建為自行車道。保留了燻黑的紅磚牆與復古燈光，騎行其中別有一番風味，彷彿進入了神隱少女的場景。", query: "五堵台鐵舊隧道" },
-            "spot7": { id: 7, title: "星光橋", img: "./spot7.jpg", desc: "橫跨基隆河的單斜塔景觀橋，造型像一支巨大的麥克風。白天視野開闊，可以遠眺群山，夜晚點燈後光影變幻，是攝影愛好者與情侶散步的熱門景點。", query: "汐止星光橋" },
-            "spot8": { id: 8, title: "星座公園", img: "./spot8.jpg", desc: "以12星座為主題的大型河濱公園，設有沙坑、遊樂設施與廣大的草皮。這裡是親子同樂的天堂，也是這趟旅程完美的休止符，適合在此野餐休息。", query: "汐止星座公園" }
+            "spot1": { id: 1, title: "汐止火車站", img: "./spot1.jpg", desc: "汐止的交通心臟，也是美食的一級戰區。站前廣場經常舉辦活動，周邊巷弄隱藏著許多在地人推薦的古早味小吃。這裡是旅程的起點，建議先在此補給水分與糧食，準備開始一場深度的在地探索之旅。", query: "汐止火車站", hasBeacon: true },
+            "spot2": { id: 2, title: "中正老街", img: "./spot2.jpg", desc: "舊稱「水返腳街」，這裡是汐止最早的發源地。雖然商業氣息已淡，但走在狹窄的街道上，仍能看見幾棟保留完整的紅磚古厝與傳統市場的熱鬧喧囂，彷彿穿越回百年前。", query: "汐止中正老街", hasBeacon: false },
+            "spot3": { id: 3, title: "蘇家古厝", img: "./spot3.jpg", desc: "隱身於現代建築之中，這座擁有百年歷史的紅磚拱廊建築，展示了優雅的巴洛克式風格。它是汐止望族蘇家的宅邸，見證了當地的興衰，紅磚牆上的雕花依然清晰可見。", query: "汐止蘇家古厝", hasBeacon: false },
+            "spot4": { id: 4, title: "建順茶行", img: "./spot4.jpg", desc: "汐止曾是北台灣重要的茶葉集散地。建順茶行傳承百年，店內至今仍保留著傳統的製茶工具與檜木茶箱，一走進去就能聞到濃郁的茶香，老闆也常熱情解說茶葉知識。", query: "汐止建順茶行", hasBeacon: true },
+            "spot5": { id: 5, title: "茄苳腳鐵路遺跡", img: "./spot5.jpg", desc: "位於高架鐵路下方，這裡保留了清朝至日治時期的鐵路基座遺跡。看著斑駁的石塊，彷彿能聽見百年前火車轟隆駛過的聲音，是鐵道迷不可錯過的隱藏景點。", query: "汐止茄苳腳鐵路遺蹟", hasBeacon: false },
+            "spot6": { id: 6, title: "五堵隧道", img: "./spot6.jpg", desc: "這是一座穿越時空的隧道。原本是舊火車隧道，荒廢多年後改建為自行車道。保留了燻黑的紅磚牆與復古燈光，騎行其中別有一番風味，彷彿進入了神隱少女的場景。", query: "五堵台鐵舊隧道", hasBeacon: false },
+            "spot7": { id: 7, title: "星光橋", img: "./spot7.jpg", desc: "橫跨基隆河的單斜塔景觀橋，造型像一支巨大的麥克風。白天視野開闊，可以遠眺群山，夜晚點燈後光影變幻，是攝影愛好者與情侶散步的熱門景點。", query: "汐止星光橋", hasBeacon: true },
+            "spot8": { id: 8, title: "星座公園", img: "./spot8.jpg", desc: "以12星座為主題的大型河濱公園，設有沙坑、遊樂設施與廣大的草皮。這裡是親子同樂的天堂，也是這趟旅程完美的休止符，適合在此野餐休息。", query: "汐止星座公園", hasBeacon: false }
         };
 
         let pendingTask = null; 
         let leaveTime = 0; 
-        let beaconTriggered = false; // 控制 Beacon
+        let beaconTriggered = false; 
 
         window.onload = function() {
             liff.init({ liffId: MY_LIFF_ID }).then(() => {
@@ -318,7 +313,6 @@
             }
         }
 
-        // --- 核心邏輯：停留時間計算 ---
         document.addEventListener("visibilitychange", () => {
             if (document.visibilityState === 'visible' && pendingTask && leaveTime > 0) {
                 const duration = Math.round((Date.now() - leaveTime) / 1000);
@@ -328,14 +322,11 @@
             }
         });
 
-        // --- Beacon 模擬 ---
+        // --- Beacon 模擬 (指定頁面觸發) ---
         function initBeaconSimulation() {
-            // 延遲 3 秒觸發
             setTimeout(() => {
                 const banner = document.getElementById('beacon-banner');
                 banner.classList.add('show');
-                
-                // 8 秒後自動收起
                 setTimeout(() => {
                     banner.classList.remove('show');
                 }, 8000);
@@ -360,11 +351,10 @@
                 document.getElementById('spot-img').src = data.img; 
                 
                 const mapQuery = encodeURIComponent(data.query);
-                // 底部導航
                 document.getElementById('map-btn').href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
                 document.getElementById('food-btn').href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}+美食`;
 
-                // 智慧公車導航
+                // 智慧公車
                 const currentIdNum = parseInt(data.id);
                 let nextSpotKey = 'spot' + (currentIdNum + 1);
                 if (currentIdNum >= 8) nextSpotKey = 'spot1'; 
@@ -376,8 +366,10 @@
                     busBtn.querySelector('.bus-label').innerText = `去${nextData.title}`;
                 }
 
-                // 啟動 Beacon 模擬
-                initBeaconSimulation();
+                // ★ 檢查此頁面是否需要 Beacon
+                if (data.hasBeacon) {
+                    initBeaconSimulation();
+                }
 
                 initTaskProgress();
                 document.getElementById('loading').style.display = 'none';
@@ -415,6 +407,11 @@
                     el.innerText = '✓'; 
                 } else {
                     el.classList.remove('active');
+                    if(task==='ubike') el.innerText = '🚲';
+                    if(task==='bus') el.innerText = '🚌';
+                    if(task==='uber') el.innerText = '🚕';
+                    if(task==='map') el.innerText = '📍';
+                    if(task==='food') el.innerText = '🍴';
                 }
             });
             document.getElementById('progress-text').innerText = `${collected.length}/5`;
@@ -426,7 +423,6 @@
             }
         }
 
-        // --- 相框合成 (直接顯示版) ---
         function handleImageUpload(e) {
             const file = e.target.files[0];
             if(!file) return;
@@ -455,7 +451,7 @@
             frameImg.onload = function() {
                 ctx.drawImage(frameImg, 0, 0, size, size);
                 
-                // 直接顯示圖片，避免新視窗 Crash
+                // 直接顯示圖片
                 const dataUrl = canvas.toDataURL("image/png");
                 const finalImg = document.getElementById('final-img');
                 finalImg.src = dataUrl;
@@ -465,7 +461,6 @@
             frameImg.src = FRAME_IMG_SRC;
         }
 
-        // --- 分享邏輯 ---
         function openShareModal() { document.getElementById('share-modal').style.display = 'flex'; }
         function closeShareModal(e) {
             if (e.target === document.getElementById('share-modal') || e.target.classList.contains('close-share')) {
@@ -477,16 +472,11 @@
             const title = document.getElementById('spot-title').innerText;
             const text = `我正在探索汐止深度導覽：${title}，快來看看！`;
             
-            if (platform === 'line') {
-                window.location.href = `https://line.me/R/msg/text/?${encodeURIComponent(text + " " + url)}`;
-            } 
-            else if (platform === 'fb') {
-                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`);
-            } 
+            if (platform === 'line') window.location.href = `https://line.me/R/msg/text/?${encodeURIComponent(text + " " + url)}`;
+            else if (platform === 'fb') window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`);
             else if (platform === 'copy') {
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(url).then(() => alert("連結已複製！"));
-                } else {
+                if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => alert("連結已複製！"));
+                else {
                     const textArea = document.createElement("textarea");
                     textArea.value = url;
                     document.body.appendChild(textArea);
@@ -522,7 +512,6 @@
         }
         function resetProgress() { if(confirm("重置？")) { localStorage.removeItem('xizhi_action_stamps'); location.reload(); } }
 
-        // --- 數據追蹤 ---
         function trackAction(actionName) { sendToWebhook(actionName, 0); }
         function trackDuration(taskName, seconds) { sendToWebhook("stay_on_" + taskName, seconds); }
         function sendToWebhook(action, durationVal) {
