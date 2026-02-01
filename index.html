@@ -23,11 +23,12 @@
         h1 { margin: 0 0 5px 0; font-size: 24px; font-weight: 800; color: #2c3e50; }
         .sub-tag { display: inline-block; font-size: 12px; color: #888; background: #eee; padding: 3px 8px; border-radius: 4px; margin-bottom: 15px; }
 
-        /* --- 簡介區 (無霧化，實體連結) --- */
+        /* --- 簡介區 (修正：顯示約 5 行) --- */
         .desc-box { margin-bottom: 25px; }
         .desc-text { 
             font-size: 15px; line-height: 1.6; color: #555; 
-            max-height: 6.4em; /* 約4行 */
+            /* 修正：1.6 * 5行 = 8.0em */
+            max-height: 8.0em; 
             overflow: hidden; 
             transition: max-height 0.4s ease; 
         }
@@ -48,8 +49,6 @@
         .bg-ubike { background: linear-gradient(135deg, #fce38a 0%, #f38181 100%); color: #555; }
         .bg-bus   { background: #3498db; }
         .bg-uber  { background: #2c3e50; } 
-        
-        /* 針對公車按鈕內的文字微調 */
         .bus-label { font-size: 11px; opacity: 0.9; line-height: 1.2; }
 
         /* --- 互動集章區 --- */
@@ -57,9 +56,24 @@
         .game-title { font-weight: bold; color: #d35400; margin-bottom: 15px; font-size: 16px; }
         .task-grid { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
         .stamp-box { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 50px; }
-        .stamp { width: 35px; height: 35px; border-radius: 50%; background: #e0e0e0; color: #999; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; border: 2px solid #ddd; transition: all 0.3s; }
-        .stamp.active { background: #ff512f; color: white; border-color: #ff512f; transform: scale(1.1); box-shadow: 0 3px 8px rgba(255, 81, 47, 0.3); }
-        .stamp-label { font-size: 10px; color: #888; }
+        
+        /* 集章樣式 (未完成) */
+        .stamp { width: 40px; height: 40px; border-radius: 50%; background: #e0e0e0; color: #999; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; border: 2px solid #ddd; transition: all 0.3s; }
+        
+        /* 修正：集章樣式 (已完成 - 汐止遊圓戳) */
+        .stamp.active { 
+            background: white; 
+            color: #d35400; 
+            border: 2px solid #d35400; 
+            transform: scale(1.1); 
+            box-shadow: 0 3px 8px rgba(211, 84, 0, 0.2);
+            font-size: 10px; /* 字體縮小以塞入三個字 */
+            line-height: 1.1;
+            padding: 2px;
+            writing-mode: horizontal-tb; /* 確保文字橫排 */
+        }
+        
+        .stamp-label { font-size: 10px; color: #888; margin-top: 4px;}
         .stamp.active + .stamp-label { color: #d35400; font-weight: bold; }
 
         /* --- 文字化分享連結 --- */
@@ -76,10 +90,8 @@
         .share-grid { display: flex; justify-content: space-around; gap: 10px; }
         
         .share-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; color: #555; font-size: 12px; width: 70px; }
-        /* SVG Icon 容器 */
         .share-icon-box { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .share-item:active .share-icon-box { transform: scale(0.9); }
-        /* SVG 尺寸 */
         .share-icon-box svg { width: 32px; height: 32px; }
 
         .close-share { margin-top: 20px; padding: 12px; width: 100%; border: none; background: #f1f3f5; color: #555; border-radius: 12px; font-weight: bold; cursor: pointer; }
@@ -99,7 +111,7 @@
         
         .canvas-container { margin: 10px auto; width: 100%; max-width: 250px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: none; }
         #result-canvas { width: 100%; height: auto; display: block; }
-        .download-btn { display: none; background: #28a745; color: white; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-bottom: 10px; font-size: 14px; }
+        .download-btn { display: none; background: #28a745; color: white; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-bottom: 10px; font-size: 14px; cursor: pointer;}
         
         /* --- 底部固定導航 --- */
         .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px 15px; box-sizing: border-box; display: flex; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
@@ -177,7 +189,7 @@
                     <input type="file" id="upload-input" accept="image/*" onchange="handleImageUpload(event)">
                 </div>
                 <div class="canvas-container"><canvas id="result-canvas"></canvas></div>
-                <a id="download-link" class="download-btn" href="#" download="xizhi-tour-memorial.png">⬇️ 下載紀念照</a>
+                <a id="download-link" class="download-btn" href="#" target="_blank">🔍 預覽大圖 (長按圖片可儲存)</a>
             </div>
 
             <div class="reset-link" onclick="resetProgress()">↺ 重置測試進度</div>
@@ -305,7 +317,7 @@
                 const busBtn = document.getElementById('bus-btn');
                 
                 if (nextData) {
-                    // Google Map Directions: API=1, Origin=Current, Dest=Next, Mode=Transit
+                    // Google Map Directions
                     const routeUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(data.query)}&destination=${encodeURIComponent(nextData.query)}&travelmode=transit`;
                     busBtn.href = routeUrl;
                     busBtn.querySelector('.bus-label').innerText = `去${nextData.title}`;
@@ -345,9 +357,16 @@
                 const el = document.getElementById('stamp-' + task);
                 if (collected.includes(task)) {
                     el.classList.add('active');
-                    el.innerText = '✓';
+                    // 修正：集章後變成「汐止遊」文字
+                    el.innerHTML = '汐止遊'; 
+                    // 修正：重置原始 Icon (如果未完成的話)
                 } else {
                     el.classList.remove('active');
+                    if(task==='ubike') el.innerText = '🚲';
+                    if(task==='bus') el.innerText = '🚌';
+                    if(task==='uber') el.innerText = '🚕';
+                    if(task==='map') el.innerText = '📍';
+                    if(task==='food') el.innerText = '🍴';
                 }
             });
             document.getElementById('progress-text').innerText = `${collected.length}/5`;
@@ -388,10 +407,13 @@
             const frameImg = new Image();
             frameImg.onload = function() {
                 ctx.drawImage(frameImg, 0, 0, size, size);
+                
+                // 修正：不直接設定 href，而是準備好 DataURL
                 const dataUrl = canvas.toDataURL("image/png");
                 const downloadLink = document.getElementById('download-link');
-                downloadLink.href = dataUrl;
+                downloadLink.href = dataUrl; // 設定連結以供新視窗開啟
                 downloadLink.style.display = "block";
+                
                 document.querySelector('.canvas-container').style.display = "block";
             }
             frameImg.src = FRAME_IMG_SRC;
