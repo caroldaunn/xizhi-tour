@@ -20,29 +20,15 @@
         /* --- 主要內容卡片 --- */
         .content-card { position: relative; background: white; border-radius: 24px 24px 0 0; margin-top: -25px; padding: 25px; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); min-height: 60vh; }
         
-        /* --- 標題 --- */
         h1 { margin: 0 0 5px 0; font-size: 24px; font-weight: 800; color: #2c3e50; }
         .sub-tag { display: inline-block; font-size: 12px; color: #888; background: #eee; padding: 3px 8px; border-radius: 4px; margin-bottom: 15px; }
 
-        /* --- 簡介區 (優化版：確保顯示4行) --- */
+        /* --- 簡介區 --- */
         .desc-box { margin-bottom: 25px; position: relative; }
-        .desc-text { 
-            font-size: 15px; line-height: 1.6; color: #555; 
-            /* 設定最大高度：1.6em * 4行 = 6.4em */
-            max-height: 6.4em; 
-            overflow: hidden; 
-            transition: max-height 0.4s ease; 
-        }
+        .desc-text { font-size: 15px; line-height: 1.6; color: #555; max-height: 6.4em; overflow: hidden; transition: max-height 0.4s ease; }
         .desc-text.expanded { max-height: none; overflow: visible; } 
-        
-        /* 漸層遮罩 (調整透明度，避免太突兀) */
-        .desc-mask { 
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 30px; 
-            background: linear-gradient(to bottom, rgba(255,255,255,0), white); 
-            pointer-events: none; transition: opacity 0.3s; 
-        }
+        .desc-mask { position: absolute; bottom: 0; left: 0; width: 100%; height: 30px; background: linear-gradient(to bottom, rgba(255,255,255,0), white); pointer-events: none; transition: opacity 0.3s; }
         .desc-text.expanded + .desc-mask { opacity: 0; }
-        
         .read-more-btn { display: block; width: 100%; text-align: center; padding-top: 10px; color: #007bff; font-weight: bold; font-size: 13px; cursor: pointer; }
 
         /* --- 交通工具箱 --- */
@@ -50,37 +36,24 @@
         .t-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 10px; border-radius: 12px; text-decoration: none; color: white; font-weight: bold; font-size: 13px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s; position: relative; overflow: hidden; }
         .t-btn:active { transform: scale(0.96); }
         .t-btn i { font-style: normal; font-size: 18px; }
-        
-        /* 點擊後的波紋效果 */
-        .t-btn::after { content: ''; position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; background: rgba(255,255,255,0.5); opacity: 0; border-radius: 100%; transform: scale(1, 1) translate(-50%); transform-origin: 50% 50%; }
-        
         .bg-ubike { background: linear-gradient(135deg, #fce38a 0%, #f38181 100%); color: #555; }
         .bg-bus   { background: #3498db; }
         .bg-uber  { background: #2c3e50; } 
 
-        /* --- 互動集章區 (功能探索任務) --- */
+        /* --- 互動集章區 --- */
         .game-section { background: #fff8e1; border: 2px dashed #ffc107; border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 20px; }
         .game-title { font-weight: bold; color: #d35400; margin-bottom: 15px; font-size: 16px; }
-        
-        /* 任務列表呈現 */
         .task-grid { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
         .stamp-box { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 50px; }
-        .stamp { width: 35px; height: 35px; border-radius: 50%; background: #e0e0e0; color: #999; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; border: 2px solid #ddd; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .stamp { width: 35px; height: 35px; border-radius: 50%; background: #e0e0e0; color: #999; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; border: 2px solid #ddd; transition: all 0.3s; }
         .stamp.active { background: #ff512f; color: white; border-color: #ff512f; transform: scale(1.1); box-shadow: 0 3px 8px rgba(255, 81, 47, 0.3); }
         .stamp-label { font-size: 10px; color: #888; }
         .stamp.active + .stamp-label { color: #d35400; font-weight: bold; }
 
-        /* --- FB 分享按鈕 (移出框框) --- */
-        .fb-share-btn { 
-            width: 100%; padding: 14px; margin-top: 10px;
-            background: #1877F2; color: white; 
-            border: none; border-radius: 12px; font-size: 16px; font-weight: bold; 
-            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; 
-            box-shadow: 0 4px 10px rgba(24, 119, 242, 0.3); text-decoration: none;
-        }
-        .fb-share-btn:active { background: #1464c4; }
+        /* --- FB 分享 --- */
+        .fb-share-btn { width: 100%; padding: 14px; margin-top: 10px; background: #1877F2; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 10px rgba(24, 119, 242, 0.3); text-decoration: none; }
 
-        /* --- 問卷區塊 (集滿 5 點顯示) --- */
+        /* --- 問卷區塊 --- */
         #survey-box { display: none; margin-top: 20px; animation: popUp 0.5s ease; }
         .survey-btn { display: block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4); }
         @keyframes popUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -91,52 +64,47 @@
         .btn-map { background: #f1f3f5; color: #495057; }
         .btn-food { background: #ff6b6b; color: white; }
 
-        /* --- 測試用重置 --- */
+        /* --- 彈窗 (Modal) --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 5000; display: none; align-items: center; justify-content: center; animation: fadeIn 0.2s; }
+        .modal-box { background: white; width: 80%; max-width: 320px; border-radius: 16px; padding: 25px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: scaleIn 0.2s; }
+        .modal-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #333; }
+        .modal-desc { font-size: 14px; color: #666; margin-bottom: 20px; }
+        .modal-btns { display: flex; gap: 10px; }
+        .modal-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-cancel { background: #f1f3f5; color: #666; }
+        .btn-confirm { background: #27ae60; color: white; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleIn { from { transform: scale(0.9); } to { transform: scale(1); } }
+
+        /* --- 重置與載入 --- */
         .reset-link { margin-top: 30px; text-align: center; font-size: 12px; color: #ccc; text-decoration: underline; cursor: pointer; }
-        
         #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; align-items: center; justify-content: center; z-index: 3000; flex-direction: column; color: #888; }
     </style>
 </head>
 <body>
 
     <div id="loading"><div>⏳ 載入中...</div></div>
-
-    <div class="progress-container">
-        <div id="progress-bar" class="progress-bar"></div>
-    </div>
+    <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
 
     <div id="main-content" style="display: none;">
-        <div class="hero-container">
-            <img id="spot-img" class="hero-img" src="" alt="景點圖片">
-        </div>
-
+        <div class="hero-container"><img id="spot-img" class="hero-img" src="" alt="景點圖片"></div>
         <div class="content-card">
             <span class="sub-tag">汐止深度導覽 NO.<span id="spot-index">1</span></span>
             <h1 id="spot-title"></h1>
-
             <div class="desc-box">
-                <div id="spot-desc-container" class="desc-text">
-                    <span id="spot-desc"></span>
-                </div>
+                <div id="spot-desc-container" class="desc-text"><span id="spot-desc"></span></div>
                 <div class="desc-mask"></div>
                 <div id="read-more-btn" class="read-more-btn" onclick="toggleDesc()">▼ 了解更多故事</div>
             </div>
 
             <div class="transport-grid">
-                <a href="https://www.google.com/maps/search/YouBike/" target="_blank" class="t-btn bg-ubike" onclick="collectAction('ubike')">
-                    <i>🚲</i> YouBike
-                </a>
-                <a href="https://www.google.com/maps/search/公車站/" target="_blank" class="t-btn bg-bus" onclick="collectAction('bus')">
-                    <i>🚌</i> 找公車
-                </a>
-                <a href="https://m.uber.com/ul" target="_blank" class="t-btn bg-uber" onclick="collectAction('uber')">
-                    <i>🚕</i> 叫 Uber
-                </a>
+                <a href="https://www.google.com/maps/search/YouBike/" target="_blank" class="t-btn bg-ubike" onclick="collectAction('ubike')"><i>🚲</i> YouBike</a>
+                <a href="https://www.google.com/maps/search/公車站/" target="_blank" class="t-btn bg-bus" onclick="collectAction('bus')"><i>🚌</i> 找公車</a>
+                <a href="https://m.uber.com/ul" target="_blank" class="t-btn bg-uber" onclick="collectAction('uber')"><i>🚕</i> 叫 Uber</a>
             </div>
 
             <div class="game-section">
                 <div class="game-title">🏆 功能探索任務 (進度: <span id="progress-text">0/5</span>)</div>
-                
                 <div class="task-grid">
                     <div class="stamp-box"><div class="stamp" id="stamp-ubike">🚲</div><div class="stamp-label">YouBike</div></div>
                     <div class="stamp-box"><div class="stamp" id="stamp-bus">🚌</div><div class="stamp-label">公車</div></div>
@@ -144,38 +112,39 @@
                     <div class="stamp-box"><div class="stamp" id="stamp-map">📍</div><div class="stamp-label">帶我去</div></div>
                     <div class="stamp-box"><div class="stamp" id="stamp-food">🍴</div><div class="stamp-label">美食</div></div>
                 </div>
-
-                <div style="font-size: 12px; color:#888; margin-top:5px;">💡 試著點擊上方交通按鈕或下方導航，解鎖所有印章！</div>
+                <div style="font-size: 12px; color:#888; margin-top:5px;">💡 試著使用導航或尋找美食，解鎖所有印章！</div>
             </div>
 
-            <a href="https://www.facebook.com/sharer/sharer.php?u=https://caroldaunn.github.io/xizhi-tour/" target="_blank" class="fb-share-btn">
-                👍 打卡並分享 (FB)
-            </a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://caroldaunn.github.io/xizhi-tour/" target="_blank" class="fb-share-btn">👍 打卡並分享 (FB)</a>
 
             <div id="survey-box">
-                <a href="https://forms.gle/您的問卷連結" target="_blank" class="survey-btn" onclick="trackAction('click_survey')">
-                    🎓 任務達成！領取完賽證書
-                </a>
+                <a href="https://forms.gle/您的問卷連結" target="_blank" class="survey-btn" onclick="trackAction('click_survey')">🎓 任務達成！領取完賽證書</a>
                 <p style="text-align: center; color: #888; font-size: 12px; margin-top: 8px;">填寫完畢可獲得汐止美食優惠券</p>
             </div>
-
-            <div class="reset-link" onclick="resetProgress()">↺ 重置測試進度 (Clear Cache)</div>
-
+            <div class="reset-link" onclick="resetProgress()">↺ 重置測試進度</div>
         </div>
     </div>
 
     <div class="sticky-footer">
-        <a id="map-btn" href="#" class="footer-btn btn-map" target="_blank" onclick="collectAction('map')">📍 帶我去</a>
-        <a id="food-btn" href="#" class="footer-btn btn-food" target="_blank" onclick="collectAction('food')">🍴 附近美食</a>
+        <a id="map-btn" href="#" class="footer-btn btn-map" target="_blank" onclick="handleClickWithConfirm('map')">📍 帶我去</a>
+        <a id="food-btn" href="#" class="footer-btn btn-food" target="_blank" onclick="handleClickWithConfirm('food')">🍴 附近美食</a>
+    </div>
+
+    <div id="confirm-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title">任務確認 🧐</div>
+            <div id="modal-msg" class="modal-desc">您是否已經找到想去的地方了？</div>
+            <div class="modal-btns">
+                <button class="modal-btn btn-cancel" onclick="closeModal(false)">還沒</button>
+                <button class="modal-btn btn-confirm" onclick="closeModal(true)">選好了！(集章)</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // ================= 設定區 =================
         const MY_LIFF_ID = "2008941841-8KQq29wn"; 
         const WEBHOOK_URL = ""; 
         const SURVEY_URL = "https://forms.gle/您的問卷連結"; 
-        
-        // 定義 5 個任務代號
         const TASKS = ['ubike', 'bus', 'uber', 'map', 'food'];
 
         const spotsData = {
@@ -189,6 +158,8 @@
             "spot8": { id: 8, title: "星座公園", img: "./spot8.jpg", desc: "以12星座為主題的大型河濱公園，設有沙坑、遊樂設施與廣大的草皮。這裡是親子同樂的天堂，也是這趟旅程完美的休止符，適合在此野餐休息。夜晚時分，這裡也是觀星的好地點。", query: "汐止星座公園" }
         };
 
+        let pendingTask = null; // 暫存等待確認的任務
+
         window.onload = function() {
             liff.init({ liffId: MY_LIFF_ID }).then(() => {
                 if (!liff.isLoggedIn()) liff.login();
@@ -196,17 +167,29 @@
             }).catch(err => { renderContent(); });
         };
 
+        // 監聽網頁可見性 (當使用者從 Google Maps 回來時觸發)
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === 'visible' && pendingTask) {
+                // 延遲一點點顯示，避免瞬間跳出太突兀
+                setTimeout(() => {
+                    const msg = pendingTask === 'food' ? "您選好想吃的餐廳了嗎？😋" : "您確認好前往路線了嗎？🗺️";
+                    document.getElementById('modal-msg').innerText = msg;
+                    document.getElementById('confirm-modal').style.display = 'flex';
+                }, 500);
+            }
+        });
+
         function renderContent() {
             const urlParams = new URLSearchParams(window.location.search);
             const spotKey = urlParams.get('id') || 'spot1';
             const data = spotsData[spotKey];
-
             if (data) {
                 document.getElementById('spot-index').innerText = data.id;
                 document.getElementById('spot-title').innerText = data.title;
                 document.getElementById('spot-desc').innerText = data.desc;
                 document.getElementById('spot-img').src = data.img; 
-
+                
+                // 設定連結
                 document.getElementById('map-btn').href = `https://www.google.com/maps/search/?api=1&query={encodeURIComponent(data.query)}`;
                 document.getElementById('food-btn').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.query + " 美食")}`;
 
@@ -216,14 +199,66 @@
             }
         }
 
-        // 簡介摺疊邏輯
+        // --- 互動邏輯 ---
+        
+        // 1. 立即集點 (UBike/Bus/Uber)
+        function collectAction(taskName) {
+            saveStamp(taskName);
+        }
+
+        // 2. 延遲集點 (Map/Food)
+        function handleClickWithConfirm(taskName) {
+            // 記錄目前正在進行的任務，等使用者回來
+            pendingTask = taskName;
+        }
+
+        // 3. 處理彈窗結果
+        function closeModal(isConfirmed) {
+            document.getElementById('confirm-modal').style.display = 'none';
+            if (isConfirmed && pendingTask) {
+                saveStamp(pendingTask);
+                alert("集章成功！獲得 1 枚印章 💮");
+            }
+            pendingTask = null; // 清除暫存
+        }
+
+        // 4. 寫入儲存與更新 UI
+        function saveStamp(taskName) {
+            let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
+            if (!collected.includes(taskName)) {
+                collected.push(taskName);
+                localStorage.setItem('xizhi_action_stamps', JSON.stringify(collected));
+                trackAction('collect_' + taskName);
+                initTaskProgress();
+            }
+        }
+
+        function initTaskProgress() {
+            let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
+            TASKS.forEach(task => {
+                const el = document.getElementById('stamp-' + task);
+                if (collected.includes(task)) {
+                    el.classList.add('active');
+                    el.innerText = '✓';
+                } else {
+                    el.classList.remove('active');
+                    if(task==='ubike') el.innerText = '🚲';
+                    if(task==='bus') el.innerText = '🚌';
+                    if(task==='uber') el.innerText = '🚕';
+                    if(task==='map') el.innerText = '📍';
+                    if(task==='food') el.innerText = '🍴';
+                }
+            });
+            document.getElementById('progress-text').innerText = `${collected.length}/5`;
+            document.getElementById('progress-bar').style.width = `${(collected.length/5)*100}%`;
+            if (collected.length >= 5) document.getElementById('survey-box').style.display = 'block';
+        }
+
         function toggleDesc() {
             const container = document.getElementById('spot-desc-container');
             const btn = document.getElementById('read-more-btn');
             const mask = document.querySelector('.desc-mask');
-            
             container.classList.toggle('expanded');
-            
             if (container.classList.contains('expanded')) {
                 btn.innerText = "▲ 收起簡介";
                 mask.style.opacity = '0'; 
@@ -234,57 +269,8 @@
             }
         }
 
-        // --- 核心邏輯修改：功能點擊集點 ---
-        
-        function collectAction(taskName) {
-            // 1. 讀取目前進度 (使用新的 key 避免與舊邏輯衝突)
-            let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
-            
-            // 2. 如果沒收集過，加入清單
-            if (!collected.includes(taskName)) {
-                collected.push(taskName);
-                localStorage.setItem('xizhi_action_stamps', JSON.stringify(collected));
-                
-                // 3. 追蹤數據
-                trackAction('collect_' + taskName);
-                
-                // 4. 更新畫面 (因為是開啟新分頁，所以要在點擊瞬間更新 UI)
-                initTaskProgress();
-            }
-        }
-
-        function initTaskProgress() {
-            let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
-            
-            // 更新 5 個圈圈的狀態
-            TASKS.forEach(task => {
-                const el = document.getElementById('stamp-' + task);
-                if (collected.includes(task)) {
-                    el.classList.add('active');
-                    el.innerText = '✓'; // 打勾
-                } else {
-                    el.classList.remove('active');
-                    // 還原原本的圖示
-                    if(task==='ubike') el.innerText = '🚲';
-                    if(task==='bus') el.innerText = '🚌';
-                    if(task==='uber') el.innerText = '🚕';
-                    if(task==='map') el.innerText = '📍';
-                    if(task==='food') el.innerText = '🍴';
-                }
-            });
-
-            // 更新文字與進度條
-            document.getElementById('progress-text').innerText = `${collected.length}/5`;
-            document.getElementById('progress-bar').style.width = `${(collected.length/5)*100}%`;
-
-            // 如果集滿 5 個，顯示問卷
-            if (collected.length >= 5) {
-                document.getElementById('survey-box').style.display = 'block';
-            }
-        }
-
         function resetProgress() {
-            if(confirm("確定要重置測試進度嗎？")) {
+            if(confirm("重置測試進度？")) {
                 localStorage.removeItem('xizhi_action_stamps');
                 location.reload();
             }
