@@ -16,7 +16,7 @@
         /* --- 虛擬 Beacon 通知 --- */
         .beacon-banner {
             position: fixed;
-            top: -100px; /* 預設隱藏 */
+            top: -120px;
             left: 5%;
             width: 90%;
             background: rgba(34, 34, 34, 0.95);
@@ -44,7 +44,6 @@
             justify-content: center;
             font-size: 20px;
             flex-shrink: 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         .beacon-text { flex: 1; font-size: 13px; line-height: 1.3; }
         .beacon-title { font-weight: bold; color: #fff; font-size: 14px; }
@@ -64,10 +63,10 @@
         .desc-box { margin-bottom: 25px; }
         .desc-text { 
             font-size: 15px; line-height: 1.6; color: #555; 
-            max-height: 8.0em; 
+            max-height: 8.0em; /* 5行 */
             overflow: hidden; 
             transition: max-height 0.4s ease; 
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
         .desc-text.expanded { max-height: none; overflow: visible; } 
         
@@ -88,58 +87,61 @@
         .bg-uber  { background: #2c3e50; } 
         .bus-label { font-size: 11px; opacity: 0.9; line-height: 1.2; }
 
-        /* --- 互動集章區 --- */
+        /* --- 互動任務區 --- */
         .game-section { background: #fff8e1; border: 2px dashed #ffc107; border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 15px; }
         .game-title { font-weight: bold; color: #d35400; margin-bottom: 15px; font-size: 16px; }
         .task-grid { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
-        .stamp-box { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 50px; }
+        .stamp-box { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 55px; cursor: pointer; }
         
-        .stamp { width: 35px; height: 35px; border-radius: 50%; background: #e0e0e0; color: #999; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; border: 2px solid #ddd; transition: all 0.3s; }
+        /* 集章樣式 */
+        .stamp { width: 40px; height: 40px; border-radius: 50%; background: #e0e0e0; color: #777; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; border: 2px solid #ddd; transition: all 0.3s; }
+        
+        /* 完成樣式 (汐止遊圓戳) */
         .stamp.active { 
-            background: #ff512f; color: white; border-color: #ff512f; 
-            transform: scale(1.1); box-shadow: 0 3px 8px rgba(255, 81, 47, 0.3);
+            background: white; 
+            color: #d35400; 
+            border: 2px solid #d35400; 
+            transform: scale(1.1); 
+            box-shadow: 0 3px 8px rgba(211, 84, 0, 0.2);
+            font-size: 10px; 
+            line-height: 1.1;
+            padding: 2px;
+            writing-mode: horizontal-tb;
         }
-        .stamp-label { font-size: 10px; color: #888; margin-top: 4px;}
-        .stamp.active + .stamp-label { color: #d35400; font-weight: bold; }
+        
+        .stamp-label { font-size: 10px; color: #888; margin-top: 4px; font-weight: bold;}
+        .stamp.active + .stamp-label { color: #d35400; }
 
-        /* --- 文字化分享連結 --- */
-        .share-text-link {
-            text-align: center; margin: 15px 0; font-size: 15px; 
-            font-weight: bold; color: #555; cursor: pointer;
-            text-decoration: underline; display: block;
-        }
+        /* --- 分享與文字連結 --- */
+        .share-text-link { text-align: center; margin: 15px 0; font-size: 15px; font-weight: bold; color: #555; cursor: pointer; text-decoration: underline; display: block; }
 
-        /* --- 分享選單 (Bottom Sheet) --- */
+        /* --- 分享選單 --- */
         .share-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 4000; display: none; align-items: flex-end; justify-content: center; animation: fadeIn 0.3s; }
         .share-sheet { background: white; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 25px; box-sizing: border-box; animation: slideUp 0.3s; }
         .share-title { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 20px; text-align: center; }
         .share-grid { display: flex; justify-content: space-around; gap: 10px; }
-        
         .share-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; color: #555; font-size: 12px; width: 70px; }
         .share-icon-box { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .share-item:active .share-icon-box { transform: scale(0.9); }
         .share-icon-box svg { width: 32px; height: 32px; }
-
         .close-share { margin-top: 20px; padding: 12px; width: 100%; border: none; background: #f1f3f5; color: #555; border-radius: 12px; font-weight: bold; cursor: pointer; }
 
-        /* --- 問卷區塊 (優先顯示) --- */
+        /* --- 問卷區塊 --- */
         #survey-box { display: none; margin-top: 25px; animation: popUp 0.5s ease; padding-top: 20px; border-top: 1px solid #eee; }
         .survey-btn { display: block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4); }
 
-        /* --- 紀念照產生器區塊 --- */
+        /* --- 紀念照 --- */
         #memorial-box { display: none; margin-top: 25px; text-align: center; background: #fafafa; padding: 20px; border-radius: 12px; }
         .memorial-title { font-size: 16px; font-weight: 800; color: #2c3e50; margin-bottom: 5px; }
         .memorial-desc { font-size: 13px; color: #666; margin-bottom: 15px; }
-        
         .upload-btn-wrapper { position: relative; overflow: hidden; display: inline-block; margin-bottom: 15px; }
         .btn-upload { border: 2px dashed #007bff; color: #007bff; background-color: white; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
         .upload-btn-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
-        
         #result-canvas { display: none; }
         #final-img { width: 100%; max-width: 250px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: none; margin: 10px auto; border-radius: 8px; }
         .download-hint { display: none; color: #28a745; font-weight: bold; font-size: 14px; margin-top: 10px; background: #e8f5e9; padding: 10px; border-radius: 8px;}
         
-        /* --- 底部固定導航 --- */
+        /* --- 底部導航 --- */
         .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px 15px; box-sizing: border-box; display: flex; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
         .footer-btn { flex: 1; padding: 12px; border-radius: 10px; text-align: center; text-decoration: none; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-map { background: #f1f3f5; color: #495057; }
@@ -161,8 +163,8 @@
     <div id="beacon-banner" class="beacon-banner" onclick="handleBeaconClick()">
         <div class="beacon-icon">📡</div>
         <div class="beacon-text">
-            <div class="beacon-title">LINE Beacon 訊號偵測</div>
-            <div class="beacon-sub">發現周邊隱藏彩蛋！點擊查看</div>
+            <div class="beacon-title">偵測到 LINE Beacon 訊號</div>
+            <div class="beacon-sub">附近有隱藏景點！點擊打卡</div>
         </div>
     </div>
 
@@ -178,13 +180,13 @@
             </div>
 
             <div class="transport-grid">
-                <a href="https://www.google.com/maps/search/YouBike/" target="_blank" class="t-btn bg-ubike" onclick="collectAction('ubike')">
+                <a href="https://www.google.com/maps/search/YouBike/" target="_blank" class="t-btn bg-ubike" onclick="trackAction('click_ubike')">
                     <i>🚲</i> YouBike
                 </a>
                 <a id="bus-btn" href="#" target="_blank" class="t-btn bg-bus" onclick="collectAction('bus')">
                     <i>🚌</i> <span class="bus-label">去下一站</span>
                 </a>
-                <a href="https://m.uber.com/ul" target="_blank" class="t-btn bg-uber" onclick="collectAction('uber')">
+                <a href="https://m.uber.com/ul" target="_blank" class="t-btn bg-uber" onclick="trackAction('click_uber')">
                     <i>🚕</i> 叫 Uber
                 </a>
             </div>
@@ -196,15 +198,36 @@
             </div>
 
             <div class="game-section">
-                <div class="game-title">🏆 功能探索任務 (進度: <span id="progress-text">0/5</span>)</div>
+                <div class="game-title">🏆 汐止達人挑戰 (進度: <span id="progress-text">0/5</span>)</div>
                 <div class="task-grid">
-                    <div class="stamp-box"><div class="stamp" id="stamp-ubike">🚲</div><div class="stamp-label">YouBike</div></div>
-                    <div class="stamp-box"><div class="stamp" id="stamp-bus">🚌</div><div class="stamp-label">公車</div></div>
-                    <div class="stamp-box"><div class="stamp" id="stamp-uber">🚕</div><div class="stamp-label">Uber</div></div>
-                    <div class="stamp-box"><div class="stamp" id="stamp-map">📍</div><div class="stamp-label">帶我去</div></div>
-                    <div class="stamp-box"><div class="stamp" id="stamp-food">🍴</div><div class="stamp-label">美食</div></div>
+                    
+                    <div class="stamp-box">
+                        <div class="stamp" id="stamp-map">🗺️</div>
+                        <div class="stamp-label">找路</div>
+                    </div>
+
+                    <div class="stamp-box" onclick="triggerQuiz()">
+                        <div class="stamp" id="stamp-quiz">❓</div>
+                        <div class="stamp-label">問答</div>
+                    </div>
+
+                    <div class="stamp-box" onclick="triggerWishlist()">
+                        <div class="stamp" id="stamp-wish">❤️</div>
+                        <div class="stamp-label">想去</div>
+                    </div>
+
+                    <div class="stamp-box">
+                        <div class="stamp" id="stamp-beacon">📡</div>
+                        <div class="stamp-label">尋寶</div>
+                    </div>
+
+                    <div class="stamp-box">
+                        <div class="stamp" id="stamp-bus">🚌</div>
+                        <div class="stamp-label">交通</div>
+                    </div>
+
                 </div>
-                <div style="font-size: 12px; color:#888; margin-top:5px;">💡 解鎖所有印章後，即可填寫問卷領取證書！</div>
+                <div style="font-size: 12px; color:#888; margin-top:5px;">💡 請嘗試上方不同互動，或前往其他景點尋找 Beacon！</div>
             </div>
 
             <div class="share-text-link" onclick="openShareModal()">📤 覺得不錯？打卡並分享給好友</div>
@@ -220,7 +243,6 @@
                     <button class="btn-upload">📸 選擇照片 / 開啟相機</button>
                     <input type="file" id="upload-input" accept="image/*" onchange="handleImageUpload(event)">
                 </div>
-                
                 <canvas id="result-canvas"></canvas>
                 <img id="final-img" src="" alt="合成照片">
                 <div id="download-msg" class="download-hint">👆 請「長按上方圖片」儲存至手機相簿</div>
@@ -231,8 +253,8 @@
     </div>
 
     <div class="sticky-footer">
-        <a id="map-btn" href="#" class="footer-btn btn-map" target="_blank" onclick="handleClickWithTrack('map')">📍 帶我去</a>
-        <a id="food-btn" href="#" class="footer-btn btn-food" target="_blank" onclick="handleClickWithTrack('food')">🍴 附近美食</a>
+        <a id="map-btn" href="#" class="footer-btn btn-map" target="_blank" onclick="collectAction('map')">📍 帶我去</a>
+        <a id="food-btn" href="#" class="footer-btn btn-food" target="_blank" onclick="trackAction('click_food')">🍴 附近美食</a>
     </div>
 
     <div id="share-modal" class="share-modal-overlay" onclick="closeShareModal(event)">
@@ -274,8 +296,10 @@
         const WEBHOOK_URL = ""; 
         const SURVEYCAKE_URL = "https://www.surveycake.com/s/您的問卷代碼"; 
         const SURVEY_UID_ALIAS = "line_uid"; 
-        const TASKS = ['ubike', 'bus', 'uber', 'map', 'food'];
         const FRAME_IMG_SRC = "./frame.png"; 
+        
+        // ★ 5大任務定義
+        const TASKS = ['map', 'quiz', 'wish', 'beacon', 'bus'];
 
         const spotsData = {
             "spot1": { id: 1, title: "汐止火車站", img: "./spot1.jpg", desc: "汐止的交通心臟，也是美食的一級戰區。站前廣場經常舉辦活動，周邊巷弄隱藏著許多在地人推薦的古早味小吃。這裡是旅程的起點，建議先在此補給水分與糧食，準備開始一場深度的在地探索之旅。", query: "汐止火車站", hasBeacon: true },
@@ -290,7 +314,6 @@
 
         let pendingTask = null; 
         let leaveTime = 0; 
-        let beaconTriggered = false; 
 
         window.onload = function() {
             liff.init({ liffId: MY_LIFF_ID }).then(() => {
@@ -322,7 +345,6 @@
             }
         });
 
-        // --- Beacon 模擬 (指定頁面觸發) ---
         function initBeaconSimulation() {
             setTimeout(() => {
                 const banner = document.getElementById('beacon-banner');
@@ -333,11 +355,33 @@
             }, 3000);
         }
 
+        // ★ 任務4：Beacon
         function handleBeaconClick() {
             const banner = document.getElementById('beacon-banner');
             banner.classList.remove('show'); 
-            alert("🎉 恭喜！透過 Beacon 發現隱藏地點！");
-            trackAction('click_beacon_banner');
+            alert("🎉 恭喜！您找到了隱藏訊號！\n獲得【尋寶印章】");
+            collectAction('beacon'); // 集章
+        }
+
+        // ★ 任務2：知識問答
+        function triggerQuiz() {
+            if(isTaskDone('quiz')) return;
+            const answer = confirm("【小知識挑戰】\n請問這裡是不是汐止著名的歷史景點？\n\n(是請按「確定」，否請按「取消」)");
+            if(answer) {
+                alert("⭕ 答對了！獲得【問答印章】");
+                collectAction('quiz');
+            } else {
+                alert("❌ 答錯囉！再仔細看看介紹吧！");
+            }
+        }
+
+        // ★ 任務3：願望清單
+        function triggerWishlist() {
+            if(isTaskDone('wish')) return;
+            if(confirm("❤️ 將此景點加入「想去清單」嗎？")) {
+                alert("已加入最愛！獲得【想去印章】");
+                collectAction('wish');
+            }
         }
 
         function renderContent() {
@@ -351,10 +395,11 @@
                 document.getElementById('spot-img').src = data.img; 
                 
                 const mapQuery = encodeURIComponent(data.query);
+                // 任務1：地圖 (底部按鈕)
                 document.getElementById('map-btn').href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
                 document.getElementById('food-btn').href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}+美食`;
 
-                // 智慧公車
+                // 任務5：公車 (動態)
                 const currentIdNum = parseInt(data.id);
                 let nextSpotKey = 'spot' + (currentIdNum + 1);
                 if (currentIdNum >= 8) nextSpotKey = 'spot1'; 
@@ -366,10 +411,7 @@
                     busBtn.querySelector('.bus-label').innerText = `去${nextData.title}`;
                 }
 
-                // ★ 檢查此頁面是否需要 Beacon
-                if (data.hasBeacon) {
-                    initBeaconSimulation();
-                }
+                if (data.hasBeacon) initBeaconSimulation();
 
                 initTaskProgress();
                 document.getElementById('loading').style.display = 'none';
@@ -377,18 +419,8 @@
             }
         }
 
+        // 通用集章與跳轉
         function collectAction(taskName) {
-            saveStamp(taskName);
-        }
-        
-        function handleClickWithTrack(taskName) {
-            saveStamp(taskName);
-            pendingTask = taskName;
-            leaveTime = Date.now();
-            trackAction('click_' + taskName);
-        }
-
-        function saveStamp(taskName) {
             let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
             if (!collected.includes(taskName)) {
                 collected.push(taskName);
@@ -397,6 +429,23 @@
                 setTimeout(initTaskProgress, 500); 
             }
         }
+        
+        // 針對地圖與公車的特殊處理 (需追蹤時間)
+        function handleClickWithTrack(taskName) {
+            collectAction(taskName); // 先集章
+            pendingTask = taskName;
+            leaveTime = Date.now();
+            trackAction('click_' + taskName);
+        }
+
+        function isTaskDone(taskName) {
+            let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
+            if (collected.includes(taskName)) {
+                alert("這個任務已經完成囉！");
+                return true;
+            }
+            return false;
+        }
 
         function initTaskProgress() {
             let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
@@ -404,14 +453,15 @@
                 const el = document.getElementById('stamp-' + task);
                 if (collected.includes(task)) {
                     el.classList.add('active');
-                    el.innerText = '✓'; 
+                    el.innerHTML = '汐止遊'; 
                 } else {
                     el.classList.remove('active');
-                    if(task==='ubike') el.innerText = '🚲';
-                    if(task==='bus') el.innerText = '🚌';
-                    if(task==='uber') el.innerText = '🚕';
-                    if(task==='map') el.innerText = '📍';
-                    if(task==='food') el.innerText = '🍴';
+                    // 還原圖示
+                    if(task==='map') el.innerHTML = '🗺️';
+                    if(task==='quiz') el.innerHTML = '❓';
+                    if(task==='wish') el.innerHTML = '❤️';
+                    if(task==='beacon') el.innerHTML = '📡';
+                    if(task==='bus') el.innerHTML = '🚌';
                 }
             });
             document.getElementById('progress-text').innerText = `${collected.length}/5`;
@@ -450,8 +500,6 @@
             const frameImg = new Image();
             frameImg.onload = function() {
                 ctx.drawImage(frameImg, 0, 0, size, size);
-                
-                // 直接顯示圖片
                 const dataUrl = canvas.toDataURL("image/png");
                 const finalImg = document.getElementById('final-img');
                 finalImg.src = dataUrl;
@@ -471,7 +519,6 @@
             const url = window.location.href;
             const title = document.getElementById('spot-title').innerText;
             const text = `我正在探索汐止深度導覽：${title}，快來看看！`;
-            
             if (platform === 'line') window.location.href = `https://line.me/R/msg/text/?${encodeURIComponent(text + " " + url)}`;
             else if (platform === 'fb') window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`);
             else if (platform === 'copy') {
