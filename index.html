@@ -25,9 +25,20 @@
 
         /* --- 簡介區 --- */
         .desc-box { margin-bottom: 25px; }
-        .desc-text { font-size: 15px; line-height: 1.6; color: #555; max-height: 6.4em; overflow: hidden; transition: max-height 0.4s ease; }
+        .desc-text { 
+            font-size: 15px; line-height: 1.6; color: #555; 
+            max-height: 6.4em; /* 約4行 */
+            overflow: hidden; 
+            transition: max-height 0.4s ease; 
+        }
         .desc-text.expanded { max-height: none; overflow: visible; } 
-        .read-more-btn { display: block; width: 100%; text-align: left; padding-top: 8px; color: #007bff; font-weight: bold; font-size: 14px; cursor: pointer; text-decoration: underline; }
+        
+        .read-more-btn { 
+            display: block; width: 100%; text-align: left; 
+            padding-top: 8px; 
+            color: #007bff; font-weight: bold; font-size: 14px; 
+            cursor: pointer; text-decoration: underline;
+        }
 
         /* --- 交通工具箱 --- */
         .transport-grid { display: flex; gap: 10px; margin-bottom: 20px; }
@@ -39,7 +50,7 @@
         .bg-uber  { background: #2c3e50; } 
 
         /* --- 互動集章區 --- */
-        .game-section { background: #fff8e1; border: 2px dashed #ffc107; border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 20px; }
+        .game-section { background: #fff8e1; border: 2px dashed #ffc107; border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 15px; }
         .game-title { font-weight: bold; color: #d35400; margin-bottom: 15px; font-size: 16px; }
         .task-grid { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
         .stamp-box { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 50px; }
@@ -48,10 +59,14 @@
         .stamp-label { font-size: 10px; color: #888; }
         .stamp.active + .stamp-label { color: #d35400; font-weight: bold; }
 
-        /* --- 分享按鈕 --- */
-        .share-trigger-btn { width: 100%; padding: 14px; margin-top: 10px; background: #1877F2; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 10px rgba(24, 119, 242, 0.3); text-decoration: none; }
-        
-        /* --- 分享選單 --- */
+        /* --- 文字化分享連結 --- */
+        .share-text-link {
+            text-align: center; margin: 15px 0; font-size: 15px; 
+            font-weight: bold; color: #555; cursor: pointer;
+            text-decoration: underline; display: block;
+        }
+
+        /* --- 分享選單 (Bottom Sheet) --- */
         .share-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 4000; display: none; align-items: flex-end; justify-content: center; animation: fadeIn 0.3s; }
         .share-sheet { background: white; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 25px; box-sizing: border-box; animation: slideUp 0.3s; }
         .share-title { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 20px; text-align: center; }
@@ -64,24 +79,23 @@
         .icon-copy { background: #555; }
         .close-share { margin-top: 20px; padding: 12px; width: 100%; border: none; background: #f1f3f5; color: #555; border-radius: 12px; font-weight: bold; cursor: pointer; }
 
-        /* --- 紀念照產生器區塊 (新功能) --- */
-        #memorial-box { display: none; margin-top: 30px; animation: popUp 0.5s ease; border-top: 1px solid #eee; padding-top: 20px; text-align: center; }
-        .memorial-title { font-size: 18px; font-weight: 800; color: #2c3e50; margin-bottom: 5px; }
+        /* --- 問卷區塊 (優先顯示) --- */
+        #survey-box { display: none; margin-top: 25px; animation: popUp 0.5s ease; padding-top: 20px; border-top: 1px solid #eee; }
+        .survey-btn { display: block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4); }
+
+        /* --- 紀念照產生器區塊 (次要獎勵) --- */
+        #memorial-box { display: none; margin-top: 25px; text-align: center; background: #fafafa; padding: 20px; border-radius: 12px; }
+        .memorial-title { font-size: 16px; font-weight: 800; color: #2c3e50; margin-bottom: 5px; }
         .memorial-desc { font-size: 13px; color: #666; margin-bottom: 15px; }
         
         .upload-btn-wrapper { position: relative; overflow: hidden; display: inline-block; margin-bottom: 15px; }
-        .btn-upload { border: 2px dashed #007bff; color: #007bff; background-color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-upload { border: 2px dashed #007bff; color: #007bff; background-color: white; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
         .upload-btn-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
         
-        .canvas-container { margin: 10px auto; width: 100%; max-width: 300px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: none; }
+        .canvas-container { margin: 10px auto; width: 100%; max-width: 250px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: none; }
         #result-canvas { width: 100%; height: auto; display: block; }
+        .download-btn { display: none; background: #28a745; color: white; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-bottom: 10px; font-size: 14px; }
         
-        .download-btn { display: none; background: #28a745; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-bottom: 15px; }
-        
-        /* 問卷按鈕 (預設隱藏/灰色) */
-        .survey-btn { display: block; background: #ccc; color: white; text-align: center; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; pointer-events: none; transition: background 0.3s; }
-        .survey-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); pointer-events: auto; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4); }
-
         /* --- 底部固定導航 --- */
         .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px 15px; box-sizing: border-box; display: flex; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
         .footer-btn { flex: 1; padding: 12px; border-radius: 10px; text-align: center; text-decoration: none; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 6px; }
@@ -127,28 +141,24 @@
                     <div class="stamp-box"><div class="stamp" id="stamp-map">📍</div><div class="stamp-label">帶我去</div></div>
                     <div class="stamp-box"><div class="stamp" id="stamp-food">🍴</div><div class="stamp-label">美食</div></div>
                 </div>
-                <div style="font-size: 12px; color:#888; margin-top:5px;">💡 解鎖所有印章後，開啟「完賽紀念框」功能！</div>
+                <div style="font-size: 12px; color:#888; margin-top:5px;">💡 解鎖所有印章後，即可填寫問卷領取證書！</div>
             </div>
 
-            <div class="share-trigger-btn" onclick="openShareModal()">📤 打卡並分享給好友</div>
+            <div class="share-text-link" onclick="openShareModal()">📤 覺得不錯？打卡並分享給好友</div>
+
+            <div id="survey-box">
+                <a href="https://forms.gle/您的問卷連結" target="_blank" class="survey-btn" onclick="trackAction('click_survey')">🎓 任務達成！填寫問卷領取證書</a>
+            </div>
 
             <div id="memorial-box">
-                <div class="memorial-title">🎉 恭喜通關！製作完賽紀念照</div>
-                <p class="memorial-desc">上傳一張照片，合成「汐止達人」專屬相框！<br>下載後即可解鎖問卷。</p>
-                
+                <div class="memorial-title">🎁 額外獎勵：完賽紀念照</div>
+                <p class="memorial-desc">您可以自拍並合成「汐止達人」相框留念</p>
                 <div class="upload-btn-wrapper">
                     <button class="btn-upload">📸 選擇照片 / 開啟相機</button>
                     <input type="file" id="upload-input" accept="image/*" onchange="handleImageUpload(event)">
                 </div>
-
-                <div class="canvas-container">
-                    <canvas id="result-canvas"></canvas>
-                </div>
-                
-                <a id="download-link" class="download-btn" href="#" download="xizhi-tour-memorial.png" onclick="unlockSurvey()">⬇️ 下載紀念照 (並解鎖問卷)</a>
-
-                <a id="survey-btn" href="https://forms.gle/您的問卷連結" target="_blank" class="survey-btn" onclick="trackAction('click_survey')">🎓 領取完賽證書 (前往問卷)</a>
-                <p style="text-align: center; color: #888; font-size: 12px; margin-top: 8px;">需先製作並下載照片才能填寫問卷喔！</p>
+                <div class="canvas-container"><canvas id="result-canvas"></canvas></div>
+                <a id="download-link" class="download-btn" href="#" download="xizhi-tour-memorial.png">⬇️ 下載紀念照</a>
             </div>
 
             <div class="reset-link" onclick="resetProgress()">↺ 重置測試進度</div>
@@ -156,8 +166,8 @@
     </div>
 
     <div class="sticky-footer">
-        <a id="map-btn" href="#" class="footer-btn btn-map" target="_blank" onclick="handleClickWithConfirm('map')">📍 帶我去</a>
-        <a id="food-btn" href="#" class="footer-btn btn-food" target="_blank" onclick="handleClickWithConfirm('food')">🍴 附近美食</a>
+        <a id="map-btn" href="#" class="footer-btn btn-map" target="_blank" onclick="handleClickWithTrack('map')">📍 帶我去</a>
+        <a id="food-btn" href="#" class="footer-btn btn-food" target="_blank" onclick="handleClickWithTrack('food')">🍴 附近美食</a>
     </div>
 
     <div id="share-modal" class="share-modal-overlay" onclick="closeShareModal(event)">
@@ -177,8 +187,6 @@
         const MY_LIFF_ID = "2008941841-8KQq29wn"; 
         const WEBHOOK_URL = ""; 
         const TASKS = ['ubike', 'bus', 'uber', 'map', 'food'];
-
-        // 圖片資源 (請確保 frame.png 已上傳到 GitHub)
         const FRAME_IMG_SRC = "./frame.png"; 
 
         const spotsData = {
@@ -197,30 +205,21 @@
 
         window.onload = function() {
             liff.init({ liffId: MY_LIFF_ID }).then(() => {
-                // 嘗試獲取 User ID 
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                } else {
-                    renderContent();
-                }
-            }).catch(err => { 
-                console.error(err);
-                renderContent(); // 即使失敗也渲染
-            });
+                if (!liff.isLoggedIn()) liff.login();
+                else renderContent();
+            }).catch(err => { console.error(err); renderContent(); });
         };
 
-        // 停留時間追蹤
+        // --- 核心邏輯：停留時間計算 ---
         document.addEventListener("visibilitychange", () => {
             if (document.visibilityState === 'visible' && pendingTask && leaveTime > 0) {
+                // 1. 計算秒數
                 const duration = Math.round((Date.now() - leaveTime) / 1000);
                 
-                // 傳送：哪個 User, 哪個任務, 停留幾秒
+                // 2. 傳送數據 (後台記錄)
                 trackDuration(pendingTask, duration);
                 
-                // 自動集點
-                saveStamp(pendingTask);
-                alert("歡迎回來！已完成任務探索，獲得印章 💮");
-
+                // 3. 重置計時 (不跳出任何彈窗，僅後台記錄)
                 leaveTime = 0;
                 pendingTask = null;
             }
@@ -250,20 +249,29 @@
         function collectAction(taskName) {
             saveStamp(taskName);
         }
-        function handleClickWithConfirm(taskName) {
+        
+        function handleClickWithTrack(taskName) {
+            // 1. 立即集章 (前台無反饋，直接給)
+            saveStamp(taskName);
+            
+            // 2. 啟動計時器 (為了計算停留時間)
             pendingTask = taskName;
             leaveTime = Date.now();
+            
+            // 3. 記錄點擊事件
             trackAction('click_' + taskName);
         }
+
         function saveStamp(taskName) {
             let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
             if (!collected.includes(taskName)) {
                 collected.push(taskName);
                 localStorage.setItem('xizhi_action_stamps', JSON.stringify(collected));
                 trackAction('collect_' + taskName);
-                setTimeout(initTaskProgress, 500);
+                setTimeout(initTaskProgress, 500); // 稍微延遲更新 UI
             }
         }
+
         function initTaskProgress() {
             let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
             TASKS.forEach(task => {
@@ -278,11 +286,10 @@
             document.getElementById('progress-text').innerText = `${collected.length}/5`;
             document.getElementById('progress-bar').style.width = `${(collected.length/5)*100}%`;
             
-            // ★ 集滿 5 點，顯示紀念框區塊
+            // ★ 集滿 5 點，顯示問卷 + 紀念框
             if (collected.length >= 5) {
+                document.getElementById('survey-box').style.display = 'block';
                 document.getElementById('memorial-box').style.display = 'block';
-                // 自動捲動到底部
-                document.getElementById('memorial-box').scrollIntoView({ behavior: 'smooth' });
             }
         }
 
@@ -290,13 +297,10 @@
         function handleImageUpload(e) {
             const file = e.target.files[0];
             if(!file) return;
-
             const reader = new FileReader();
             reader.onload = function(event) {
                 const img = new Image();
-                img.onload = function() {
-                    drawCanvas(img);
-                }
+                img.onload = function() { drawCanvas(img); }
                 img.src = event.target.result;
             }
             reader.readAsDataURL(file);
@@ -305,40 +309,25 @@
         function drawCanvas(userImg) {
             const canvas = document.getElementById('result-canvas');
             const ctx = canvas.getContext('2d');
-            
-            // 設定畫布大小 (建議正方形)
             const size = 1080;
             canvas.width = size;
             canvas.height = size;
-
-            // 1. 繪製使用者照片 (簡單的 Center Crop 邏輯)
-            // 計算比例以填滿正方形
+            
             const scale = Math.max(size / userImg.width, size / userImg.height);
             const x = (size / 2) - (userImg.width / 2) * scale;
             const y = (size / 2) - (userImg.height / 2) * scale;
             ctx.drawImage(userImg, x, y, userImg.width * scale, userImg.height * scale);
 
-            // 2. 繪製相框
             const frameImg = new Image();
             frameImg.onload = function() {
                 ctx.drawImage(frameImg, 0, 0, size, size);
-                
-                // 3. 顯示下載按鈕
                 const dataUrl = canvas.toDataURL("image/png");
                 const downloadLink = document.getElementById('download-link');
                 downloadLink.href = dataUrl;
                 downloadLink.style.display = "block";
-                
                 document.querySelector('.canvas-container').style.display = "block";
             }
-            frameImg.src = FRAME_IMG_SRC; // 載入您的 frame.png
-        }
-
-        function unlockSurvey() {
-            // 點擊下載後，解鎖問卷按鈕
-            const btn = document.getElementById('survey-btn');
-            btn.classList.add('active');
-            btn.innerText = "🎓 領取完賽證書 (前往問卷)";
+            frameImg.src = FRAME_IMG_SRC;
         }
 
         // --- 其他功能 ---
@@ -353,34 +342,22 @@
                 btn.innerText = "▼ 了解更多故事";
             }
         }
-
         function openShareModal() { document.getElementById('share-modal').style.display = 'flex'; }
         function closeShareModal(e) {
             if (e.target === document.getElementById('share-modal') || e.target.classList.contains('close-share')) {
                 document.getElementById('share-modal').style.display = 'none';
             }
         }
-        function shareTo(platform) { /* ...同前一版... */ document.getElementById('share-modal').style.display = 'none'; }
+        function shareTo(platform) { /* 省略，與前版相同 */ document.getElementById('share-modal').style.display = 'none'; }
         function resetProgress() { if(confirm("重置？")) { localStorage.removeItem('xizhi_action_stamps'); location.reload(); } }
 
-        // --- 數據追蹤 (精準 UserID) ---
-        function trackAction(actionName) {
-            sendToWebhook(actionName, 0);
-        }
-        function trackDuration(taskName, seconds) {
-            sendToWebhook("stay_on_" + taskName, seconds);
-        }
+        // --- 數據追蹤 ---
+        function trackAction(actionName) { sendToWebhook(actionName, 0); }
+        function trackDuration(taskName, seconds) { sendToWebhook("stay_on_" + taskName, seconds); }
         function sendToWebhook(action, durationVal) {
             if (!WEBHOOK_URL) return;
-            
-            // ★ 關鍵：從 LIFF 獲取精準 UserID
             let userId = "unknown";
-            try { 
-                if (liff.isLoggedIn()) {
-                    userId = liff.getContext().userId; 
-                }
-            } catch(e) {}
-
+            try { if (liff.isLoggedIn()) userId = liff.getContext().userId; } catch(e) {}
             const spotId = new URLSearchParams(window.location.search).get('id') || 'spot1';
             
             fetch(WEBHOOK_URL, {
@@ -390,7 +367,7 @@
                     userId: userId, 
                     action: action, 
                     spot: spotId, 
-                    duration: durationVal,
+                    duration: durationVal, // 這裡會是 0 或 秒數
                     timestamp: new Date().toISOString() 
                 })
             }).catch(console.error);
