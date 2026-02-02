@@ -478,7 +478,7 @@
 
                 const currentIdNum = parseInt(data.id);
                 let nextSpotKey = 'spot' + (currentIdNum + 1);
-                if (currentIdNum >= 8) nextSpotKey = 'spot1'; 
+                if (currentIdNum >= 23) nextSpotKey = 'spot1'; 
                 const nextData = spotsData[nextSpotKey];
                 const busBtn = document.getElementById('bus-btn');
                 if (nextData) {
@@ -666,4 +666,5 @@
     </script>
 </body>
 </html>
+
 
