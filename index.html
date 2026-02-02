@@ -288,15 +288,94 @@
         const TASKS = ['map', 'quiz', 'wish', 'beacon', 'bus'];
         const FRAME_IMG_SRC = "./frame.png"; 
 
+        const routesData = {
+            "route1": {
+                id: "route1",
+                mainTitle: "一茶一礦：產業遺跡巡禮",
+                subTitle: "清代包種茶與日治煤礦的雙軌時光",
+                spots: [
+                    { id: "spot1", name: "汐止火車站", type: "起點" },
+                    { id: "spot2", name: "濟德宮", type: "信仰" },
+                    { id: "spot3", name: "蘇家古厝", type: "古蹟" },
+                    { id: "spot4", name: "汐止老街", type: "聚落" },
+                    { id: "spot5", name: "建順茶行", type: "產業" },
+                    { id: "spot6", name: "茄苳腳鐵路遺跡", type: "遺跡" },
+                    { id: "spot7", name: "星光橋", type: "地標" },
+                    { id: "spot8", name: "東山煤礦遺跡", type: "遺跡" },
+                    { id: "spot9", name: "五堵鐵路隧道", type: "終點" }
+                ]
+            },
+            "route2": {
+                id: "route2",
+                mainTitle: "山林秘境：瀑布森呼吸",
+                subTitle: "走進後山，眺望臺北盆地的遼闊景緻",
+                spots: [
+                    { id: "spot1",  name: "汐止火車站", type: "起點" },
+                    { id: "spot10", name: "聖德宮", type: "宮廟" },
+                    { id: "spot11", name: "大尖山天秀宮", type: "賞景" },
+                    { id: "spot12", name: "大尖山登山步道", type: "健行" },
+                    { id: "spot13", name: "秀峰瀑布", type: "秘境" },
+                    { id: "spot14", name: "四分尾山", type: "終點" }
+                ]
+            },
+            "route3": {
+                id: "route3",
+                mainTitle: "網美打卡：最高路線",
+                subTitle: "從偽京都到夢幻湖景",
+                spots: [
+                    { id: "spot15", name: "汐科火車站北站", type: "起點" },
+                    { id: "spot16", name: "拱北殿", type: "打卡" },
+                    { id: "spot17", name: "新山夢湖", type: "秘境" },
+                    { id: "spot18", name: "大金剛岩", type: "奇岩" },
+                    { id: "spot13", name: "秀峰瀑布", type: "水景" },
+                    { id: "spot19", name: "新山", type: "終點" }
+                ]
+            },
+            "route4": {
+                id: "route4",
+                mainTitle: "百年信仰：心靈之旅",
+                subTitle: "解讀汐止的多層信仰與歷史墓園",
+                spots: [
+                    { id: "spot1",  name: "汐止火車站", type: "起點" },
+                    { id: "spot20", name: "秀峰山靜修禪院", type: "佛教" },
+                    { id: "spot21", name: "杜月笙墓園", type: "歷史" },
+                    { id: "spot22", name: "秀峰山彌勒內院", type: "佛教" },
+                    { id: "spot23", name: "忠順廟", type: "道教" },
+                    { id: "spot2",  name: "濟德宮", type: "終點" }
+                ]
+            }
+        };
         const spotsData = {
-            "spot1": { id: 1, title: "汐止火車站", img: "./spot1.jpg", desc: "汐止的交通心臟，也是美食的一級戰區。站前廣場經常舉辦活動，周邊巷弄隱藏著許多在地人推薦的古早味小吃。這裡是旅程的起點，建議先在此補給水分與糧食，準備開始一場深度的在地探索之旅。", query: "汐止火車站", hasBeacon: true },
-            "spot2": { id: 2, title: "中正老街", img: "./spot2.jpg", desc: "舊稱「水返腳街」，這裡是汐止最早的發源地。雖然商業氣息已淡，但走在狹窄的街道上，仍能看見幾棟保留完整的紅磚古厝與傳統市場的熱鬧喧囂，彷彿穿越回百年前。", query: "汐止中正老街", hasBeacon: false },
-            "spot3": { id: 3, title: "蘇家古厝", img: "./spot3.jpg", desc: "隱身於現代建築之中，這座擁有百年歷史的紅磚拱廊建築，展示了優雅的巴洛克式風格。它是汐止望族蘇家的宅邸，見證了當地的興衰，紅磚牆上的雕花依然清晰可見。", query: "汐止蘇家古厝", hasBeacon: false },
-            "spot4": { id: 4, title: "建順茶行", img: "./spot4.jpg", desc: "汐止曾是北台灣重要的茶葉集散地。建順茶行傳承百年，店內至今仍保留著傳統的製茶工具與檜木茶箱，一走進去就能聞到濃郁的茶香，老闆也常熱情解說茶葉知識。", query: "汐止建順茶行", hasBeacon: true },
-            "spot5": { id: 5, title: "茄苳腳鐵路遺跡", img: "./spot5.jpg", desc: "位於高架鐵路下方，這裡保留了清朝至日治時期的鐵路基座遺跡。看著斑駁的石塊，彷彿能聽見百年前火車轟隆駛過的聲音，是鐵道迷不可錯過的隱藏景點。", query: "汐止茄苳腳鐵路遺蹟", hasBeacon: false },
-            "spot6": { id: 6, title: "五堵隧道", img: "./spot6.jpg", desc: "這是一座穿越時空的隧道。原本是舊火車隧道，荒廢多年後改建為自行車道。保留了燻黑的紅磚牆與復古燈光，騎行其中別有一番風味，彷彿進入了神隱少女的場景。", query: "五堵台鐵舊隧道", hasBeacon: false },
-            "spot7": { id: 7, title: "星光橋", img: "./spot7.jpg", desc: "橫跨基隆河的單斜塔景觀橋，造型像一支巨大的麥克風。白天視野開闊，可以遠眺群山，夜晚點燈後光影變幻，是攝影愛好者與情侶散步的熱門景點。", query: "汐止星光橋", hasBeacon: true },
-            "spot8": { id: 8, title: "星座公園", img: "./spot8.jpg", desc: "以12星座為主題的大型河濱公園，設有沙坑、遊樂設施與廣大的草皮。這裡是親子同樂的天堂，也是這趟旅程完美的休止符，適合在此野餐休息。", query: "汐止星座公園", hasBeacon: false }
+            // [R01 產業遺跡]
+            "spot1": { id: 1, title: "汐止火車站", img: "./spot1.jpg", desc: "旅程起點。「汐止」舊稱「水返腳」，意指基隆河潮汐至此而返。站前廣場是感受在地活力的最佳起點。", query: "汐止火車站", hasBeacon: true },
+            "spot2": { id: 2, title: "濟德宮", img: "./spot2.jpg", desc: "俗稱汐止媽祖廟，是通靈少女的取景地，也是在地重要信仰中心，見證了老街的興衰。", query: "汐止濟德宮", hasBeacon: false },
+            "spot3": { id: 3, title: "蘇家古厝", img: "./spot3.jpg", desc: "紅磚拱廊的百年茶商宅邸，見證了汐止茶葉外銷的黃金年代。建築保留完整，古色古香。", query: "汐止蘇家古厝", hasBeacon: false },
+            "spot4": { id: 4, title: "汐止老街", img: "./spot4.jpg", desc: "中正老街，清代「峰仔峙庄」商業街遺跡。雖繁華褪去，仍保留著巴洛克式建築的殘影與在地人情味。", query: "汐止中正老街", hasBeacon: false },
+            "spot5": { id: 5, title: "建順茶行", img: "./spot5.jpg", desc: "創立於1885年，汐止現存最古老的茶行。走進店內彷彿穿越時空，聞得到百年茶香與歷史韻味。", query: "汐止建順茶行", hasBeacon: true },
+            "spot6": { id: 6, title: "茄苳腳鐵路遺跡", img: "./spot6.jpg", desc: "位於高架鐵路橋下，保留著清領時期至日治時期的鐵路基座，是鐵道迷不可錯過的隱藏景點。", query: "汐止茄苳腳鐵路遺跡", hasBeacon: false },
+            "spot7": { id: 7, title: "星光橋", img: "./spot7.jpg", desc: "橫跨基隆河的單斜塔景觀橋，造型如一支巨大的麥克風。夜晚點燈後光影變幻，是攝影熱點。", query: "汐止星光橋", hasBeacon: true },
+            "spot8": { id: 8, title: "東山煤礦遺跡", img: "./spot8.jpg", desc: "汐止曾是北台灣重要煤礦產地。這裡保留了部分礦坑與運輸設施遺跡，訴說著當年的黑金歲月。", query: "汐止東山煤礦", hasBeacon: false },
+            "spot9": { id: 9, title: "五堵鐵路隧道", img: "./spot9.jpg", desc: "穿越時空的紅磚隧道，原為日治時期舊隧道，現改建為自行車道，充滿神隱少女般的氛圍。", query: "五堵台鐵舊隧道", hasBeacon: false },
+
+            // [R02 山林秘境]
+            "spot10": { id: 10, title: "聖德宮", img: "https://duk.tw/QF86I6.jpg", desc: "位於大尖山腰，宮廟建築宏偉，視野極佳，是登山途中的重要休憩點。", query: "汐止聖德宮", hasBeacon: false },
+            "spot11": { id: 11, title: "大尖山天秀宮", img: "https://duk.tw/QF86I6.jpg", desc: "汐止最著名的賞景點之一，廟前廣場可俯瞰大台北盆地，夕陽與夜景更是迷人。", query: "汐止天秀宮", hasBeacon: false },
+            "spot12": { id: 12, title: "大尖山登山步道", img: "https://duk.tw/QF86I6.jpg", desc: "石階鋪設完善，沿途林蔭茂密。登頂後視野開闊，是汐止人的後花園。", query: "大尖山登山步道", hasBeacon: false },
+            "spot13": { id: 13, title: "秀峰瀑布", img: "https://duk.tw/QF86I6.jpg", desc: "藏身於峽谷之中的清幽瀑布，岩壁陡峭，水花飛濺，充滿負離子的清涼秘境。", query: "汐止秀峰瀑布", hasBeacon: false },
+            "spot14": { id: 14, title: "四分尾山", img: "https://duk.tw/QF86I6.jpg", desc: "汐止知名小百岳，擁有一等三角點，360度無視野遮蔽，山海景緻盡收眼底。", query: "汐止四分尾山", hasBeacon: false },
+
+            // [R03 網美打卡]
+            "spot15": { id: 15, title: "汐科火車站北站", img: "https://duk.tw/xAZcvt.jpg", desc: "擁有獨特的長型月台設計，流線型的站體結構是軌道攝影愛好者的取景地。", query: "汐科火車站", hasBeacon: false },
+            "spot16": { id: 16, title: "拱北殿", img: "https://duk.tw/xAZcvt.jpg", desc: "北台灣賞楓勝地，著名的「彼岸橋」充滿日式古剎風情，彷彿一秒飛到京都。", query: "汐止拱北殿", hasBeacon: true },
+            "spot17": { id: 17, title: "新山夢湖", img: "https://duk.tw/xAZcvt.jpg", desc: "夢幻般的碧綠湖泊，常有雲霧繚繞。湖畔設有白色碼頭與小船，是婚紗拍攝聖地。", query: "新山夢湖", hasBeacon: false },
+            "spot18": { id: 18, title: "大金剛岩", img: "https://duk.tw/xAZcvt.jpg", desc: "新山稜線上的一塊巨岩，形狀酷似金剛頭部，氣勢磅礡，是登山客必拍的奇岩。", query: "新山大金剛岩", hasBeacon: false },
+            "spot19": { id: 19, title: "新山", img: "https://duk.tw/xAZcvt.jpg", desc: "海拔499公尺，山頂岩石裸露，極具野趣。站在巨岩上可俯瞰夢湖全景。", query: "汐止新山", hasBeacon: false },
+
+            // [R04 百年信仰]
+            "spot20": { id: 20, title: "秀峰山靜修禪院", img: "https://duk.tw/zESfwL.jpg", desc: "位於秀峰山下的幽靜禪院，環境清幽，庭園造景典雅，適合洗滌心靈。", query: "汐止靜修禪院", hasBeacon: false },
+            "spot21": { id: 21, title: "杜月笙墓園", img: "https://duk.tw/zESfwL.jpg", desc: "上海灘傳奇人物杜月笙的長眠之地，墓園題字多出自黨國大老之手，極具歷史價值。", query: "杜月笙墓園", hasBeacon: false },
+            "spot22": { id: 22, title: "秀峰山彌勒內院", img: "https://duk.tw/zESfwL.jpg", desc: "供奉彌勒佛的莊嚴道場，建築宏偉，在此可感受宗教的寧靜力量。", query: "汐止彌勒內院", hasBeacon: false },
+            "spot23": { id: 23, title: "忠順廟", img: "https://duk.tw/zESfwL.jpg", desc: "原址為日治時期的「汐止神社」，至今仍保留著神社的鳥居與石燈籠，呈現中日合璧的特殊景觀。", query: "汐止忠順廟", hasBeacon: true }
         };
 
         let pendingTask = null; 
@@ -587,3 +666,4 @@
     </script>
 </body>
 </html>
+
