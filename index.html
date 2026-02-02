@@ -40,9 +40,9 @@
         .title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
         h1 { margin: 0; font-size: 24px; font-weight: 800; color: #2c3e50; }
         
-        /* 愛心按鈕樣式 */
-        .wish-btn { font-size: 28px; color: #ccc; cursor: pointer; transition: transform 0.2s; }
-        .wish-btn.active { color: #ff4757; transform: scale(1.2); }
+        /* 修改：愛心按鈕縮小 */
+        .wish-btn { font-size: 22px; color: #ccc; cursor: pointer; transition: transform 0.2s; padding: 5px; }
+        .wish-btn.active { color: #ff4757; transform: scale(1.1); }
 
         .sub-tag { display: inline-block; font-size: 12px; color: #888; background: #eee; padding: 3px 8px; border-radius: 4px; margin-bottom: 15px; }
 
@@ -51,13 +51,11 @@
         .desc-text { font-size: 15px; line-height: 1.6; color: #555; max-height: 8.0em; overflow: hidden; transition: max-height 0.4s ease; margin-bottom: 12px; }
         .desc-text.expanded { max-height: none; overflow: visible; } 
         
-        /* 簡介動作列 (了解更多 + 問答) */
         .desc-actions { display: flex; justify-content: space-between; align-items: center; }
         .read-more-btn { color: #007bff; font-weight: bold; font-size: 14px; cursor: pointer; text-decoration: underline; }
         
-        /* 問答按鈕 */
         .quiz-trigger-btn { 
-            background: #ff9f43; color: white; padding: 6px 12px; 
+            background: #ff9f43; color: white; padding: 6px 14px; 
             border-radius: 20px; font-size: 13px; font-weight: bold; 
             cursor: pointer; display: flex; align-items: center; gap: 5px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -73,16 +71,13 @@
         .bg-uber  { background: #2c3e50; } 
         .bus-label { font-size: 11px; opacity: 0.9; line-height: 1.2; }
 
-        /* --- 互動任務區 (狀態顯示) --- */
+        /* --- 互動任務區 --- */
         .game-section { background: #fff8e1; border: 2px dashed #ffc107; border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 15px; }
         .game-title { font-weight: bold; color: #d35400; margin-bottom: 15px; font-size: 16px; }
         .task-grid { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
-        /* 移除 cursor: pointer，因為這裡現在只是展示 */
         .stamp-box { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 55px; }
         
         .stamp { width: 40px; height: 40px; border-radius: 50%; background: #e0e0e0; color: #777; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; border: 2px solid #ddd; transition: all 0.3s; }
-        
-        /* 完成樣式 (打勾) */
         .stamp.active { 
             background: #ff512f; color: white; border-color: #ff512f; 
             transform: scale(1.1); box-shadow: 0 3px 8px rgba(255, 81, 47, 0.3);
@@ -93,32 +88,51 @@
         /* --- 分享與文字連結 --- */
         .share-text-link { text-align: center; margin: 15px 0; font-size: 15px; font-weight: bold; color: #555; cursor: pointer; text-decoration: underline; display: block; }
 
-        /* --- 分享選單 --- */
-        .share-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 4000; display: none; align-items: flex-end; justify-content: center; animation: fadeIn 0.3s; }
-        .share-sheet { background: white; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 25px; box-sizing: border-box; animation: slideUp 0.3s; }
+        /* --- 問卷區塊 --- */
+        #survey-box { display: none; margin-top: 25px; animation: popUp 0.5s ease; padding-top: 20px; border-top: 1px solid #eee; }
+        .survey-btn { display: block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4); }
+
+        /* --- 紀念照產生器區塊 --- */
+        #memorial-box { display: none; margin-top: 25px; text-align: center; background: #fafafa; padding: 20px; border-radius: 12px; }
+        .memorial-title { font-size: 16px; font-weight: 800; color: #2c3e50; margin-bottom: 5px; }
+        .memorial-desc { font-size: 13px; color: #666; margin-bottom: 15px; }
+        
+        .upload-btn-wrapper { position: relative; overflow: hidden; display: inline-block; margin-bottom: 15px; }
+        .btn-upload { border: 2px dashed #007bff; color: #007bff; background-color: white; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .upload-btn-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
+        
+        #result-canvas { display: none; }
+        
+        /* 最終合成圖：強化顯示效果 */
+        #final-img { 
+            width: 100%; max-width: 280px; 
+            border: 2px solid #28a745; /* 加綠色框提示 */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+            display: none; margin: 10px auto; border-radius: 8px; 
+            pointer-events: auto; /* 確保可長按 */
+        }
+        .download-hint { display: none; color: #28a745; font-weight: bold; font-size: 14px; margin-top: 10px; background: #e8f5e9; padding: 10px; border-radius: 8px;}
+        
+        /* --- 彈窗模組 (分享 & 測驗) --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 6000; display: none; align-items: center; justify-content: center; animation: fadeIn 0.2s; }
+        
+        /* 分享選單 (底部) */
+        .share-sheet { position: absolute; bottom: 0; width: 100%; max-width: 500px; background: white; border-radius: 20px 20px 0 0; padding: 25px; box-sizing: border-box; animation: slideUp 0.3s; }
         .share-title { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 20px; text-align: center; }
         .share-grid { display: flex; justify-content: space-around; gap: 10px; }
         .share-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; color: #555; font-size: 12px; width: 70px; }
         .share-icon-box { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .share-item:active .share-icon-box { transform: scale(0.9); }
-        .share-icon-box svg { width: 32px; height: 32px; }
-        .close-share { margin-top: 20px; padding: 12px; width: 100%; border: none; background: #f1f3f5; color: #555; border-radius: 12px; font-weight: bold; cursor: pointer; }
-
-        /* --- 問卷區塊 --- */
-        #survey-box { display: none; margin-top: 25px; animation: popUp 0.5s ease; padding-top: 20px; border-top: 1px solid #eee; }
-        .survey-btn { display: block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4); }
-
-        /* --- 紀念照 --- */
-        #memorial-box { display: none; margin-top: 25px; text-align: center; background: #fafafa; padding: 20px; border-radius: 12px; }
-        .memorial-title { font-size: 16px; font-weight: 800; color: #2c3e50; margin-bottom: 5px; }
-        .memorial-desc { font-size: 13px; color: #666; margin-bottom: 15px; }
-        .upload-btn-wrapper { position: relative; overflow: hidden; display: inline-block; margin-bottom: 15px; }
-        .btn-upload { border: 2px dashed #007bff; color: #007bff; background-color: white; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
-        .upload-btn-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
-        #result-canvas { display: none; }
-        #final-img { width: 100%; max-width: 250px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: none; margin: 10px auto; border-radius: 8px; }
-        .download-hint { display: none; color: #28a745; font-weight: bold; font-size: 14px; margin-top: 10px; background: #e8f5e9; padding: 10px; border-radius: 8px;}
+        .share-icon-box svg { width: 48px; height: 48px; } /* Logo 尺寸調整 */
         
+        /* 測驗視窗 (置中) */
+        .quiz-box { background: white; width: 85%; max-width: 320px; padding: 20px; border-radius: 16px; text-align: center; position: relative; }
+        .quiz-question { font-size: 16px; font-weight: bold; margin-bottom: 20px; color: #333; line-height: 1.5; }
+        .quiz-options { display: flex; flex-direction: column; gap: 10px; }
+        .quiz-btn { padding: 12px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 8px; font-size: 14px; cursor: pointer; transition: background 0.2s; }
+        .quiz-btn:active { background: #e2e6ea; }
+        .close-modal { margin-top: 15px; color: #999; font-size: 12px; text-decoration: underline; cursor: pointer; }
+
         /* --- 底部導航 --- */
         .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px 15px; box-sizing: border-box; display: flex; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
         .footer-btn { flex: 1; padding: 12px; border-radius: 10px; text-align: center; text-decoration: none; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 6px; }
@@ -158,10 +172,9 @@
             
             <div class="desc-box">
                 <div id="spot-desc-container" class="desc-text"><span id="spot-desc"></span></div>
-                
                 <div class="desc-actions">
                     <div id="read-more-btn" class="read-more-btn" onclick="toggleDesc()">▼ 了解更多故事</div>
-                    <div class="quiz-trigger-btn" onclick="triggerQuiz()">
+                    <div class="quiz-trigger-btn" onclick="openQuizModal()">
                         <span>🧠 知識小學堂</span>
                     </div>
                 </div>
@@ -188,34 +201,13 @@
             <div class="game-section">
                 <div class="game-title">🏆 汐止達人挑戰 (進度: <span id="progress-text">0/5</span>)</div>
                 <div class="task-grid">
-                    
-                    <div class="stamp-box">
-                        <div class="stamp" id="stamp-map">🗺️</div>
-                        <div class="stamp-label">找路</div>
-                    </div>
-
-                    <div class="stamp-box">
-                        <div class="stamp" id="stamp-quiz">❓</div>
-                        <div class="stamp-label">問答</div>
-                    </div>
-
-                    <div class="stamp-box">
-                        <div class="stamp" id="stamp-wish">❤️</div>
-                        <div class="stamp-label">想去</div>
-                    </div>
-
-                    <div class="stamp-box">
-                        <div class="stamp" id="stamp-beacon">📡</div>
-                        <div class="stamp-label">尋寶</div>
-                    </div>
-
-                    <div class="stamp-box">
-                        <div class="stamp" id="stamp-bus">🚌</div>
-                        <div class="stamp-label">交通</div>
-                    </div>
-
+                    <div class="stamp-box"><div class="stamp" id="stamp-map">🗺️</div><div class="stamp-label">找路</div></div>
+                    <div class="stamp-box"><div class="stamp" id="stamp-quiz">❓</div><div class="stamp-label">問答</div></div>
+                    <div class="stamp-box"><div class="stamp" id="stamp-wish">❤️</div><div class="stamp-label">想去</div></div>
+                    <div class="stamp-box"><div class="stamp" id="stamp-beacon">📡</div><div class="stamp-label">尋寶</div></div>
+                    <div class="stamp-box"><div class="stamp" id="stamp-bus">🚌</div><div class="stamp-label">交通</div></div>
                 </div>
-                <div style="font-size: 12px; color:#888; margin-top:5px;">💡 請從頁面各處尋找互動機會，完成上方挑戰！</div>
+                <div style="font-size: 12px; color:#888; margin-top:5px;">💡 完成上方挑戰，解鎖完賽證書！</div>
             </div>
 
             <div class="share-text-link" onclick="openShareModal()">📤 覺得不錯？打卡並分享給好友</div>
@@ -226,12 +218,11 @@
 
             <div id="memorial-box">
                 <div class="memorial-title">🎁 額外獎勵：完賽紀念照</div>
-                <p class="memorial-desc">您可以自拍並合成「汐止達人」相框留念</p>
+                <p class="memorial-desc">上傳自拍照，合成汐止達人相框！</p>
                 <div class="upload-btn-wrapper">
                     <button class="btn-upload">📸 選擇照片 / 開啟相機</button>
                     <input type="file" id="upload-input" accept="image/*" onchange="handleImageUpload(event)">
                 </div>
-                
                 <canvas id="result-canvas"></canvas>
                 <img id="final-img" src="" alt="合成照片">
                 <div id="download-msg" class="download-hint">👆 請「長按上方圖片」儲存至手機相簿</div>
@@ -246,36 +237,51 @@
         <a id="food-btn" href="#" class="footer-btn btn-food" target="_blank" onclick="trackAction('click_food')">🍴 附近美食</a>
     </div>
 
-    <div id="share-modal" class="share-modal-overlay" onclick="closeShareModal(event)">
+    <div id="share-modal" class="modal-overlay" onclick="closeModal('share-modal', event)">
         <div class="share-sheet">
             <div class="share-title">分享這個景點 📢</div>
             <div class="share-grid">
                 <div class="share-item" onclick="shareTo('line')">
-                    <div class="share-icon-box" style="background:#06C755;">
-                        <svg viewBox="0 0 24 24" fill="white"><path d="M22 10.3c0-4.7-4.3-8.6-10-8.6-5.4 0-10 3.9-10 8.6 0 4.2 3.8 7.8 8.4 8.5.3 0 .7.2.8.5 0 0 .3 1.1.3 1.3-.1.5-.4 1.8-1.7 2.5 1.4 0 4.3-.9 6-3.1 3.5-1.5 6.2-4.8 6.2-9.7zm-14.7.2c0-.3.3-.5.5-.5h4.8c.3 0 .5.2.5.5s-.2.5-.5.5h-4.2v1.3h4.2c.3 0 .5.2.5.5s-.2.5-.5.5h-4.8c-.3 0-.5-.2-.5-.5v-2.1zm8.7 2.1c0 .3-.2.5-.5.5h-1.3v-2.6h.5c.3 0 .5.2.5.5v2.1c.8 0 .8-.5.8-2.6h.6v2.6c0 .3-.2.5-.6.5h-.1zm-2.8-2.6h.5c.3 0 .5.2.5.5v1.3l1.8-1.8h.7l-1.9 1.9 2 2.1h-.7l-1.6-1.7v1.7c0 .3-.2.5-.5.5h-.5v-4.5zm-5.7 4.5h-.5v-4.5h.5v2.3l1.9-2.3h.7l-2.2 2.6 2.3 2.5h-.8l-1.9-2.1v2.1z"/></svg>
+                    <div class="share-icon-box">
+                        <svg viewBox="0 0 512 512" fill="none">
+                            <path d="M512 256C512 114.615 397.385 0 256 0C114.615 0 0 114.615 0 256C0 397.385 114.615 512 256 512C397.385 512 512 397.385 512 256Z" fill="#06C755"/>
+                            <path d="M421.333 219.429C421.333 159.048 347.111 110 256 110C164.889 110 90.6667 159.048 90.6667 219.429C90.6667 274.667 140.444 321.143 216.889 328L207.111 369.143C207.111 369.143 203.556 379.429 217.778 376C232 372.571 292.444 333.143 323.556 313.429C384 292 421.333 258.286 421.333 219.429ZM174.222 258.857H133.333V180H153.778V238.286H174.222V258.857ZM204.444 258.857H184V180H204.444V258.857ZM264.889 258.857H244.444L244.444 202.286L223.111 233.143V180H243.556L243.556 236.571L264.889 205.714V258.857ZM325.333 180V258.857H284.444V180H325.333ZM304.889 238.286H325.333V258.857H304.889V238.286ZM304.889 219.429H325.333V200.571H304.889V219.429ZM304.889 200.571V180H325.333V200.571H304.889Z" fill="white"/>
+                        </svg>
                     </div>
                     <span>LINE</span>
                 </div>
                 <div class="share-item" onclick="shareTo('fb')">
-                    <div class="share-icon-box" style="background:#1877F2;">
-                        <svg viewBox="0 0 24 24" fill="white"><path d="M22 12c0-5.5-4.5-10-10-10S2 6.5 2 12c0 5 3.7 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7C18.3 21.1 22 17 22 12z"/></svg>
+                    <div class="share-icon-box">
+                        <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="24" fill="#1877F2"/><path d="M26.5 36V22h4l.5-5h-4.5v-3c0-1.4.4-2.3 2.2-2.3h2.4V7.2c-.4 0-1.8-.2-3.4-.2-3.4 0-5.7 2.1-5.7 6v4h-3.8v5h3.8v14h6.5z" fill="white"/></svg>
                     </div>
                     <span>Facebook</span>
                 </div>
                 <div class="share-item" onclick="shareTo('ig')">
-                    <div class="share-icon-box" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);">
-                        <svg viewBox="0 0 24 24" fill="white"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 3.3.1 4.8 1.7 4.9 4.9.1 1.3.1 1.6.1 4.8 0 3.2 0 3.6-.1 4.9-.1 3.3-1.7 4.8-4.9 4.9-1.3.1-1.6.1-4.8.1-3.2 0-3.6 0-4.9-.1-3.3-.1-4.8-1.7-4.9-4.9-.1-1.3-.1-1.6-.1-4.8 0-3.2 0-3.6.1-4.9.1-3.3 1.7-4.8 4.9-4.9 1.3-.1 1.6-.1 4.8-.1zm0-2.2C8.7 0 8.3 0 7.1.1 2.8.3.3 2.8.1 7.1 0 8.3 0 8.7 0 12s0 3.7.1 4.9c.2 4.4 2.7 6.8 7 7 1.3.1 1.7.1 4.9.1s3.7 0 4.9-.1c4.4-.2 6.8-2.7 7-7 .1-1.3.1-1.7.1-4.9s0-3.7-.1-4.9c-.2-4.4-2.7-6.8-7-7C15.7 0 15.3 0 12 0zm0 5.8c-3.4 0-6.2 2.8-6.2 6.2s2.8 6.2 6.2 6.2 6.2-2.8 6.2-6.2-2.8-6.2-6.2-6.2zm0 10.2c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4zm6.4-10.4c0 .8-.6 1.4-1.4 1.4-.8 0-1.4-.6-1.4-1.4 0-.8.6-1.4 1.4-1.4.8 0 1.4.6 1.4 1.4z"/></svg>
+                    <div class="share-icon-box">
+                        <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="24" fill="url(#paint0_radial)"/><path d="M24 13c-3 0-3.3 0-4.5.1-4 .2-6 2.2-6.2 6.2-.1 1.2-.1 1.5-.1 4.7s0 3.6.1 4.8c.2 4 2.2 6 6.2 6.2 1.2.1 1.5.1 4.5.1s3.3 0 4.5-.1c4-.2 6-2.2 6.2-6.2.1-1.2.1-1.5.1-4.8s0-3.6-.1-4.7c-.2-4-2.2-6-6.2-6.2-1.2-.1-1.5-.1-4.5-.1zm0 2.2c2.9 0 3.3 0 4.4.1 3 .1 4.4 1.5 4.5 4.5.1 1.1.1 1.5.1 4.2s0 3.1-.1 4.2c-.1 3-1.5 4.4-4.5 4.5-1.1.1-1.5.1-4.4.1s-3.3 0-4.4-.1c-3-.1-4.4-1.5-4.5-4.5-.1-1.1-.1-1.5-.1-4.2s0-3.1.1-4.2c.1-3 1.5-4.4 4.5-4.5 1.1-.1 1.5-.1 4.4-.1zm0 5.4c-3.1 0-5.6 2.5-5.6 5.6s2.5 5.6 5.6 5.6 5.6-2.5 5.6-5.6-2.5-5.6-5.6-5.6zm0 9c-1.9 0-3.4-1.5-3.4-3.4s1.5-3.4 3.4-3.4 3.4 1.5 3.4 3.4-1.5 3.4-3.4 3.4zm5.8-9.2c0 .7-.6 1.3-1.3 1.3-.7 0-1.3-.6-1.3-1.3 0-.7.6-1.3 1.3-1.3.7 0 1.3.6 1.3 1.3z" fill="white"/><defs><radialGradient id="paint0_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="rotate(45) scale(34)"><stop stop-color="#FFDD55"/><stop offset=".3" stop-color="#FF5D52"/><stop offset=".6" stop-color="#E53D86"/><stop offset="1" stop-color="#6E00AF"/></radialGradient></defs></svg>
                     </div>
                     <span>Instagram</span>
                 </div>
                 <div class="share-item" onclick="shareTo('copy')">
                     <div class="share-icon-box" style="background:#555;">
-                        <svg viewBox="0 0 24 24" fill="white"><path d="M3.9 12c0-1.7 1.4-3.1 3.1-3.1h4V7H7c-2.8 0-5 2.2-5 5s2.2 5 5 5h4v-1.9H7c-1.7 0-3.1-1.4-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.7 0 3.1 1.4 3.1 3.1s-1.4 3.1-3.1 3.1h-4V17h4c2.8 0 5-2.2 5-5s-2.2-5-5-5z"/></svg>
+                        <svg viewBox="0 0 24 24" fill="white"><path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z"/></svg>
                     </div>
                     <span>複製連結</span>
                 </div>
             </div>
-            <button class="close-share" onclick="closeShareModal(event)">取消</button>
+            <button class="close-share" onclick="closeModal('share-modal', event)">取消</button>
+        </div>
+    </div>
+
+    <div id="quiz-modal" class="modal-overlay">
+        <div class="quiz-box">
+            <div class="quiz-question">Q: 這裡早期是什麼地方的發源地？</div>
+            <div class="quiz-options">
+                <button class="quiz-btn" onclick="checkQuiz(1)">A. 台北車站</button>
+                <button class="quiz-btn" onclick="checkQuiz(2)">B. 水返腳 (汐止)</button>
+                <button class="quiz-btn" onclick="checkQuiz(3)">C. 淡水老街</button>
+            </div>
+            <div class="close-modal" onclick="closeModal('quiz-modal', event)">放棄挑戰</div>
         </div>
     </div>
 
@@ -285,10 +291,8 @@
         const WEBHOOK_URL = ""; 
         const SURVEYCAKE_URL = "https://www.surveycake.com/s/您的問卷代碼"; 
         const SURVEY_UID_ALIAS = "line_uid"; 
-        const FRAME_IMG_SRC = "./frame.png"; 
-        
-        // ★ 5大任務
         const TASKS = ['map', 'quiz', 'wish', 'beacon', 'bus'];
+        const FRAME_IMG_SRC = "./frame.png"; 
 
         const spotsData = {
             "spot1": { id: 1, title: "汐止火車站", img: "./spot1.jpg", desc: "汐止的交通心臟，也是美食的一級戰區。站前廣場經常舉辦活動，周邊巷弄隱藏著許多在地人推薦的古早味小吃。這裡是旅程的起點，建議先在此補給水分與糧食，準備開始一場深度的在地探索之旅。", query: "汐止火車站", hasBeacon: true },
@@ -344,7 +348,6 @@
             }, 3000);
         }
 
-        // ★ 任務4：Beacon
         function handleBeaconClick() {
             const banner = document.getElementById('beacon-banner');
             banner.classList.remove('show'); 
@@ -352,33 +355,32 @@
             collectAction('beacon'); 
         }
 
-        // ★ 任務2：知識問答
-        function triggerQuiz() {
-            if(isTaskDone('quiz')) return;
-            const answer = confirm("【小知識挑戰】\n請問這裡是不是汐止著名的歷史景點？\n\n(是請按「確定」，否請按「取消」)");
-            if(answer) {
-                alert("⭕ 答對了！獲得【問答印章】");
+        // --- 知識問答邏輯 (新) ---
+        function openQuizModal() {
+            if(isTaskDone('quiz')) { alert("這個任務已經完成囉！"); return; }
+            document.getElementById('quiz-modal').style.display = 'flex';
+        }
+        function checkQuiz(answerIdx) {
+            // 這裡設定答案為 2 (B)
+            if(answerIdx === 2) {
+                document.getElementById('quiz-modal').style.display = 'none';
+                alert("⭕ 答對了！真厲害！\n獲得【問答印章】");
                 collectAction('quiz');
             } else {
-                alert("❌ 答錯囉！再仔細看看介紹吧！");
+                alert("❌ 答錯了，請再試試看！");
             }
         }
 
-        // ★ 任務3：願望清單 (更新：愛心變色邏輯)
+        // --- 願望清單 ---
         function triggerWishlist() {
             const btn = document.getElementById('wish-btn');
-            
-            // 視覺切換
             if(btn.classList.contains('active')) {
-                // 已收藏 -> 取消 (不取消印章，只取消視覺)
                 btn.classList.remove('active');
                 btn.innerHTML = '♡';
                 alert("已從清單移除");
             } else {
-                // 未收藏 -> 收藏
                 btn.classList.add('active');
                 btn.innerHTML = '❤️';
-                
                 if(!isTaskDone('wish')) {
                     alert("已加入最愛！獲得【想去印章】");
                     collectAction('wish');
@@ -399,11 +401,9 @@
                 document.getElementById('spot-img').src = data.img; 
                 
                 const mapQuery = encodeURIComponent(data.query);
-                // 任務1：地圖 (底部按鈕)
                 document.getElementById('map-btn').href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
                 document.getElementById('food-btn').href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}+美食`;
 
-                // 任務5：公車 (動態)
                 const currentIdNum = parseInt(data.id);
                 let nextSpotKey = 'spot' + (currentIdNum + 1);
                 if (currentIdNum >= 8) nextSpotKey = 'spot1'; 
@@ -423,7 +423,6 @@
             }
         }
 
-        // 通用集章
         function collectAction(taskName) {
             let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
             if (!collected.includes(taskName)) {
@@ -441,7 +440,6 @@
             trackAction('click_' + taskName);
         }
 
-        // 檢查任務是否已完成 (不跳 Alert 版)
         function isTaskDone(taskName) {
             let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
             return collected.includes(taskName);
@@ -449,8 +447,6 @@
 
         function initTaskProgress() {
             let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
-            
-            // 1. 更新 Grid 狀態
             TASKS.forEach(task => {
                 const el = document.getElementById('stamp-' + task);
                 if (collected.includes(task)) {
@@ -467,7 +463,7 @@
                 }
             });
 
-            // 2. 更新愛心按鈕視覺 (如果切換頁面回來)
+            // 更新愛心狀態
             const wishBtn = document.getElementById('wish-btn');
             if(collected.includes('wish')) {
                 wishBtn.classList.add('active');
@@ -486,7 +482,6 @@
             }
         }
 
-        // --- 相框合成 (修正下載) ---
         function handleImageUpload(e) {
             const file = e.target.files[0];
             if(!file) return;
@@ -515,7 +510,7 @@
             frameImg.onload = function() {
                 ctx.drawImage(frameImg, 0, 0, size, size);
                 
-                // 轉為 Image 顯示
+                // ★ 關鍵修正：生成圖片並顯示
                 const dataUrl = canvas.toDataURL("image/png");
                 const finalImg = document.getElementById('final-img');
                 finalImg.src = dataUrl;
@@ -525,11 +520,10 @@
             frameImg.src = FRAME_IMG_SRC;
         }
 
-        // --- 分享邏輯 ---
         function openShareModal() { document.getElementById('share-modal').style.display = 'flex'; }
-        function closeShareModal(e) {
-            if (e.target === document.getElementById('share-modal') || e.target.classList.contains('close-share')) {
-                document.getElementById('share-modal').style.display = 'none';
+        function closeModal(modalId, e) {
+            if (e.target.id === modalId || e.target.classList.contains('close-modal') || e.target.classList.contains('close-share')) {
+                document.getElementById(modalId).style.display = 'none';
             }
         }
         function shareTo(platform) { 
