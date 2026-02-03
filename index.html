@@ -6,136 +6,77 @@
     <title>汐止深度導覽</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        /* --- 基礎設定 --- */
+        /* --- 基礎樣式維持不變 --- */
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; padding-bottom: 100px; }
-        
-        /* --- 頂部進度條 --- */
         .progress-container { position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: #e0e0e0; z-index: 2000; }
         .progress-bar { height: 100%; background: linear-gradient(90deg, #ff8a00, #e52e71); width: 0%; transition: width 0.5s ease; border-radius: 0 3px 3px 0; }
-
-        /* --- 虛擬 Beacon 通知 --- */
-        .beacon-banner {
-            position: fixed; top: -120px; left: 5%; width: 90%;
-            background: rgba(34, 34, 34, 0.95); color: white;
-            padding: 12px 15px; border-radius: 50px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3); z-index: 5000;
-            display: flex; align-items: center; gap: 12px;
-            transition: top 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer; box-sizing: border-box;
-        }
+        .beacon-banner { position: fixed; top: -120px; left: 5%; width: 90%; background: rgba(34, 34, 34, 0.95); color: white; padding: 12px 15px; border-radius: 50px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); z-index: 5000; display: flex; align-items: center; gap: 12px; transition: top 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; box-sizing: border-box; }
         .beacon-banner.show { top: 20px; } 
         .beacon-icon { width: 36px; height: 36px; background: #06C755; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
         .beacon-text { flex: 1; font-size: 13px; line-height: 1.3; }
         .beacon-title { font-weight: bold; color: #fff; font-size: 14px; }
         .beacon-sub { color: #ccc; font-size: 11px; }
-
-        /* --- Hero 圖片區 --- */
         .hero-container { position: relative; width: 100%; height: 35vh; overflow: hidden; }
         .hero-img { width: 100%; height: 100%; object-fit: cover; }
-        
-        /* --- 主要內容卡片 --- */
         .content-card { position: relative; background: white; border-radius: 24px 24px 0 0; margin-top: -25px; padding: 25px; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); min-height: 60vh; }
-        
-        /* --- 標題區 (含愛心收藏) --- */
         .title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
         h1 { margin: 0; font-size: 24px; font-weight: 800; color: #2c3e50; }
         .wish-btn { font-size: 22px; color: #ccc; cursor: pointer; transition: transform 0.2s; padding: 5px; }
         .wish-btn.active { color: #ff4757; transform: scale(1.1); }
-
-        .sub-tag { display: inline-block; font-size: 12px; color: #888; background: #eee; padding: 3px 8px; border-radius: 4px; margin-bottom: 15px; }
-
-        /* --- 簡介區 --- */
+        .sub-tag { display: inline-block; font-size: 12px; color: #fff; background: #2c3e50; padding: 4px 10px; border-radius: 4px; margin-bottom: 10px; font-weight: bold; }
+        .route-info { font-size: 13px; color: #666; margin-bottom: 15px; border-left: 3px solid #ff8a00; padding-left: 8px; line-height: 1.4; }
         .desc-box { margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
         .desc-text { font-size: 15px; line-height: 1.6; color: #555; max-height: 8.0em; overflow: hidden; transition: max-height 0.4s ease; margin-bottom: 12px; }
         .desc-text.expanded { max-height: none; overflow: visible; } 
-        
         .desc-actions { display: flex; justify-content: space-between; align-items: center; }
         .read-more-btn { color: #007bff; font-weight: bold; font-size: 14px; cursor: pointer; text-decoration: underline; }
-        
-        .quiz-trigger-btn { 
-            background: #ff9f43; color: white; padding: 6px 14px; 
-            border-radius: 20px; font-size: 13px; font-weight: bold; 
-            cursor: pointer; display: flex; align-items: center; gap: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        /* --- 交通工具箱 --- */
+        .quiz-trigger-btn { background: #ff9f43; color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .transport-grid { display: flex; gap: 10px; margin-bottom: 20px; }
         .t-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 10px; border-radius: 12px; text-decoration: none; color: white; font-weight: bold; font-size: 13px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s; position: relative; overflow: hidden; text-align: center; }
         .t-btn:active { transform: scale(0.96); }
         .t-btn i { font-style: normal; font-size: 18px; display: block; margin-bottom: 2px;}
         .bg-ubike { background: linear-gradient(135deg, #fce38a 0%, #f38181 100%); color: #555; }
         .bg-bus   { background: #3498db; }
-        /* 新增：停車場按鈕顏色 (深藍色) */
         .bg-parking { background: #546de5; } 
         .bus-label { font-size: 11px; opacity: 0.9; line-height: 1.2; }
-
-        /* --- 互動任務區 --- */
         .game-section { background: #fff8e1; border: 2px dashed #ffc107; border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 15px; }
         .game-title { font-weight: bold; color: #d35400; margin-bottom: 15px; font-size: 16px; }
         .task-grid { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
         .stamp-box { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 55px; }
-        
         .stamp { width: 40px; height: 40px; border-radius: 50%; background: #e0e0e0; color: #777; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; border: 2px solid #ddd; transition: all 0.3s; }
-        .stamp.active { 
-            background: #ff512f; color: white; border-color: #ff512f; 
-            transform: scale(1.1); box-shadow: 0 3px 8px rgba(255, 81, 47, 0.3);
-        }
+        .stamp.active { background: #ff512f; color: white; border-color: #ff512f; transform: scale(1.1); box-shadow: 0 3px 8px rgba(255, 81, 47, 0.3); }
         .stamp-label { font-size: 10px; color: #888; margin-top: 4px; font-weight: bold;}
         .stamp.active + .stamp-label { color: #d35400; }
-
-        /* --- 分享與文字連結 --- */
         .share-text-link { text-align: center; margin: 15px 0; font-size: 15px; font-weight: bold; color: #555; cursor: pointer; text-decoration: underline; display: block; }
-
-        /* --- 問卷區塊 --- */
         #survey-box { display: none; margin-top: 25px; animation: popUp 0.5s ease; padding-top: 20px; border-top: 1px solid #eee; }
         .survey-btn { display: block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4); }
-
-        /* --- 紀念照產生器區塊 --- */
         #memorial-box { display: none; margin-top: 25px; text-align: center; background: #fafafa; padding: 20px; border-radius: 12px; }
         .memorial-title { font-size: 16px; font-weight: 800; color: #2c3e50; margin-bottom: 5px; }
         .memorial-desc { font-size: 13px; color: #666; margin-bottom: 15px; }
-        
         .upload-btn-wrapper { position: relative; overflow: hidden; display: inline-block; margin-bottom: 15px; }
         .btn-upload { border: 2px dashed #007bff; color: #007bff; background-color: white; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
         .upload-btn-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
-        
         #result-canvas { display: none; }
-        
-        #final-img { 
-            width: 100%; max-width: 280px; 
-            border: 2px solid #28a745; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            display: none; margin: 10px auto; border-radius: 8px; 
-            pointer-events: auto;
-        }
+        #final-img { width: 100%; max-width: 280px; border: 2px solid #28a745; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: none; margin: 10px auto; border-radius: 8px; pointer-events: auto; }
         .download-hint { display: none; color: #28a745; font-weight: bold; font-size: 14px; margin-top: 10px; background: #e8f5e9; padding: 10px; border-radius: 8px;}
-        
-        /* --- 彈窗模組 --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 6000; display: none; align-items: flex-end; justify-content: center; animation: fadeIn 0.2s; }
-        
         .share-sheet { width: 100%; max-width: 500px; background: white; border-radius: 20px 20px 0 0; padding: 25px 25px 35px 25px; box-sizing: border-box; animation: slideUp 0.3s; }
         .share-title { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 25px; text-align: center; }
         .share-grid { display: flex; justify-content: space-around; gap: 10px; }
         .share-item { display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; color: #555; font-size: 12px; width: 70px; }
-        
         .share-icon-box { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; color: white; }
         .share-item:active .share-icon-box { transform: scale(0.92); }
         .share-icon-box svg { width: 30px; height: 30px; fill: currentColor; }
-        
         .quiz-box { background: white; width: 85%; max-width: 320px; padding: 20px; border-radius: 16px; text-align: center; position: relative; align-self: center; }
         .quiz-question { font-size: 16px; font-weight: bold; margin-bottom: 20px; color: #333; line-height: 1.5; }
         .quiz-options { display: flex; flex-direction: column; gap: 10px; }
         .quiz-btn { padding: 12px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 8px; font-size: 14px; cursor: pointer; transition: background 0.2s; }
         .quiz-btn:active { background: #e2e6ea; }
         .close-modal { margin-top: 15px; color: #999; font-size: 12px; text-decoration: underline; cursor: pointer; }
-
-        /* --- 底部導航 --- */
         .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px 15px; box-sizing: border-box; display: flex; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
         .footer-btn { flex: 1; padding: 12px; border-radius: 10px; text-align: center; text-decoration: none; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-map { background: #f1f3f5; color: #495057; }
         .btn-food { background: #ff6b6b; color: white; }
-
         .reset-link { margin-top: 30px; text-align: center; font-size: 12px; color: #ccc; text-decoration: underline; cursor: pointer; }
         #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; align-items: center; justify-content: center; z-index: 3000; flex-direction: column; color: #888; }
         
@@ -160,7 +101,8 @@
     <div id="main-content" style="display: none;">
         <div class="hero-container"><img id="spot-img" class="hero-img" src="" alt="景點圖片"></div>
         <div class="content-card">
-            <span class="sub-tag">汐止深度導覽 NO.<span id="spot-index">1</span></span>
+            <span id="route-tag" class="sub-tag">汐止導覽</span>
+            <div id="route-desc" class="route-info"></div>
             
             <div class="title-row">
                 <h1 id="spot-title"></h1>
@@ -238,32 +180,12 @@
         <div class="share-sheet">
             <div class="share-title">分享這個景點 📢</div>
             <div class="share-grid">
-                <div class="share-item" onclick="shareTo('line')">
-                    <div class="share-icon-box" style="background:#06C755;">
-                         <svg viewBox="0 0 24 24"><path d="M22 10.3c0-4.7-4.3-8.6-10-8.6-5.4 0-10 3.9-10 8.6 0 4.2 3.8 7.8 8.4 8.5.3 0 .7.2.8.5 0 0 .3 1.1.3 1.3-.1.5-.4 1.8-1.7 2.5 1.4 0 4.3-.9 6-3.1 3.5-1.5 6.2-4.8 6.2-9.7zm-14.7.2c0-.3.3-.5.5-.5h4.8c.3 0 .5.2.5.5s-.2.5-.5.5h-4.2v1.3h4.2c.3 0 .5.2.5.5s-.2.5-.5.5h-4.8c-.3 0-.5-.2-.5-.5v-2.1zm8.7 2.1c0 .3-.2.5-.5.5h-1.3v-2.6h.5c.3 0 .5.2.5.5v2.1c.8 0 .8-.5.8-2.6h.6v2.6c0 .3-.2.5-.6.5h-.1zm-2.8-2.6h.5c.3 0 .5.2.5.5v1.3l1.8-1.8h.7l-1.9 1.9 2 2.1h-.7l-1.6-1.7v1.7c0 .3-.2.5-.5.5h-.5v-4.5zm-5.7 4.5h-.5v-4.5h.5v2.3l1.9-2.3h.7l-2.2 2.6 2.3 2.5h-.8l-1.9-2.1v2.1z"/></svg>
-                    </div>
-                    <span>LINE</span>
-                </div>
-                <div class="share-item" onclick="shareTo('fb')">
-                    <div class="share-icon-box" style="background:#1877F2;">
-                        <svg viewBox="0 0 24 24"><path d="M22 12c0-5.5-4.5-10-10-10S2 6.5 2 12c0 5 3.7 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7C18.3 21.1 22 17 22 12z"/></svg>
-                    </div>
-                    <span>Facebook</span>
-                </div>
-                <div class="share-item" onclick="shareTo('ig')">
-                    <div class="share-icon-box" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);">
-                         <svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 3.3.1 4.8 1.7 4.9 4.9.1 1.3.1 1.6.1 4.8 0 3.2 0 3.6-.1 4.9-.1 3.3-1.7 4.8-4.9 4.9-1.3.1-1.6.1-4.8.1-3.2 0-3.6 0-4.9-.1-3.3-.1-4.8-1.7-4.9-4.9-.1-1.3-.1-1.6-.1-4.8 0-3.2 0-3.6.1-4.9.1-3.3 1.7-4.8 4.9-4.9 1.3-.1 1.6-.1 4.8-.1zm0-2.2C8.7 0 8.3 0 7.1.1 2.8.3.3 2.8.1 7.1 0 8.3 0 8.7 0 12s0 3.7.1 4.9c.2 4.4 2.7 6.8 7 7 1.3.1 1.7.1 4.9.1s3.7 0 4.9-.1c4.4-.2 6.8-2.7 7-7 .1-1.3.1-1.7.1-4.9s0-3.7-.1-4.9c-.2-4.4-2.7-6.8-7-7C15.7 0 15.3 0 12 0zm0 5.8c-3.4 0-6.2 2.8-6.2 6.2s2.8 6.2 6.2 6.2 6.2-2.8 6.2-6.2-2.8-6.2-6.2-6.2zm0 10.2c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4zm6.4-10.4c0 .8-.6 1.4-1.4 1.4-.8 0-1.4-.6-1.4-1.4 0-.8.6-1.4 1.4-1.4.8 0 1.4.6 1.4 1.4z"/></svg>
-                    </div>
-                    <span>Instagram</span>
-                </div>
-                <div class="share-item" onclick="shareTo('copy')">
-                    <div class="share-icon-box" style="background:#555;">
-                         <svg viewBox="0 0 24 24"><path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z"/></svg>
-                    </div>
-                    <span>複製連結</span>
-                </div>
+                <div class="share-item" onclick="shareTo('line')"><div class="share-icon-box" style="background:#06C755;"><svg viewBox="0 0 24 24"><path d="M22 10.3c0-4.7-4.3-8.6-10-8.6-5.4 0-10 3.9-10 8.6 0 4.2 3.8 7.8 8.4 8.5.3 0 .7.2.8.5 0 0 .3 1.1.3 1.3-.1.5-.4 1.8-1.7 2.5 1.4 0 4.3-.9 6-3.1 3.5-1.5 6.2-4.8 6.2-9.7zm-14.7.2c0-.3.3-.5.5-.5h4.8c.3 0 .5.2.5.5s-.2.5-.5.5h-4.2v1.3h4.2c.3 0 .5.2.5.5s-.2.5-.5.5h-4.8c-.3 0-.5-.2-.5-.5v-2.1zm8.7 2.1c0 .3-.2.5-.5.5h-1.3v-2.6h.5c.3 0 .5.2.5.5v2.1c.8 0 .8-.5.8-2.6h.6v2.6c0 .3-.2.5-.6.5h-.1zm-2.8-2.6h.5c.3 0 .5.2.5.5v1.3l1.8-1.8h.7l-1.9 1.9 2 2.1h-.7l-1.6-1.7v1.7c0 .3-.2.5-.5.5h-.5v-4.5zm-5.7 4.5h-.5v-4.5h.5v2.3l1.9-2.3h.7l-2.2 2.6 2.3 2.5h-.8l-1.9-2.1v2.1z"/></svg></div><span>LINE</span></div>
+                <div class="share-item" onclick="shareTo('fb')"><div class="share-icon-box" style="background:#1877F2;"><svg viewBox="0 0 24 24"><path d="M22 12c0-5.5-4.5-10-10-10S2 6.5 2 12c0 5 3.7 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7C18.3 21.1 22 17 22 12z"/></svg></div><span>Facebook</span></div>
+                <div class="share-item" onclick="shareTo('ig')"><div class="share-icon-box" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 3.3.1 4.8 1.7 4.9 4.9.1 1.3.1 1.6.1 4.8 0 3.2 0 3.6-.1 4.9-.1 3.3-1.7 4.8-4.9 4.9-1.3.1-1.6.1-4.8.1-3.2 0-3.6 0-4.9-.1-3.3-.1-4.8-1.7-4.9-4.9-.1-1.3-.1-1.6-.1-4.8 0-3.2 0-3.6.1-4.9.1-3.3 1.7-4.8 4.9-4.9 1.3-.1 1.6-.1 4.8-.1zm0-2.2C8.7 0 8.3 0 7.1.1 2.8.3.3 2.8.1 7.1 0 8.3 0 8.7 0 12s0 3.7.1 4.9c.2 4.4 2.7 6.8 7 7 1.3.1 1.7.1 4.9.1s3.7 0 4.9-.1c4.4-.2 6.8-2.7 7-7 .1-1.3.1-1.7.1-4.9s0-3.7-.1-4.9c-.2-4.4-2.7-6.8-7-7C15.7 0 15.3 0 12 0zm0 5.8c-3.4 0-6.2 2.8-6.2 6.2s2.8 6.2 6.2 6.2 6.2-2.8 6.2-6.2-2.8-6.2-6.2-6.2zm0 10.2c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4zm6.4-10.4c0 .8-.6 1.4-1.4 1.4-.8 0-1.4-.6-1.4-1.4 0-.8.6-1.4 1.4-1.4.8 0 1.4.6 1.4 1.4z"/></svg></div><span>Instagram</span></div>
+                <div class="share-item" onclick="shareTo('copy')"><div class="share-icon-box" style="background:#555;"><svg viewBox="0 0 24 24"><path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z"/></svg></div><span>複製連結</span></div>
             </div>
-            </div>
+        </div>
     </div>
 
     <div id="quiz-modal" class="modal-overlay">
@@ -287,96 +209,50 @@
         const TASKS = ['map', 'quiz', 'wish', 'beacon', 'bus'];
         const FRAME_IMG_SRC = "./frame.png"; 
 
-        const routesData = {
-            "route1": {
-                id: "route1",
-                mainTitle: "一茶一礦：產業遺跡巡禮",
-                subTitle: "清代包種茶與日治煤礦的雙軌時光",
-                spots: [
-                    { id: "spot1", name: "汐止火車站", type: "起點" },
-                    { id: "spot2", name: "濟德宮", type: "信仰" },
-                    { id: "spot3", name: "蘇家古厝", type: "古蹟" },
-                    { id: "spot4", name: "汐止老街", type: "聚落" },
-                    { id: "spot5", name: "建順茶行", type: "產業" },
-                    { id: "spot6", name: "茄苳腳鐵路遺跡", type: "遺跡" },
-                    { id: "spot7", name: "星光橋", type: "地標" },
-                    { id: "spot8", name: "東山煤礦遺跡", type: "遺跡" },
-                    { id: "spot9", name: "五堵鐵路隧道", type: "終點" }
-                ]
-            },
-            "route2": {
-                id: "route2",
-                mainTitle: "山林秘境：瀑布森呼吸",
-                subTitle: "走進後山，眺望臺北盆地的遼闊景緻",
-                spots: [
-                    { id: "spot1",  name: "汐止火車站", type: "起點" },
-                    { id: "spot10", name: "聖德宮", type: "宮廟" },
-                    { id: "spot11", name: "大尖山天秀宮", type: "賞景" },
-                    { id: "spot12", name: "大尖山登山步道", type: "健行" },
-                    { id: "spot13", name: "秀峰瀑布", type: "秘境" },
-                    { id: "spot14", name: "四分尾山", type: "終點" }
-                ]
-            },
-            "route3": {
-                id: "route3",
-                mainTitle: "網美打卡：最高路線",
-                subTitle: "從偽京都到夢幻湖景",
-                spots: [
-                    { id: "spot15", name: "汐科火車站北站", type: "起點" },
-                    { id: "spot16", name: "拱北殿", type: "打卡" },
-                    { id: "spot17", name: "新山夢湖", type: "秘境" },
-                    { id: "spot18", name: "大金剛岩", type: "奇岩" },
-                    { id: "spot13", name: "秀峰瀑布", type: "水景" },
-                    { id: "spot19", name: "新山", type: "終點" }
-                ]
-            },
-            "route4": {
-                id: "route4",
-                mainTitle: "百年信仰：心靈之旅",
-                subTitle: "解讀汐止的多層信仰與歷史墓園",
-                spots: [
-                    { id: "spot1",  name: "汐止火車站", type: "起點" },
-                    { id: "spot20", name: "秀峰山靜修禪院", type: "佛教" },
-                    { id: "spot21", name: "杜月笙墓園", type: "歷史" },
-                    { id: "spot22", name: "秀峰山彌勒內院", type: "佛教" },
-                    { id: "spot23", name: "忠順廟", type: "道教" },
-                    { id: "spot2",  name: "濟德宮", type: "終點" }
-                ]
-            }
+        // 定義路線資訊
+        const routesInfo = {
+            "R1": { title: "一茶一礦：產業遺跡巡禮", desc: "清代包種茶與日治煤礦的雙軌時光" },
+            "R2": { title: "山林秘境：瀑布森呼吸", desc: "走進後山，眺望臺北盆地的遼闊景緻" },
+            "R3": { title: "網美打卡：最高路線", desc: "從偽京都到夢幻湖景" },
+            "R4": { title: "百年信仰：心靈之旅", desc: "解讀汐止的多層信仰與歷史墓園" }
         };
+
+        // 整合後的景點資料庫 (包含 route 屬性)
         const spotsData = {
             // [R01 產業遺跡]
-            "spot1": { id: 1, title: "汐止火車站", img: "./spot1.jpg", desc: "旅程起點。「汐止」舊稱「水返腳」，意指基隆河潮汐至此而返。站前廣場是感受在地活力的最佳起點。", query: "汐止火車站", hasBeacon: true },
-            "spot2": { id: 2, title: "濟德宮", img: "./spot2.jpg", desc: "俗稱汐止媽祖廟，是通靈少女的取景地，也是在地重要信仰中心，見證了老街的興衰。", query: "汐止濟德宮", hasBeacon: false },
-            "spot3": { id: 3, title: "蘇家古厝", img: "./spot3.jpg", desc: "紅磚拱廊的百年茶商宅邸，見證了汐止茶葉外銷的黃金年代。建築保留完整，古色古香。", query: "汐止蘇家古厝", hasBeacon: false },
-            "spot4": { id: 4, title: "汐止老街", img: "./spot4.jpg", desc: "中正老街，清代「峰仔峙庄」商業街遺跡。雖繁華褪去，仍保留著巴洛克式建築的殘影與在地人情味。", query: "汐止中正老街", hasBeacon: false },
-            "spot5": { id: 5, title: "建順茶行", img: "./spot5.jpg", desc: "創立於1885年，汐止現存最古老的茶行。走進店內彷彿穿越時空，聞得到百年茶香與歷史韻味。", query: "汐止建順茶行", hasBeacon: true },
-            "spot6": { id: 6, title: "茄苳腳鐵路遺跡", img: "./spot6.jpg", desc: "位於高架鐵路橋下，保留著清領時期至日治時期的鐵路基座，是鐵道迷不可錯過的隱藏景點。", query: "汐止茄苳腳鐵路遺跡", hasBeacon: false },
-            "spot7": { id: 7, title: "星光橋", img: "./spot7.jpg", desc: "橫跨基隆河的單斜塔景觀橋，造型如一支巨大的麥克風。夜晚點燈後光影變幻，是攝影熱點。", query: "汐止星光橋", hasBeacon: true },
-            "spot8": { id: 8, title: "東山煤礦遺跡", img: "./spot8.jpg", desc: "汐止曾是北台灣重要煤礦產地。這裡保留了部分礦坑與運輸設施遺跡，訴說著當年的黑金歲月。", query: "汐止東山煤礦", hasBeacon: false },
-            "spot9": { id: 9, title: "五堵鐵路隧道", img: "./spot9.jpg", desc: "穿越時空的紅磚隧道，原為日治時期舊隧道，現改建為自行車道，充滿神隱少女般的氛圍。", query: "五堵台鐵舊隧道", hasBeacon: false },
+            "spot1": { id: 1, route: "R1", title: "汐止火車站", img: "./spot1.jpg", desc: "旅程起點。「汐止」舊稱「水返腳」，意指基隆河潮汐至此而返。", query: "汐止火車站", hasBeacon: true },
+            "spot2": { id: 2, route: "R1", title: "濟德宮", img: "./spot2.jpg", desc: "俗稱汐止媽祖廟，是通靈少女的取景地，見證了老街的興衰。", query: "汐止濟德宮", hasBeacon: false },
+            "spot3": { id: 3, route: "R1", title: "蘇家古厝", img: "./spot3.jpg", desc: "紅磚拱廊的百年茶商宅邸，見證了汐止茶葉外銷的黃金年代。", query: "汐止蘇家古厝", hasBeacon: false },
+            "spot4": { id: 4, route: "R1", title: "汐止老街", img: "./spot4.jpg", desc: "中正老街，清代「峰仔峙庄」商業街遺跡。", query: "汐止中正老街", hasBeacon: false },
+            "spot5": { id: 5, route: "R1", title: "建順茶行", img: "./spot5.jpg", desc: "創立於1885年，汐止現存最古老的茶行。", query: "汐止建順茶行", hasBeacon: true },
+            "spot6": { id: 6, route: "R1", title: "茄苳腳鐵路遺跡", img: "./spot6.jpg", desc: "保留著清領時期至日治時期的鐵路基座。", query: "汐止茄苳腳鐵路遺跡", hasBeacon: false },
+            "spot7": { id: 7, route: "R1", title: "星光橋", img: "./spot7.jpg", desc: "橫跨基隆河的單斜塔景觀橋，造型如一支巨大的麥克風。", query: "汐止星光橋", hasBeacon: true },
+            "spot8": { id: 8, route: "R1", title: "東山煤礦遺跡", img: "./spot8.jpg", desc: "保留了部分礦坑與運輸設施遺跡，訴說著當年的黑金歲月。", query: "汐止東山煤礦", hasBeacon: false },
+            "spot9": { id: 9, route: "R1", title: "五堵鐵路隧道", img: "./spot9.jpg", desc: "穿越時空的紅磚隧道，原為日治時期舊隧道。", query: "五堵台鐵舊隧道", hasBeacon: false },
 
-            // [R02 山林秘境]
-            "spot10": { id: 10, title: "聖德宮", img: "https://duk.tw/QF86I6.jpg", desc: "位於大尖山腰，宮廟建築宏偉，視野極佳，是登山途中的重要休憩點。", query: "汐止聖德宮", hasBeacon: false },
-            "spot11": { id: 11, title: "大尖山天秀宮", img: "https://duk.tw/QF86I6.jpg", desc: "汐止最著名的賞景點之一，廟前廣場可俯瞰大台北盆地，夕陽與夜景更是迷人。", query: "汐止天秀宮", hasBeacon: false },
-            "spot12": { id: 12, title: "大尖山登山步道", img: "https://duk.tw/QF86I6.jpg", desc: "石階鋪設完善，沿途林蔭茂密。登頂後視野開闊，是汐止人的後花園。", query: "大尖山登山步道", hasBeacon: false },
-            "spot13": { id: 13, title: "秀峰瀑布", img: "https://duk.tw/QF86I6.jpg", desc: "藏身於峽谷之中的清幽瀑布，岩壁陡峭，水花飛濺，充滿負離子的清涼秘境。", query: "汐止秀峰瀑布", hasBeacon: false },
-            "spot14": { id: 14, title: "四分尾山", img: "https://duk.tw/QF86I6.jpg", desc: "汐止知名小百岳，擁有一等三角點，360度無視野遮蔽，山海景緻盡收眼底。", query: "汐止四分尾山", hasBeacon: false },
+            // [R02 山林秘境] - 修改 route 屬性為 R2
+            "spot10": { id: 10, route: "R2", title: "聖德宮", img: "https://duk.tw/QF86I6.jpg", desc: "位於大尖山腰，宮廟建築宏偉，視野極佳。", query: "汐止聖德宮", hasBeacon: false },
+            "spot11": { id: 11, route: "R2", title: "大尖山天秀宮", img: "https://duk.tw/QF86I6.jpg", desc: "汐止最著名的賞景點之一，廟前廣場可俯瞰大台北盆地。", query: "汐止天秀宮", hasBeacon: false },
+            "spot12": { id: 12, route: "R2", title: "大尖山登山步道", img: "https://duk.tw/QF86I6.jpg", desc: "石階鋪設完善，沿途林蔭茂密。", query: "大尖山登山步道", hasBeacon: false },
+            "spot13": { id: 13, route: "R2", title: "秀峰瀑布", img: "https://duk.tw/QF86I6.jpg", desc: "藏身於峽谷之中的清幽瀑布，岩壁陡峭，水花飛濺。", query: "汐止秀峰瀑布", hasBeacon: false },
+            "spot14": { id: 14, route: "R2", title: "四分尾山", img: "https://duk.tw/QF86I6.jpg", desc: "汐止知名小百岳，擁有一等三角點，360度無視野遮蔽。", query: "汐止四分尾山", hasBeacon: false },
 
-            // [R03 網美打卡]
-            "spot15": { id: 15, title: "汐科火車站北站", img: "https://duk.tw/xAZcvt.jpg", desc: "擁有獨特的長型月台設計，流線型的站體結構是軌道攝影愛好者的取景地。", query: "汐科火車站", hasBeacon: false },
-            "spot16": { id: 16, title: "拱北殿", img: "https://duk.tw/xAZcvt.jpg", desc: "北台灣賞楓勝地，著名的「彼岸橋」充滿日式古剎風情，彷彿一秒飛到京都。", query: "汐止拱北殿", hasBeacon: true },
-            "spot17": { id: 17, title: "新山夢湖", img: "https://duk.tw/xAZcvt.jpg", desc: "夢幻般的碧綠湖泊，常有雲霧繚繞。湖畔設有白色碼頭與小船，是婚紗拍攝聖地。", query: "新山夢湖", hasBeacon: false },
-            "spot18": { id: 18, title: "大金剛岩", img: "https://duk.tw/xAZcvt.jpg", desc: "新山稜線上的一塊巨岩，形狀酷似金剛頭部，氣勢磅礡，是登山客必拍的奇岩。", query: "新山大金剛岩", hasBeacon: false },
-            "spot19": { id: 19, title: "新山", img: "https://duk.tw/xAZcvt.jpg", desc: "海拔499公尺，山頂岩石裸露，極具野趣。站在巨岩上可俯瞰夢湖全景。", query: "汐止新山", hasBeacon: false },
+            // [R03 網美打卡] - 修改 route 屬性為 R3
+            "spot15": { id: 15, route: "R3", title: "汐科火車站北站", img: "https://duk.tw/xAZcvt.jpg", desc: "擁有獨特的長型月台設計，流線型的站體結構。", query: "汐科火車站", hasBeacon: false },
+            "spot16": { id: 16, route: "R3", title: "拱北殿", img: "https://duk.tw/xAZcvt.jpg", desc: "北台灣賞楓勝地，著名的「彼岸橋」充滿日式古剎風情。", query: "汐止拱北殿", hasBeacon: true },
+            "spot17": { id: 17, route: "R3", title: "新山夢湖", img: "https://duk.tw/xAZcvt.jpg", desc: "夢幻般的碧綠湖泊，常有雲霧繚繞。婚紗拍攝聖地。", query: "新山夢湖", hasBeacon: false },
+            "spot18": { id: 18, route: "R3", title: "大金剛岩", img: "https://duk.tw/xAZcvt.jpg", desc: "新山稜線上的一塊巨岩，形狀酷似金剛頭部。", query: "新山大金剛岩", hasBeacon: false },
+            "spot19": { id: 19, route: "R3", title: "新山", img: "https://duk.tw/xAZcvt.jpg", desc: "海拔499公尺，山頂岩石裸露，極具野趣。", query: "汐止新山", hasBeacon: false },
 
-            // [R04 百年信仰]
-            "spot20": { id: 20, title: "秀峰山靜修禪院", img: "https://duk.tw/zESfwL.jpg", desc: "位於秀峰山下的幽靜禪院，環境清幽，庭園造景典雅，適合洗滌心靈。", query: "汐止靜修禪院", hasBeacon: false },
-            "spot21": { id: 21, title: "杜月笙墓園", img: "https://duk.tw/zESfwL.jpg", desc: "上海灘傳奇人物杜月笙的長眠之地，墓園題字多出自黨國大老之手，極具歷史價值。", query: "杜月笙墓園", hasBeacon: false },
-            "spot22": { id: 22, title: "秀峰山彌勒內院", img: "https://duk.tw/zESfwL.jpg", desc: "供奉彌勒佛的莊嚴道場，建築宏偉，在此可感受宗教的寧靜力量。", query: "汐止彌勒內院", hasBeacon: false },
-            "spot23": { id: 23, title: "忠順廟", img: "https://duk.tw/zESfwL.jpg", desc: "原址為日治時期的「汐止神社」，至今仍保留著神社的鳥居與石燈籠，呈現中日合璧的特殊景觀。", query: "汐止忠順廟", hasBeacon: true }
+            // [R04 百年信仰] - 修改 route 屬性為 R4
+            // 注意：spot1 (汐止火車站) 是共用點，預設歸屬 R1，但程式邏輯可處理
+            "spot20": { id: 20, route: "R4", title: "秀峰山靜修禪院", img: "https://duk.tw/zESfwL.jpg", desc: "位於秀峰山下的幽靜禪院，環境清幽。", query: "汐止靜修禪院", hasBeacon: false },
+            "spot21": { id: 21, route: "R4", title: "杜月笙墓園", img: "https://duk.tw/zESfwL.jpg", desc: "上海灘傳奇人物杜月笙的長眠之地。", query: "杜月笙墓園", hasBeacon: false },
+            "spot22": { id: 22, route: "R4", title: "秀峰山彌勒內院", img: "https://duk.tw/zESfwL.jpg", desc: "供奉彌勒佛的莊嚴道場，建築宏偉。", query: "汐止彌勒內院", hasBeacon: false },
+            "spot23": { id: 23, route: "R4", title: "忠順廟", img: "https://duk.tw/zESfwL.jpg", desc: "原址為日治時期的「汐止神社」，保留著神社鳥居。", query: "汐止忠順廟", hasBeacon: true }
         };
 
+        // ... [中間變數與 onload 函式維持不變] ...
         let pendingTask = null; 
         let leaveTime = 0; 
 
@@ -391,6 +267,7 @@
             }).catch(err => { console.error(err); renderContent(); });
         };
 
+        // ... [中間輔助函式維持不變] ...
         function updateSurveyLink() {
             let userId = "";
             try { if (liff.isLoggedIn()) userId = liff.getContext().userId; } catch (e) {}
@@ -427,13 +304,11 @@
             collectAction('beacon'); 
         }
 
-        // --- 3選1 問答邏輯 ---
         function openQuizModal() {
             if(isTaskDone('quiz')) { alert("這個任務已經完成囉！"); return; }
             document.getElementById('quiz-modal').style.display = 'flex';
         }
         function checkQuiz(answerIdx) {
-            // 預設答案是 2
             if(answerIdx === 2) {
                 document.getElementById('quiz-modal').style.display = 'none';
                 alert("⭕ 答對了！真厲害！\n獲得【問答印章】");
@@ -464,30 +339,47 @@
         function renderContent() {
             const urlParams = new URLSearchParams(window.location.search);
             const spotKey = urlParams.get('id') || 'spot1';
+
+            // --- 交通轉址邏輯 ---
+            if (spotKey === 'TRANS_BUS') { window.location.replace("https://ebus.gov.taipei/"); return; }
+            if (spotKey === 'TRANS_TRAIN') { window.location.replace("https://tip.railway.gov.tw/tra-tip-web/tip"); return; }
+            if (spotKey === 'TRANS_BIKE') { window.location.replace("https://www.youbike.com.tw/region/ntpc/"); return; }
+
             const data = spotsData[spotKey];
             if (data) {
+                // 1. 渲染景點基本資料
                 document.getElementById('spot-index').innerText = data.id;
                 document.getElementById('spot-title').innerText = data.title;
                 document.getElementById('spot-desc').innerText = data.desc;
-                document.getElementById('spot-img').src = data.img; 
-                
+                document.getElementById('spot-img').src = data.img;
+
+                // 2. 渲染動態路線標題 (新增邏輯)
+                // 讀取該景點所屬的 route 代碼 (R1, R2, R3, R4)
+                const routeKey = data.route || "R1"; 
+                const rInfo = routesInfo[routeKey];
+                if(rInfo) {
+                    document.getElementById('route-tag').innerText = rInfo.title.split('：')[0]; // 取冒號前的主題
+                    document.getElementById('route-desc').innerText = rInfo.desc;
+                }
+
+                // 3. 設定連結
                 const mapQuery = encodeURIComponent(data.query);
-                // 修正：使用標準 Google Maps 搜尋連結
-                document.getElementById('map-btn').href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
-                document.getElementById('food-btn').href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}+美食`;
-
-                // 修改：設定停車場按鈕連結
+                document.getElementById('map-btn').href = `https://www.google.com/maps/search/?api=1&query=$${mapQuery}`;
+                document.getElementById('food-btn').href = `https://www.google.com/maps/search/?api=1&query=$${mapQuery}+美食`;
+                
                 const parkingBtn = document.getElementById('parking-btn');
-                parkingBtn.href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}+停車場`;
+                parkingBtn.href = `https://www.google.com/maps/search/?api=1&query=$${mapQuery}+停車場`;
 
+                // 4. 設定下一站按鈕 (簡易邏輯：ID + 1)
                 const currentIdNum = parseInt(data.id);
                 let nextSpotKey = 'spot' + (currentIdNum + 1);
+                // 如果是最後一站 (23)，回到第一站
                 if (currentIdNum >= 23) nextSpotKey = 'spot1'; 
+                
                 const nextData = spotsData[nextSpotKey];
                 const busBtn = document.getElementById('bus-btn');
                 if (nextData) {
-                    // 修正：使用標準 Google Maps 路線連結
-                    const routeUrl = `https://www.google.com/maps/dir/?api=1&origin=${mapQuery}&destination=${encodeURIComponent(nextData.query)}&travelmode=transit`;
+                    const routeUrl = `https://www.google.com/maps/dir/?api=1&origin=$${encodeURIComponent(data.query)}&destination=${encodeURIComponent(nextData.query)}&travelmode=transit`;
                     busBtn.href = routeUrl;
                     busBtn.querySelector('.bus-label').innerText = `去${nextData.title}`;
                 }
@@ -500,6 +392,7 @@
             }
         }
 
+        // ... [其餘函式維持不變] ...
         function collectAction(taskName) {
             let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
             if (!collected.includes(taskName)) {
@@ -509,19 +402,8 @@
                 setTimeout(initTaskProgress, 500); 
             }
         }
-        
-        function handleClickWithTrack(taskName) {
-            collectAction(taskName); 
-            pendingTask = taskName;
-            leaveTime = Date.now();
-            trackAction('click_' + taskName);
-        }
-
-        function isTaskDone(taskName) {
-            let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
-            return collected.includes(taskName);
-        }
-
+        function handleClickWithTrack(taskName) { collectAction(taskName); pendingTask = taskName; leaveTime = Date.now(); trackAction('click_' + taskName); }
+        function isTaskDone(taskName) { let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || []; return collected.includes(taskName); }
         function initTaskProgress() {
             let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
             TASKS.forEach(task => {
@@ -531,7 +413,6 @@
                     el.innerText = '✓'; 
                 } else {
                     el.classList.remove('active');
-                    // 還原圖示
                     if(task==='map') el.innerText = '🗺️';
                     if(task==='quiz') el.innerText = '❓';
                     if(task==='wish') el.innerText = '❤️';
@@ -539,54 +420,30 @@
                     if(task==='bus') el.innerText = '🚌';
                 }
             });
-
             const wishBtn = document.getElementById('wish-btn');
-            if(collected.includes('wish')) {
-                wishBtn.classList.add('active');
-                wishBtn.innerHTML = '❤️';
-            } else {
-                wishBtn.classList.remove('active');
-                wishBtn.innerHTML = '♡';
-            }
-
+            if(collected.includes('wish')) { wishBtn.classList.add('active'); wishBtn.innerHTML = '❤️'; } else { wishBtn.classList.remove('active'); wishBtn.innerHTML = '♡'; }
             document.getElementById('progress-text').innerText = `${collected.length}/5`;
             document.getElementById('progress-bar').style.width = `${(collected.length/5)*100}%`;
-            
-            if (collected.length >= 5) {
-                document.getElementById('survey-box').style.display = 'block';
-                document.getElementById('memorial-box').style.display = 'block';
-            }
+            if (collected.length >= 5) { document.getElementById('survey-box').style.display = 'block'; document.getElementById('memorial-box').style.display = 'block'; }
         }
-
         function handleImageUpload(e) {
             const file = e.target.files[0];
             if(!file) return;
             const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() { drawCanvas(img); }
-                img.src = event.target.result;
-            }
+            reader.onload = function(event) { const img = new Image(); img.onload = function() { drawCanvas(img); }; img.src = event.target.result; };
             reader.readAsDataURL(file);
         }
-
-        // --- 優化：降低圖片解析度以防 Crash ---
         function drawCanvas(userImg) {
             const canvas = document.getElementById('result-canvas');
             const ctx = canvas.getContext('2d');
-            const size = 800; // 降至 800px 確保 LIFF 不崩潰
-            canvas.width = size;
-            canvas.height = size;
-            
+            const size = 800; canvas.width = size; canvas.height = size;
             const scale = Math.max(size / userImg.width, size / userImg.height);
             const x = (size / 2) - (userImg.width / 2) * scale;
             const y = (size / 2) - (userImg.height / 2) * scale;
             ctx.drawImage(userImg, x, y, userImg.width * scale, userImg.height * scale);
-
             const frameImg = new Image();
             frameImg.onload = function() {
                 ctx.drawImage(frameImg, 0, 0, size, size);
-                
                 const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
                 const finalImg = document.getElementById('final-img');
                 finalImg.src = dataUrl;
@@ -596,14 +453,8 @@
             }
             frameImg.src = FRAME_IMG_SRC;
         }
-
         function openShareModal() { document.getElementById('share-modal').style.display = 'flex'; }
-        function closeModal(modalId, e) {
-            // 允許點擊背景關閉
-            if (e.target.id === modalId || e.target.classList.contains('close-modal')) {
-                document.getElementById(modalId).style.display = 'none';
-            }
-        }
+        function closeModal(modalId, e) { if (e.target.id === modalId || e.target.classList.contains('close-modal')) { document.getElementById(modalId).style.display = 'none'; } }
         function shareTo(platform) { 
             const url = window.location.href;
             const title = document.getElementById('spot-title').innerText;
@@ -612,42 +463,20 @@
             else if (platform === 'fb') window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`);
             else if (platform === 'copy') {
                 if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => alert("連結已複製！"));
-                else {
-                    const textArea = document.createElement("textarea");
-                    textArea.value = url;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand("Copy");
-                    textArea.remove();
-                    alert("連結已複製！");
-                }
+                else { const textArea = document.createElement("textarea"); textArea.value = url; document.body.appendChild(textArea); textArea.select(); document.execCommand("Copy"); textArea.remove(); alert("連結已複製！"); }
             } 
             else if (platform === 'ig') {
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(url).then(() => {
-                        alert("連結已複製！請開啟 Instagram 發佈限時動態。");
-                        window.location.href = "instagram://app";
-                    });
-                } else {
-                    alert("請手動複製網址分享至 Instagram");
-                }
+                if (navigator.clipboard) { navigator.clipboard.writeText(url).then(() => { alert("連結已複製！請開啟 Instagram 發佈限時動態。"); window.location.href = "instagram://app"; }); } else { alert("請手動複製網址分享至 Instagram"); }
             }
             document.getElementById('share-modal').style.display = 'none';
         }
-
         function toggleDesc() {
             const container = document.getElementById('spot-desc-container');
             const btn = document.getElementById('read-more-btn');
             container.classList.toggle('expanded');
-            if (container.classList.contains('expanded')) {
-                btn.innerText = "▲ 收起簡介";
-                trackAction('expand_desc');
-            } else {
-                btn.innerText = "▼ 了解更多故事";
-            }
+            if (container.classList.contains('expanded')) { btn.innerText = "▲ 收起簡介"; trackAction('expand_desc'); } else { btn.innerText = "▼ 了解更多故事"; }
         }
         function resetProgress() { if(confirm("重置？")) { localStorage.removeItem('xizhi_action_stamps'); location.reload(); } }
-
         function trackAction(actionName) { sendToWebhook(actionName, 0); }
         function trackDuration(taskName, seconds) { sendToWebhook("stay_on_" + taskName, seconds); }
         function sendToWebhook(action, durationVal) {
@@ -655,18 +484,7 @@
             let userId = "unknown";
             try { if (liff.isLoggedIn()) userId = liff.getContext().userId; } catch(e) {}
             const spotId = new URLSearchParams(window.location.search).get('id') || 'spot1';
-            
-            fetch(WEBHOOK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    userId: userId, 
-                    action: action, 
-                    spot: spotId, 
-                    duration: durationVal, 
-                    timestamp: new Date().toISOString() 
-                })
-            }).catch(console.error);
+            fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: userId, action: action, spot: spotId, duration: durationVal, timestamp: new Date().toISOString() }) }).catch(console.error);
         }
     </script>
 </body>
