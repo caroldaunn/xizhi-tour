@@ -66,7 +66,8 @@
         .t-btn i { font-style: normal; font-size: 18px; display: block; margin-bottom: 2px;}
         .bg-ubike { background: linear-gradient(135deg, #fce38a 0%, #f38181 100%); color: #555; }
         .bg-bus   { background: #3498db; }
-        .bg-uber  { background: #2c3e50; } 
+        /* 新增：停車場按鈕顏色 (深藍色) */
+        .bg-parking { background: #546de5; } 
         .bus-label { font-size: 11px; opacity: 0.9; line-height: 1.2; }
 
         /* --- 互動任務區 --- */
@@ -113,13 +114,11 @@
         /* --- 彈窗模組 --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 6000; display: none; align-items: flex-end; justify-content: center; animation: fadeIn 0.2s; }
         
-        /* 修改：移除取消按鈕，調整底部間距 */
         .share-sheet { width: 100%; max-width: 500px; background: white; border-radius: 20px 20px 0 0; padding: 25px 25px 35px 25px; box-sizing: border-box; animation: slideUp 0.3s; }
         .share-title { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 25px; text-align: center; }
         .share-grid { display: flex; justify-content: space-around; gap: 10px; }
         .share-item { display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; color: #555; font-size: 12px; width: 70px; }
         
-        /* 修改：Icon Box 平面化 (移除陰影，改用品牌色背景，內部圖示為白色) */
         .share-icon-box { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; color: white; }
         .share-item:active .share-icon-box { transform: scale(0.92); }
         .share-icon-box svg { width: 30px; height: 30px; fill: currentColor; }
@@ -185,8 +184,8 @@
                 <a id="bus-btn" href="#" target="_blank" class="t-btn bg-bus" onclick="collectAction('bus')">
                     <i>🚌</i> <span class="bus-label">去下一站</span>
                 </a>
-                <a href="https://m.uber.com/ul" target="_blank" class="t-btn bg-uber" onclick="trackAction('click_uber')">
-                    <i>🚕</i> 叫 Uber
+                <a id="parking-btn" href="#" target="_blank" class="t-btn bg-parking" onclick="trackAction('click_parking')">
+                    <i>🅿️</i> 找停車場
                 </a>
             </div>
 
@@ -473,8 +472,13 @@
                 document.getElementById('spot-img').src = data.img; 
                 
                 const mapQuery = encodeURIComponent(data.query);
+                // 修正：使用標準 Google Maps 搜尋連結
                 document.getElementById('map-btn').href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
                 document.getElementById('food-btn').href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}+美食`;
+
+                // 修改：設定停車場按鈕連結
+                const parkingBtn = document.getElementById('parking-btn');
+                parkingBtn.href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}+停車場`;
 
                 const currentIdNum = parseInt(data.id);
                 let nextSpotKey = 'spot' + (currentIdNum + 1);
@@ -482,7 +486,8 @@
                 const nextData = spotsData[nextSpotKey];
                 const busBtn = document.getElementById('bus-btn');
                 if (nextData) {
-                    const routeUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(data.query)}&destination=${encodeURIComponent(nextData.query)}&travelmode=transit`;
+                    // 修正：使用標準 Google Maps 路線連結
+                    const routeUrl = `https://www.google.com/maps/dir/?api=1&origin=${mapQuery}&destination=${encodeURIComponent(nextData.query)}&travelmode=transit`;
                     busBtn.href = routeUrl;
                     busBtn.querySelector('.bus-label').innerText = `去${nextData.title}`;
                 }
@@ -666,6 +671,3 @@
     </script>
 </body>
 </html>
-
-
-
