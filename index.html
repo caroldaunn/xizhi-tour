@@ -6,10 +6,11 @@
     <title>汐止深度導覽</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
+        /* --- 基礎設定 --- */
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; padding-bottom: 100px; }
         .progress-container { position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: #e0e0e0; z-index: 2000; }
         .progress-bar { height: 100%; background: linear-gradient(90deg, #ff8a00, #e52e71); width: 0%; transition: width 0.5s ease; border-radius: 0 3px 3px 0; }
-        
+
         .beacon-banner { position: fixed; top: -120px; left: 5%; width: 90%; background: rgba(34, 34, 34, 0.95); color: white; padding: 12px 15px; border-radius: 50px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); z-index: 5000; display: flex; align-items: center; gap: 12px; transition: top 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; box-sizing: border-box; }
         .beacon-banner.show { top: 20px; } 
         .beacon-icon { width: 36px; height: 36px; background: #06C755; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
@@ -28,8 +29,8 @@
         .wish-btn.active { color: #ff4757; transform: scale(1.1); }
 
         .sub-tag { display: inline-block; font-size: 12px; color: #fff; background: #2c3e50; padding: 4px 10px; border-radius: 4px; margin-bottom: 10px; font-weight: bold; }
-        .route-info { font-size: 13px; color: #666; margin-bottom: 15px; border-left: 3px solid #ff8a00; padding-left: 8px; line-height: 1.4; }
-        .spot-number { font-size: 12px; color: #888; margin-bottom: 5px; }
+        .route-info { font-size: 13px; color: #666; margin-bottom: 10px; border-left: 3px solid #ff8a00; padding-left: 8px; line-height: 1.4; }
+        .spot-number { font-size: 12px; color: #888; margin-bottom: 15px; font-weight: bold; background: #f0f0f0; display: inline-block; padding: 2px 8px; border-radius: 10px; }
 
         .desc-box { margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
         .desc-text { font-size: 15px; line-height: 1.6; color: #555; max-height: 8.0em; overflow: hidden; transition: max-height 0.4s ease; margin-bottom: 12px; }
@@ -140,7 +141,7 @@
             </div>
 
             <div class="transport-grid">
-                <a href="https://www.google.com/maps/search/YouBike/" target="_blank" class="t-btn bg-ubike" onclick="trackAction('click_ubike')">
+                <a href="#" target="_blank" class="t-btn bg-ubike" onclick="trackAction('click_ubike')">
                     <i>🚲</i> YouBike
                 </a>
                 <a id="bus-btn" href="#" target="_blank" class="t-btn bg-bus" onclick="collectAction('bus')">
@@ -231,42 +232,53 @@
 
         // 定義路線資訊
         const routesInfo = {
-            "R1": { title: "一茶一礦", desc: "清代包種茶與日治煤礦的雙軌時光", spots: ["spot1","spot2","spot3","spot4","spot5","spot6","spot7","spot8","spot9"] },
-            "R2": { title: "山林秘境", desc: "走進後山，眺望臺北盆地的遼闊景緻", spots: ["spot1","spot10","spot11","spot12","spot13","spot14"] },
-            "R3": { title: "網美打卡", desc: "從偽京都到夢幻湖景", spots: ["spot15","spot16","spot17","spot18","spot19"] },
-            "R4": { title: "百年信仰", desc: "解讀汐止的多層信仰與歷史墓園", spots: ["spot1","spot20","spot21","spot22","spot23"] }
+            "R1": { title: "一茶一礦：產業遺跡巡禮", desc: "清代包種茶與日治煤礦的雙軌時光", spots: ["spot1","spot2","spot3","spot4","spot5","spot6","spot7","spot8","spot9"] },
+            "R2": { title: "山林秘境：瀑布溪谷森呼吸", desc: "走進後山，眺望臺北盆地的遼闊景緻", spots: ["route2_spot1","route2_spot2","route2_spot3","route2_spot4","route2_spot5","route2_spot6"] },
+            "R3": { title: "網美打卡：最高路線", desc: "從偽京都到夢幻湖景", spots: ["route3_spot1","route3_spot2","route3_spot3","route3_spot4","route3_spot5","route3_spot6"] },
+            "R4": { title: "百年信仰：心靈之旅", desc: "解讀汐止的多層信仰與歷史墓園", spots: ["route4_spot1","route4_spot2","route4_spot3","route4_spot4","route4_spot5","route4_spot6","route4_spot7"] }
         };
 
-        // 整合後的景點資料庫
+        // 整合後的景點資料庫 (包含所有路線的獨立節點)
         const spotsData = {
-            "spot1": { id: 1, route: "R1", title: "汐止火車站", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/TRA_Xizhi_Station_202308.jpg/800px-TRA_Xizhi_Station_202308.jpg", desc: "旅程起點。「汐止」舊稱「水返腳」，意指基隆河潮汐至此而返。站前廣場是感受在地活力的最佳起點。", query: "汐止火車站", hasBeacon: true, quizQ: "Q: 汐止舊稱什麼？", quizA: 2, quizOpts: ["A. 雞籠", "B. 水返腳", "C. 艋舺"] },
-            "spot2": { id: 2, route: "R1", title: "濟德宮", img: "https://tour.ntpc.gov.tw/Content/Upload/Place/6d368051-9e7f-44e8-8a4e-1b8f5745778a.jpg", desc: "俗稱汐止媽祖廟，是通靈少女的取景地，也是在地重要信仰中心，見證了老街的興衰。", query: "汐止濟德宮", hasBeacon: false, quizQ: "Q: 濟德宮曾是哪部戲劇的取景地？", quizA: 1, quizOpts: ["A. 通靈少女", "B. 花甲男孩", "C. 俗女養成記"] },
-            "spot3": { id: 3, route: "R1", title: "蘇家古厝", img: "https://newtaipei.travel/content/images/attractions/26786/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg", desc: "紅磚拱廊的百年茶商宅邸，見證了汐止茶葉外銷的黃金年代。建築保留完整，古色古香。", query: "汐止蘇家古厝", hasBeacon: false, quizQ: "Q: 蘇家古厝見證了什麼產業？", quizA: 2, quizOpts: ["A. 煤礦", "B. 茶葉外銷", "C. 漁業"] },
-            "spot4": { id: 4, route: "R1", title: "汐止老街", img: "https://tour.ntpc.gov.tw/Content/Upload/Place/ed979927-567c-48c9-947b-1178c520857b.jpg", desc: "中正老街，清代「峰仔峙庄」商業街遺跡。雖繁華褪去，仍保留著巴洛克式建築的殘影與在地人情味。", query: "汐止中正老街", hasBeacon: false, quizQ: "Q: 汐止老街的清代名稱是？", quizA: 3, quizOpts: ["A. 水返腳街", "B. 基隆街", "C. 峰仔峙庄"] },
-            "spot5": { id: 5, route: "R1", title: "建順茶行", img: "https://newtaipei.travel/content/images/attractions/41830/1024x768_attractions-image-1.jpg", desc: "創立於1885年，汐止現存最古老的茶行。走進店內彷彿穿越時空，聞得到百年茶香與歷史韻味。", query: "汐止建順茶行", hasBeacon: true, quizQ: "Q: 建順茶行創立於哪一年？", quizA: 1, quizOpts: ["A. 1885年", "B. 1900年", "C. 1920年"] },
-            "spot6": { id: 6, route: "R1", title: "茄苳腳鐵路遺跡", img: "https://tour.ntpc.gov.tw/Content/Upload/Place/6d368051-9e7f-44e8-8a4e-1b8f5745778a.jpg", desc: "位於高架鐵路橋下，保留著清領時期至日治時期的鐵路基座，是鐵道迷不可錯過的隱藏景點。", query: "汐止茄苳腳鐵路遺跡", hasBeacon: false, quizQ: "Q: 茄苳腳遺跡保留了什麼？", quizA: 2, quizOpts: ["A. 古井", "B. 鐵路基座", "C. 城牆"] },
-            "spot7": { id: 7, route: "R1", title: "星光橋", img: "https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg", desc: "橫跨基隆河的單斜塔景觀橋，造型如一支巨大的麥克風。夜晚點燈後光影變幻，是攝影熱點。", query: "汐止星光橋", hasBeacon: true, quizQ: "Q: 星光橋的造型像什麼？", quizA: 3, quizOpts: ["A. 吉他", "B. 帆船", "C. 麥克風"] },
-            "spot8": { id: 8, route: "R1", title: "東山煤礦遺跡", img: "https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg", desc: "汐止曾是北台灣重要煤礦產地。這裡保留了部分礦坑與運輸設施遺跡，訴說著當年的黑金歲月。", query: "汐止東山煤礦", hasBeacon: false, quizQ: "Q: 汐止曾是什麼重要產地？", quizA: 1, quizOpts: ["A. 煤礦", "B. 金礦", "C. 銅礦"] },
-            "spot9": { id: 9, route: "R1", title: "五堵鐵路隧道", img: "https://newtaipei.travel/content/images/attractions/26786/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg", desc: "穿越時空的紅磚隧道，原為日治時期舊隧道，現改建為自行車道，充滿神隱少女般的氛圍。", query: "五堵台鐵舊隧道", hasBeacon: false, quizQ: "Q: 五堵隧道現在的用途是？", quizA: 2, quizOpts: ["A. 火車通行", "B. 自行車道", "C. 步道"] },
-            "spot10": { id: 10, route: "R2", title: "聖德宮", img: "https://duk.tw/QF86I6.jpg", desc: "位於大尖山腰，宮廟建築宏偉，視野極佳，是登山途中的重要休憩點。供奉關聖帝君，香火鼎盛。", query: "汐止聖德宮", hasBeacon: false, quizQ: "Q: 聖德宮主要供奉哪位神明？", quizA: 1, quizOpts: ["A. 關聖帝君", "B. 媽祖", "C. 土地公"] },
-            "spot11": { id: 11, route: "R2", title: "大尖山天秀宮", img: "https://duk.tw/QF86I6.jpg", desc: "汐止最著名的賞景點之一，廟前廣場可俯瞰大台北盆地，夕陽與夜景更是迷人。", query: "汐止天秀宮", hasBeacon: true, quizQ: "Q: 天秀宮最著名的景觀是？", quizA: 3, quizOpts: ["A. 瀑布", "B. 古樹", "C. 俯瞰大台北盆地"] },
-            "spot12": { id: 12, route: "R2", title: "大尖山登山步道", img: "https://duk.tw/QF86I6.jpg", desc: "石階鋪設完善，沿途林蔭茂密。登頂後視野開闊，是汐止人的後花園，四季皆宜健行。", query: "大尖山登山步道", hasBeacon: false, quizQ: "Q: 大尖山的海拔約多少公尺？", quizA: 2, quizOpts: ["A. 260 公尺", "B. 460 公尺", "C. 660 公尺"] },
-            "spot13": { id: 13, route: "R2", title: "秀峰瀑布", img: "https://duk.tw/QF86I6.jpg", desc: "藏身於峽谷之中的清幽瀑布，岩壁陡峭，水花飛濺，充滿負離子的清涼秘境。夏日消暑好去處。", query: "汐止秀峰瀑布", hasBeacon: true, quizQ: "Q: 秀峰瀑布以什麼聞名？", quizA: 2, quizOpts: ["A. 溫泉", "B. 負離子", "C. 螢火蟲"] },
-            "spot14": { id: 14, route: "R2", title: "四分尾山", img: "https://duk.tw/QF86I6.jpg", desc: "汐止知名小百岳，擁有一等三角點，360度無遮蔽視野，山海景緻盡收眼底。是登山愛好者必訪之地。", query: "汐止四分尾山", hasBeacon: false, quizQ: "Q: 四分尾山有什麼特殊標記？", quizA: 1, quizOpts: ["A. 一等三角點", "B. 古蹟碑", "C. 觀景台"] },
-            "spot15": { id: 15, route: "R3", title: "汐科火車站", img: "https://duk.tw/xAZcvt.jpg", desc: "擁有獨特的長型月台設計，流線型的站體結構是軌道攝影愛好者的取景地。台鐵與高鐵在此交會。", query: "汐科火車站", hasBeacon: false, quizQ: "Q: 汐科站有什麼特別之處？", quizA: 2, quizOpts: ["A. 最古老車站", "B. 特長月台設計", "C. 海景車站"] },
-            "spot16": { id: 16, route: "R3", title: "拱北殿", img: "https://duk.tw/xAZcvt.jpg", desc: "北台灣賞楓勝地，著名的「彼岸橋」充滿日式古剎風情，彷彿一秒飛到京都。秋天楓紅時節最為迷人。", query: "汐止拱北殿", hasBeacon: true, quizQ: "Q: 拱北殿最著名的是什麼？", quizA: 2, quizOpts: ["A. 櫻花", "B. 楓葉與彼岸橋", "C. 瀑布"] },
-            "spot17": { id: 17, route: "R3", title: "新山夢湖", img: "https://duk.tw/xAZcvt.jpg", desc: "夢幻般的碧綠湖泊，常有雲霧繚繞。湖畔設有白色碼頭與小船，是婚紗拍攝聖地，IG 打卡熱點。", query: "新山夢湖", hasBeacon: true, quizQ: "Q: 新山夢湖以什麼聞名？", quizA: 1, quizOpts: ["A. 婚紗拍攝聖地", "B. 溫泉", "C. 古蹟"] },
-            "spot18": { id: 18, route: "R3", title: "大金剛岩", img: "https://duk.tw/xAZcvt.jpg", desc: "新山稜線上的一塊巨岩，形狀酷似金剛頭部，氣勢磅礡，是登山客必拍的奇岩景觀。", query: "新山大金剛岩", hasBeacon: false, quizQ: "Q: 大金剛岩的名稱由來？", quizA: 3, quizOpts: ["A. 發現者姓名", "B. 地名", "C. 形狀像金剛"] },
-            "spot19": { id: 19, route: "R3", title: "新山", img: "https://duk.tw/xAZcvt.jpg", desc: "海拔499公尺，山頂岩石裸露，極具野趣。站在巨岩上可俯瞰夢湖全景，360度視野極佳。", query: "汐止新山", hasBeacon: false, quizQ: "Q: 新山的海拔約多少公尺？", quizA: 2, quizOpts: ["A. 299 公尺", "B. 499 公尺", "C. 699 公尺"] },
-            "spot20": { id: 20, route: "R4", title: "秀峰山靜修禪院", img: "https://duk.tw/zESfwL.jpg", desc: "位於秀峰山下的幽靜禪院，環境清幽，庭園造景典雅，適合洗滌心靈。創建於日治時期，歷史悠久。", query: "汐止靜修禪院", hasBeacon: false, quizQ: "Q: 靜修禪院位於哪座山？", quizA: 1, quizOpts: ["A. 秀峰山", "B. 大尖山", "C. 四分尾山"] },
-            "spot21": { id: 21, route: "R4", title: "杜月笙墓園", img: "https://duk.tw/zESfwL.jpg", desc: "上海灘傳奇人物杜月笙的長眠之地，墓園題字多出自黨國大老之手，極具歷史價值。墓園環境清幽肅穆。", query: "杜月笙墓園", hasBeacon: true, quizQ: "Q: 杜月笙是哪裡的傳奇人物？", quizA: 3, quizOpts: ["A. 台北", "B. 香港", "C. 上海"] },
-            "spot22": { id: 22, route: "R4", title: "秀峰山彌勒內院", img: "https://duk.tw/zESfwL.jpg", desc: "供奉彌勒佛的莊嚴道場，建築宏偉，在此可感受宗教的寧靜力量。為北部重要的佛教聖地。", query: "汐止彌勒內院", hasBeacon: false, quizQ: "Q: 彌勒內院主要供奉？", quizA: 2, quizOpts: ["A. 觀音菩薩", "B. 彌勒佛", "C. 地藏王菩薩"] },
-            "spot23": { id: 23, route: "R4", title: "忠順廟", img: "https://duk.tw/zESfwL.jpg", desc: "原址為日治時期的「汐止神社」，至今仍保留著神社的鳥居與石燈籠，呈現中日合璧的特殊景觀。", query: "汐止忠順廟", hasBeacon: true, quizQ: "Q: 忠順廟原本是什麼建築？", quizA: 2, quizOpts: ["A. 媽祖廟", "B. 日本神社", "C. 孔廟"] }
+            // [R01 一茶一礦]
+            "spot1": { id: "1", route: "R1", title: "汐止火車站", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/TRA_Xizhi_Station_202308.jpg/800px-TRA_Xizhi_Station_202308.jpg", desc: "旅程起點。「汐止」舊稱「水返腳」，意指基隆河潮汐至此而返。站前廣場是感受在地活力的最佳起點。", query: "汐止火車站", hasBeacon: true, quizQ: "Q: 汐止舊稱什麼？", quizA: 2, quizOpts: ["A. 雞籠", "B. 水返腳", "C. 艋舺"] },
+            "spot2": { id: "2", route: "R1", title: "濟德宮", img: "https://tour.ntpc.gov.tw/Content/Upload/Place/6d368051-9e7f-44e8-8a4e-1b8f5745778a.jpg", desc: "俗稱汐止媽祖廟，是通靈少女的取景地，也是在地重要信仰中心，見證了老街的興衰。", query: "汐止濟德宮", hasBeacon: false, quizQ: "Q: 濟德宮曾是哪部戲劇的取景地？", quizA: 1, quizOpts: ["A. 通靈少女", "B. 花甲男孩", "C. 俗女養成記"] },
+            "spot3": { id: "3", route: "R1", title: "蘇家古厝", img: "https://newtaipei.travel/content/images/attractions/26786/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg", desc: "紅磚拱廊的百年茶商宅邸，見證了汐止茶葉外銷的黃金年代。建築保留完整，古色古香。", query: "汐止蘇家古厝", hasBeacon: false, quizQ: "Q: 蘇家古厝見證了什麼產業？", quizA: 2, quizOpts: ["A. 煤礦", "B. 茶葉外銷", "C. 漁業"] },
+            "spot4": { id: "4", route: "R1", title: "汐止老街", img: "https://tour.ntpc.gov.tw/Content/Upload/Place/ed979927-567c-48c9-947b-1178c520857b.jpg", desc: "中正老街，清代「峰仔峙庄」商業街遺跡。雖繁華褪去，仍保留著巴洛克式建築的殘影與在地人情味。", query: "汐止中正老街", hasBeacon: false, quizQ: "Q: 汐止老街的清代名稱是？", quizA: 3, quizOpts: ["A. 水返腳街", "B. 基隆街", "C. 峰仔峙庄"] },
+            "spot5": { id: "5", route: "R1", title: "建順茶行", img: "https://newtaipei.travel/content/images/attractions/41830/1024x768_attractions-image-1.jpg", desc: "創立於1885年，汐止現存最古老的茶行。走進店內彷彿穿越時空，聞得到百年茶香與歷史韻味。", query: "汐止建順茶行", hasBeacon: true, quizQ: "Q: 建順茶行創立於哪一年？", quizA: 1, quizOpts: ["A. 1885年", "B. 1900年", "C. 1920年"] },
+            "spot6": { id: "6", route: "R1", title: "茄苳腳鐵路遺跡", img: "https://tour.ntpc.gov.tw/Content/Upload/Place/6d368051-9e7f-44e8-8a4e-1b8f5745778a.jpg", desc: "位於高架鐵路橋下，保留著清領時期至日治時期的鐵路基座，是鐵道迷不可錯過的隱藏景點。", query: "汐止茄苳腳鐵路遺跡", hasBeacon: false, quizQ: "Q: 茄苳腳遺跡保留了什麼？", quizA: 2, quizOpts: ["A. 古井", "B. 鐵路基座", "C. 城牆"] },
+            "spot7": { id: "7", route: "R1", title: "星光橋", img: "https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg", desc: "橫跨基隆河的單斜塔景觀橋，造型如一支巨大的麥克風。夜晚點燈後光影變幻，是攝影熱點。", query: "汐止星光橋", hasBeacon: true, quizQ: "Q: 星光橋的造型像什麼？", quizA: 3, quizOpts: ["A. 吉他", "B. 帆船", "C. 麥克風"] },
+            "spot8": { id: "8", route: "R1", title: "東山煤礦遺跡", img: "https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg", desc: "汐止曾是北台灣重要煤礦產地。這裡保留了部分礦坑與運輸設施遺跡，訴說著當年的黑金歲月。", query: "汐止東山煤礦", hasBeacon: false, quizQ: "Q: 汐止曾是什麼重要產地？", quizA: 1, quizOpts: ["A. 煤礦", "B. 金礦", "C. 銅礦"] },
+            "spot9": { id: "9", route: "R1", title: "五堵鐵路隧道", img: "https://newtaipei.travel/content/images/attractions/26786/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg", desc: "穿越時空的紅磚隧道，原為日治時期舊隧道，現改建為自行車道，充滿神隱少女般的氛圍。", query: "五堵台鐵舊隧道", hasBeacon: false, quizQ: "Q: 五堵隧道現在的用途是？", quizA: 2, quizOpts: ["A. 火車通行", "B. 自行車道", "C. 步道"] },
+
+            // [R02 山林秘境]
+            "route2_spot1": { id: "1", route: "R2", title: "汐止火車站", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/TRA_Xizhi_Station_202308.jpg/800px-TRA_Xizhi_Station_202308.jpg", desc: "交通起點，補給充足，準備出發前往後山秘境。", query: "汐止火車站", hasBeacon: true, quizQ: "Q: 汐止舊稱什麼？", quizA: 2, quizOpts: ["A. 雞籠", "B. 水返腳", "C. 艋舺"] },
+            "route2_spot2": { id: "2", route: "R2", title: "聖德宮", img: "https://newtaipei.travel/content/images/attractions/26765/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg", desc: "以華麗的宮廟建築著稱，地理位置佳，可俯瞰汐止市區。", query: "汐止聖德宮", hasBeacon: false, quizQ: "Q: 聖德宮主要供奉哪位神明？", quizA: 1, quizOpts: ["A. 關聖帝君", "B. 媽祖", "C. 土地公"] },
+            "route2_spot3": { id: "3", route: "R2", title: "大尖山天秀宮", img: "https://tour.ntpc.gov.tw/Content/Upload/Place/19f18703-99d9-43c2-8419-48283526188e.jpg", desc: "登山客的重要休憩點，廟前廣場視野極佳，夜景更是迷人。", query: "汐止天秀宮", hasBeacon: true, quizQ: "Q: 天秀宮最著名的景觀是？", quizA: 3, quizOpts: ["A. 瀑布", "B. 古樹", "C. 俯瞰大台北盆地"] },
+            "route2_spot4": { id: "4", route: "R2", title: "大尖山登山步道", img: "https://tour.ntpc.gov.tw/Content/Upload/Place/d8958288-7718-4067-8526-70e281512781.jpg", desc: "石階鋪設完善，沿途林蔭茂密，是鍛鍊腳力與呼吸芬多精的好去處。", query: "大尖山登山步道", hasBeacon: false, quizQ: "Q: 大尖山的海拔約多少公尺？", quizA: 2, quizOpts: ["A. 260 公尺", "B. 460 公尺", "C. 660 公尺"] },
+            "route2_spot5": { id: "5", route: "R2", title: "秀峰瀑布", img: "https://tour.ntpc.gov.tw/Content/Upload/Place/ed979927-567c-48c9-947b-1178c520857b.jpg", desc: "峭壁懸崖間的銀白絲帶，枯水期涓涓細流，豐水期氣勢磅礡。", query: "汐止秀峰瀑布", hasBeacon: true, quizQ: "Q: 秀峰瀑布以什麼聞名？", quizA: 2, quizOpts: ["A. 溫泉", "B. 負離子", "C. 螢火蟲"] },
+            "route2_spot6": { id: "6", route: "R2", title: "四分尾山", img: "https://newtaipei.travel/content/images/attractions/26792/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg", desc: "擁有兩顆三角點，展望極佳，可360度環視大台北盆地與基隆外海。", query: "汐止四分尾山", hasBeacon: false, quizQ: "Q: 四分尾山有什麼特殊標記？", quizA: 1, quizOpts: ["A. 一等三角點", "B. 古蹟碑", "C. 觀景台"] },
+
+            // [R03 網美打卡]
+            "route3_spot1": { id: "1", route: "R3", title: "汐科火車站北站", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Xike_Station_North_Exit_20170513.jpg/800px-Xike_Station_North_Exit_20170513.jpg", desc: "具有現代感的車站結構，狹長的月台設計是獨特的攝影視角。", query: "汐科火車站", hasBeacon: false, quizQ: "Q: 汐科站有什麼特別之處？", quizA: 2, quizOpts: ["A. 最古老車站", "B. 特長月台設計", "C. 海景車站"] },
+            "route3_spot2": { id: "2", route: "R3", title: "拱北殿", img: "https://newtaipei.travel/content/images/attractions/26801/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg", desc: "著名的賞楓勝地，彼岸橋與石造雙拱橋充滿濃厚的日式神社氛圍。", query: "汐止拱北殿", hasBeacon: true, quizQ: "Q: 拱北殿最著名的是什麼？", quizA: 2, quizOpts: ["A. 櫻花", "B. 楓葉與彼岸橋", "C. 瀑布"] },
+            "route3_spot3": { id: "3", route: "R3", title: "新山夢湖", img: "https://newtaipei.travel/content/images/attractions/26780/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg", desc: "碧綠湖水倒映山影，夢幻迷濛，是婚紗拍攝與IG打卡的熱門景點。", query: "新山夢湖", hasBeacon: true, quizQ: "Q: 新山夢湖以什麼聞名？", quizA: 1, quizOpts: ["A. 婚紗拍攝聖地", "B. 溫泉", "C. 古蹟"] },
+            "route3_spot4": { id: "4", route: "R3", title: "大金剛岩", img: "https://tour.ntpc.gov.tw/Content/Upload/Place/6d368051-9e7f-44e8-8a4e-1b8f5745778a.jpg", desc: "隱身山林的奇岩怪石，側面形似金剛臉譜，充滿神秘色彩。", query: "新山大金剛岩", hasBeacon: false, quizQ: "Q: 大金剛岩的名稱由來？", quizA: 3, quizOpts: ["A. 發現者姓名", "B. 地名", "C. 形狀像金剛"] },
+            "route3_spot5": { id: "5", route: "R3", title: "秀峰瀑布", img: "https://tour.ntpc.gov.tw/Content/Upload/Place/ed979927-567c-48c9-947b-1178c520857b.jpg", desc: "結合山林與水景，利用長時間曝光可拍出如絲綢般的夢幻流水。", query: "汐止秀峰瀑布", hasBeacon: false, quizQ: "Q: 秀峰瀑布位於哪條路線？", quizA: 1, quizOpts: ["A. 山林與網美", "B. 只有海邊", "C. 市區"] },
+            "route3_spot6": { id: "6", route: "R3", title: "新山", img: "https://newtaipei.travel/content/images/attractions/26780/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg", desc: "巨石嶙峋的山頂，擁有絕佳的懸崖視角，是拍攝壯觀大景的必訪之地。", query: "汐止新山", hasBeacon: false, quizQ: "Q: 新山的海拔約多少公尺？", quizA: 2, quizOpts: ["A. 299 公尺", "B. 499 公尺", "C. 699 公尺"] },
+
+            // [R04 百年信仰]
+            "route4_spot1": { id: "1", route: "R4", title: "汐止火車站", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/TRA_Xizhi_Station_202308.jpg/800px-TRA_Xizhi_Station_202308.jpg", desc: "信仰之旅的起點，見證汐止從水返腳到現代市鎮的歷史變遷。", query: "汐止火車站", hasBeacon: true, quizQ: "Q: 汐止舊稱什麼？", quizA: 2, quizOpts: ["A. 雞籠", "B. 水返腳", "C. 艋舺"] },
+            "route4_spot2": { id: "2", route: "R4", title: "秀峰山靜修禪院", img: "https://tour.ntpc.gov.tw/Content/Upload/Place/6d368051-9e7f-44e8-8a4e-1b8f5745778a.jpg", desc: "幽靜的佛門聖地，環境清幽，是洗滌心靈、參禪禮佛的場所。", query: "汐止靜修禪院", hasBeacon: false, quizQ: "Q: 靜修禪院位於哪座山？", quizA: 1, quizOpts: ["A. 秀峰山", "B. 大尖山", "C. 四分尾山"] },
+            "route4_spot3": { id: "3", route: "R4", title: "杜月笙墓園", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Tomb_of_Du_Yuesheng.jpg/800px-Tomb_of_Du_Yuesheng.jpg", desc: "上海灘傳奇人物長眠於此，墓園題字多出自黨國元老，極具歷史價值。", query: "杜月笙墓園", hasBeacon: true, quizQ: "Q: 杜月笙是哪裡的傳奇人物？", quizA: 3, quizOpts: ["A. 台北", "B. 香港", "C. 上海"] },
+            "route4_spot4": { id: "4", route: "R4", title: "秀峰山彌勒內院", img: "https://tour.ntpc.gov.tw/Content/Upload/Place/6d368051-9e7f-44e8-8a4e-1b8f5745778a.jpg", desc: "寬成老和尚創建，供奉彌勒菩薩，建築莊嚴，是汐止重要的佛教道場。", query: "汐止彌勒內院", hasBeacon: false, quizQ: "Q: 彌勒內院主要供奉？", quizA: 2, quizOpts: ["A. 觀音菩薩", "B. 彌勒佛", "C. 地藏王菩薩"] },
+            "route4_spot5": { id: "5", route: "R4", title: "秀峰山慈航紀念館", img: "https://tour.ntpc.gov.tw/Content/Upload/Place/6d368051-9e7f-44e8-8a4e-1b8f5745778a.jpg", desc: "紀念台灣首位肉身菩薩慈航法師，金身供奉於此，信徒眾多，香火鼎盛。", query: "秀峰山慈航紀念館", hasBeacon: false, quizQ: "Q: 慈航法師以什麼聞名？", quizA: 1, quizOpts: ["A. 肉身菩薩", "B. 鑄鐘技術", "C. 武術"] },
+            "route4_spot6": { id: "6", route: "R4", title: "忠順廟", img: "https://tour.ntpc.gov.tw/Content/Upload/Place/6d368051-9e7f-44e8-8a4e-1b8f5745778a.jpg", desc: "前身為汐止神社，保留鳥居與石燈籠，主祀保儀大夫，見證政權交替的信仰融合。", query: "汐止忠順廟", hasBeacon: true, quizQ: "Q: 忠順廟原本是什麼建築？", quizA: 2, quizOpts: ["A. 媽祖廟", "B. 日本神社", "C. 孔廟"] },
+            "route4_spot7": { id: "7", route: "R4", title: "濟德宮", img: "https://tour.ntpc.gov.tw/Content/Upload/Place/6d368051-9e7f-44e8-8a4e-1b8f5745778a.jpg", desc: "俗稱汐止媽祖廟，歷史悠久，也是熱門劇集拍攝地，凝聚了在地人的信仰力量。", query: "汐止濟德宮", hasBeacon: false, quizQ: "Q: 濟德宮俗稱什麼？", quizA: 1, quizOpts: ["A. 汐止媽祖廟", "B. 土地公廟", "C. 天后宮"] }
         };
 
         let pendingTask = null; 
-        let leaveTime = 0;
-        let currentSpotData = null;
+        let leaveTime = 0; 
 
         window.onload = function() {
             liff.init({ liffId: MY_LIFF_ID }).then(() => {
@@ -286,7 +298,7 @@
             let userId = "";
             try { if (liff.isLoggedIn()) userId = liff.getContext().userId; } catch (e) {}
             if (userId) {
-                const finalUrl = SURVEYCAKE_URL + "?" + SURVEY_UID_ALIAS + "=" + userId;
+                const finalUrl = `${SURVEYCAKE_URL}?${SURVEY_UID_ALIAS}=${userId}`;
                 const btn = document.querySelector('.survey-btn');
                 if (btn) btn.href = finalUrl;
             }
@@ -304,40 +316,45 @@
         function initBeaconSimulation() {
             setTimeout(function() {
                 var banner = document.getElementById('beacon-banner');
-                banner.classList.add('show');
+                if(banner) banner.classList.add('show');
                 setTimeout(function() {
-                    banner.classList.remove('show');
+                    if(banner) banner.classList.remove('show');
                 }, 8000);
             }, 3000);
         }
 
         function handleBeaconClick() {
             var banner = document.getElementById('beacon-banner');
-            banner.classList.remove('show'); 
+            if(banner) banner.classList.remove('show'); 
             alert("🎉 恭喜！您找到了隱藏訊號！\n獲得【尋寶印章】");
             collectAction('beacon'); 
         }
 
         function openQuizModal() {
-            if(isTaskDone('quiz')) { 
-                alert("這個任務已經完成囉！"); 
-                return; 
-            }
-            if(currentSpotData && currentSpotData.quizQ) {
-                document.getElementById('quiz-question').innerText = currentSpotData.quizQ;
-                var btns = document.querySelectorAll('.quiz-btn');
-                if(currentSpotData.quizOpts) {
-                    for(var i = 0; i < currentSpotData.quizOpts.length; i++) {
-                        btns[i].innerText = currentSpotData.quizOpts[i];
-                    }
+            if(isTaskDone('quiz')) { alert("這個任務已經完成囉！"); return; }
+            // 更新題目
+            const urlParams = new URLSearchParams(window.location.search);
+            const spotKey = urlParams.get('id') || 'spot1';
+            const data = spotsData[spotKey];
+            if(data && data.quizQ) {
+                document.getElementById('quiz-question').innerText = data.quizQ;
+                const btns = document.querySelectorAll('.quiz-btn');
+                if(data.quizOpts && btns.length === 3) {
+                    btns[0].innerText = data.quizOpts[0];
+                    btns[1].innerText = data.quizOpts[1];
+                    btns[2].innerText = data.quizOpts[2];
                 }
             }
             document.getElementById('quiz-modal').style.display = 'flex';
         }
 
         function checkQuiz(answerIdx) {
-            var correctAnswer = currentSpotData ? currentSpotData.quizA : 2;
-            if(answerIdx === correctAnswer) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const spotKey = urlParams.get('id') || 'spot1';
+            const data = spotsData[spotKey];
+            const correct = data ? data.quizA : 2;
+
+            if(answerIdx === correct) {
                 document.getElementById('quiz-modal').style.display = 'none';
                 alert("⭕ 答對了！真厲害！\n獲得【問答印章】");
                 collectAction('quiz');
@@ -376,36 +393,34 @@
 
                 var data = spotsData[spotKey];
                 if (!data) {
-                    data = spotsData['spot1']; // fallback
+                    // Fallback
+                    data = spotsData['spot1'];
                     spotKey = 'spot1';
                 }
 
-                currentSpotData = data;
+                // 渲染基本資料
+                if(document.getElementById('spot-title')) document.getElementById('spot-title').innerText = data.title;
+                if(document.getElementById('spot-desc')) document.getElementById('spot-desc').innerText = data.desc;
+                if(document.getElementById('spot-img')) document.getElementById('spot-img').src = data.img;
 
-                // 渲染景點基本資料
-                document.getElementById('spot-title').innerText = data.title;
-                document.getElementById('spot-desc').innerText = data.desc;
-                document.getElementById('spot-img').src = data.img;
-
-                // 渲染動態路線標題
+                // 渲染路線標題與站點
                 var routeKey = data.route || "R1"; 
                 var rInfo = routesInfo[routeKey];
                 if(rInfo) {
-                    document.getElementById('route-tag').innerText = rInfo.title;
-                    document.getElementById('route-desc').innerText = rInfo.desc;
+                    if(document.getElementById('route-tag')) document.getElementById('route-tag').innerText = rInfo.title.split('：')[0]; 
+                    if(document.getElementById('route-desc')) document.getElementById('route-desc').innerText = rInfo.desc;
                     
-                    // 計算在此路線中的序號
-                    var spotIndex = rInfo.spots.indexOf(spotKey);
-                    if(spotIndex >= 0) {
-                        document.getElementById('spot-number').innerText = "第 " + (spotIndex + 1) + " 站，共 " + rInfo.spots.length + " 站";
+                    var idx = rInfo.spots.indexOf(spotKey);
+                    if(idx !== -1 && document.getElementById('spot-number')) {
+                        document.getElementById('spot-number').innerText = "本路線第 " + (idx + 1) + " 站，共 " + rInfo.spots.length + " 站";
                     }
                 }
 
                 // 設定連結
                 var mapQuery = encodeURIComponent(data.query);
-                document.getElementById('map-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
-                document.getElementById('food-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+美食';
-                document.getElementById('parking-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+停車場';
+                if(document.getElementById('map-btn')) document.getElementById('map-btn').href = "https://www.google.com/maps/search/?api=1&query=$" + mapQuery;
+                if(document.getElementById('food-btn')) document.getElementById('food-btn').href = "https://www.google.com/maps/search/?api=1&query=$" + mapQuery + "+美食";
+                if(document.getElementById('parking-btn')) document.getElementById('parking-btn').href = "https://www.google.com/maps/search/?api=1&query=$" + mapQuery + "+停車場";
 
                 // 設定下一站按鈕
                 if(rInfo && rInfo.spots) {
@@ -413,23 +428,24 @@
                     var nextIdx = (currentIdx + 1) % rInfo.spots.length;
                     var nextSpotKey = rInfo.spots[nextIdx];
                     var nextData = spotsData[nextSpotKey];
-                    
                     var busBtn = document.getElementById('bus-btn');
-                    if (nextData) {
-                        busBtn.href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(nextData.query) + '&travelmode=transit';
-                        busBtn.querySelector('.bus-label').innerText = '去' + nextData.title;
+                    if (nextData && busBtn) {
+                        busBtn.href = "https://www.google.com/maps/dir/?api=1&origin=$" + encodeURIComponent(data.query) + "&destination=" + encodeURIComponent(nextData.query) + "&travelmode=transit";
+                        var label = busBtn.querySelector('.bus-label');
+                        if(label) label.innerText = '去' + nextData.title;
                     }
                 }
 
                 if (data.hasBeacon) initBeaconSimulation();
 
                 initTaskProgress();
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('main-content').style.display = 'block';
-                
-            } catch(e) {
-                console.error("renderContent error:", e);
-                document.getElementById('loading').innerHTML = '<div>載入失敗，請重新整理</div>';
+            } catch (e) {
+                console.error("Render Error:", e);
+            } finally {
+                var loader = document.getElementById('loading');
+                if(loader) loader.style.display = 'none';
+                var main = document.getElementById('main-content');
+                if(main) main.style.display = 'block';
             }
         }
 
@@ -484,16 +500,16 @@
                 }
             }
             
-            var progressText = document.getElementById('progress-text');
-            var progressBar = document.getElementById('progress-bar');
-            if(progressText) progressText.innerText = collected.length + '/5';
-            if(progressBar) progressBar.style.width = (collected.length/5)*100 + '%';
+            var progText = document.getElementById('progress-text');
+            var progBar = document.getElementById('progress-bar');
+            if(progText) progText.innerText = collected.length + '/5';
+            if(progBar) progBar.style.width = (collected.length/5)*100 + '%';
             
             if (collected.length >= 5) { 
-                var surveyBox = document.getElementById('survey-box');
-                var memorialBox = document.getElementById('memorial-box');
-                if(surveyBox) surveyBox.style.display = 'block'; 
-                if(memorialBox) memorialBox.style.display = 'block'; 
+                var survey = document.getElementById('survey-box');
+                var memorial = document.getElementById('memorial-box');
+                if(survey) survey.style.display = 'block'; 
+                if(memorial) memorial.style.display = 'block'; 
             }
         }
 
@@ -511,6 +527,7 @@
 
         function drawCanvas(userImg) {
             var canvas = document.getElementById('result-canvas');
+            if(!canvas) return;
             var ctx = canvas.getContext('2d');
             var size = 800; 
             canvas.width = size; 
@@ -524,16 +541,20 @@
                 ctx.drawImage(frameImg, 0, 0, size, size);
                 var dataUrl = canvas.toDataURL("image/jpeg", 0.8);
                 var finalImg = document.getElementById('final-img');
-                finalImg.src = dataUrl;
-                finalImg.style.display = "block";
-                document.getElementById('download-msg').style.display = "block";
-                finalImg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if(finalImg) {
+                    finalImg.src = dataUrl;
+                    finalImg.style.display = "block";
+                    var dlMsg = document.getElementById('download-msg');
+                    if(dlMsg) dlMsg.style.display = "block";
+                    finalImg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
             };
             frameImg.src = FRAME_IMG_SRC;
         }
 
         function openShareModal() { 
-            document.getElementById('share-modal').style.display = 'flex'; 
+            var el = document.getElementById('share-modal'); 
+            if(el) el.style.display = 'flex'; 
         }
 
         function closeModal(modalId, e) { 
@@ -544,7 +565,8 @@
 
         function shareTo(platform) { 
             var url = window.location.href;
-            var title = document.getElementById('spot-title').innerText;
+            var titleEl = document.getElementById('spot-title');
+            var title = titleEl ? titleEl.innerText : "汐止深度導覽";
             var text = '我正在探索汐止深度導覽：' + title + '，快來看看！';
             
             if (platform === 'line') {
@@ -573,18 +595,21 @@
                     alert("請手動複製網址分享至 Instagram"); 
                 }
             }
-            document.getElementById('share-modal').style.display = 'none';
+            var modal = document.getElementById('share-modal');
+            if(modal) modal.style.display = 'none';
         }
 
         function toggleDesc() {
             var container = document.getElementById('spot-desc-container');
             var btn = document.getElementById('read-more-btn');
-            container.classList.toggle('expanded');
-            if (container.classList.contains('expanded')) { 
-                btn.innerText = "▲ 收起簡介"; 
-                trackAction('expand_desc'); 
-            } else { 
-                btn.innerText = "▼ 了解更多故事"; 
+            if(container && btn) {
+                container.classList.toggle('expanded');
+                if (container.classList.contains('expanded')) { 
+                    btn.innerText = "▲ 收起簡介"; 
+                    trackAction('expand_desc'); 
+                } else { 
+                    btn.innerText = "▼ 了解更多故事"; 
+                }
             }
         }
 
