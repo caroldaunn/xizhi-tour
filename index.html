@@ -6,11 +6,11 @@
     <title>汐止深度導覽</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        /* --- 樣式設定 (CSS) --- */
+        /* --- 基礎設定 --- */
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; padding-bottom: 100px; }
         .progress-container { position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: #e0e0e0; z-index: 2000; }
         .progress-bar { height: 100%; background: linear-gradient(90deg, #ff8a00, #e52e71); width: 0%; transition: width 0.5s ease; border-radius: 0 3px 3px 0; }
-        
+
         .beacon-banner { position: fixed; top: -120px; left: 5%; width: 90%; background: rgba(34, 34, 34, 0.95); color: white; padding: 12px 15px; border-radius: 50px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); z-index: 5000; display: flex; align-items: center; gap: 12px; transition: top 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; box-sizing: border-box; }
         .beacon-banner.show { top: 20px; } 
         .beacon-icon { width: 36px; height: 36px; background: #06C755; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
@@ -99,10 +99,6 @@
 
         .reset-link { margin-top: 30px; text-align: center; font-size: 12px; color: #ccc; text-decoration: underline; cursor: pointer; }
         #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; align-items: center; justify-content: center; z-index: 3000; flex-direction: column; color: #888; }
-        
-        @keyframes popUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -140,7 +136,7 @@
             </div>
 
             <div class="transport-grid">
-                <a href="https://www.google.com/maps/search/YouBike/" target="_blank" class="t-btn bg-ubike" onclick="trackAction('click_ubike')">
+                <a href="#" target="_blank" class="t-btn bg-ubike" onclick="trackAction('click_ubike')">
                     <i>🚲</i> YouBike
                 </a>
                 <a id="bus-btn" href="#" target="_blank" class="t-btn bg-bus" onclick="collectAction('bus')">
@@ -275,7 +271,11 @@
                     updateSurveyLink(); 
                     renderContent();
                 }
-            }).catch(err => { console.error(err); renderContent(); });
+            }).catch(err => { 
+                console.error("LIFF Error:", err); 
+                // 即使 LIFF 初始化失敗，也強制顯示內容，避免畫面全白
+                renderContent(); 
+            });
         };
 
         function updateSurveyLink() {
@@ -300,16 +300,16 @@
         function initBeaconSimulation() {
             setTimeout(() => {
                 const banner = document.getElementById('beacon-banner');
-                banner.classList.add('show');
+                if(banner) banner.classList.add('show');
                 setTimeout(() => {
-                    banner.classList.remove('show');
+                    if(banner) banner.classList.remove('show');
                 }, 8000);
             }, 3000);
         }
 
         function handleBeaconClick() {
             const banner = document.getElementById('beacon-banner');
-            banner.classList.remove('show'); 
+            if(banner) banner.classList.remove('show'); 
             alert("🎉 恭喜！您找到了隱藏訊號！\n獲得【尋寶印章】");
             collectAction('beacon'); 
         }
@@ -347,149 +347,38 @@
         }
 
         function renderContent() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const spotKey = urlParams.get('id') || 'spot1';
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const spotKey = urlParams.get('id') || 'spot1';
 
-            // --- 交通轉址邏輯 (修正後) ---
-            if (spotKey === 'TRANS_BUS') { window.location.replace("https://ebus.gov.taipei/"); return; }
-            if (spotKey === 'TRANS_TRAIN') { window.location.replace("https://tip.railway.gov.tw/tra-tip-web/tip"); return; }
-            if (spotKey === 'TRANS_BIKE') { window.location.replace("https://www.youbike.com.tw/region/ntpc/"); return; }
+                // --- 交通轉址邏輯 (標準格式) ---
+                if (spotKey === 'TRANS_BUS') { window.location.replace("https://ebus.gov.taipei/"); return; }
+                if (spotKey === 'TRANS_TRAIN') { window.location.replace("https://tip.railway.gov.tw/tra-tip-web/tip"); return; }
+                if (spotKey === 'TRANS_BIKE') { window.location.replace("https://www.youbike.com.tw/region/ntpc/"); return; }
 
-            const data = spotsData[spotKey];
-            if (data) {
-                // 1. 渲染景點基本資料
-                document.getElementById('spot-index').innerText = data.id;
-                document.getElementById('spot-title').innerText = data.title;
-                document.getElementById('spot-desc').innerText = data.desc;
-                document.getElementById('spot-img').src = data.img;
+                const data = spotsData[spotKey];
+                if (data) {
+                    // 1. 渲染景點基本資料 (使用 try-catch 防止缺少 ID 導致當機)
+                    if(document.getElementById('spot-index')) document.getElementById('spot-index').innerText = data.id;
+                    if(document.getElementById('spot-title')) document.getElementById('spot-title').innerText = data.title;
+                    if(document.getElementById('spot-desc')) document.getElementById('spot-desc').innerText = data.desc;
+                    if(document.getElementById('spot-img')) document.getElementById('spot-img').src = data.img;
 
-                // 2. 渲染動態路線標題
-                const routeKey = data.route || "R1"; 
-                const rInfo = routesInfo[routeKey];
-                if(rInfo) {
-                    document.getElementById('route-tag').innerText = rInfo.title.split('：')[0]; 
-                    document.getElementById('route-desc').innerText = rInfo.desc;
-                }
+                    // 2. 渲染動態路線標題
+                    const routeKey = data.route || "R1"; 
+                    const rInfo = routesInfo[routeKey];
+                    if(rInfo) {
+                        if(document.getElementById('route-tag')) document.getElementById('route-tag').innerText = rInfo.title.split('：')[0]; 
+                        if(document.getElementById('route-desc')) document.getElementById('route-desc').innerText = rInfo.desc;
+                    }
 
-                // 3. 設定連結 (語法修正)
-                const mapQuery = encodeURIComponent(data.query);
-                document.getElementById('map-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
-                document.getElementById('food-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+美食';
-                document.getElementById('parking-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+停車場';
+                    // 3. 設定連結 (修正語法)
+                    const mapQuery = encodeURIComponent(data.query);
+                    if(document.getElementById('map-btn')) document.getElementById('map-btn').href = "https://www.google.com/maps/search/?api=1&query=" + mapQuery;
+                    if(document.getElementById('food-btn')) document.getElementById('food-btn').href = "https://www.google.com/maps/search/?api=1&query=" + mapQuery + "+美食";
+                    if(document.getElementById('parking-btn')) document.getElementById('parking-btn').href = "https://www.google.com/maps/search/?api=1&query=" + mapQuery + "+停車場";
 
-                // 4. 設定下一站按鈕
-                const currentIdNum = parseInt(data.id);
-                let nextSpotKey = 'spot' + (currentIdNum + 1);
-                if (currentIdNum >= 23) nextSpotKey = 'spot1'; 
-                
-                const nextData = spotsData[nextSpotKey];
-                const busBtn = document.getElementById('bus-btn');
-                if (nextData) {
-                    busBtn.href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(nextData.query) + '&travelmode=transit';
-                    busBtn.querySelector('.bus-label').innerText = '去' + nextData.title;
-                }
-
-                if (data.hasBeacon) initBeaconSimulation();
-
-                initTaskProgress();
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('main-content').style.display = 'block';
-            }
-        }
-
-        function collectAction(taskName) {
-            let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
-            if (!collected.includes(taskName)) {
-                collected.push(taskName);
-                localStorage.setItem('xizhi_action_stamps', JSON.stringify(collected));
-                trackAction('collect_' + taskName);
-                setTimeout(initTaskProgress, 500); 
-            }
-        }
-        function handleClickWithTrack(taskName) { collectAction(taskName); pendingTask = taskName; leaveTime = Date.now(); trackAction('click_' + taskName); }
-        function isTaskDone(taskName) { let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || []; return collected.includes(taskName); }
-        function initTaskProgress() {
-            let collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
-            TASKS.forEach(task => {
-                const el = document.getElementById('stamp-' + task);
-                if (collected.includes(task)) {
-                    el.classList.add('active');
-                    el.innerText = '✓'; 
-                } else {
-                    el.classList.remove('active');
-                    if(task==='map') el.innerText = '🗺️';
-                    if(task==='quiz') el.innerText = '❓';
-                    if(task==='wish') el.innerText = '❤️';
-                    if(task==='beacon') el.innerText = '📡';
-                    if(task==='bus') el.innerText = '🚌';
-                }
-            });
-            const wishBtn = document.getElementById('wish-btn');
-            if(collected.includes('wish')) { wishBtn.classList.add('active'); wishBtn.innerHTML = '❤️'; } else { wishBtn.classList.remove('active'); wishBtn.innerHTML = '♡'; }
-            document.getElementById('progress-text').innerText = `${collected.length}/5`;
-            document.getElementById('progress-bar').style.width = `${(collected.length/5)*100}%`;
-            if (collected.length >= 5) { document.getElementById('survey-box').style.display = 'block'; document.getElementById('memorial-box').style.display = 'block'; }
-        }
-        function handleImageUpload(e) {
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(event) { const img = new Image(); img.onload = function() { drawCanvas(img); }; img.src = event.target.result; };
-            reader.readAsDataURL(file);
-        }
-        function drawCanvas(userImg) {
-            const canvas = document.getElementById('result-canvas');
-            const ctx = canvas.getContext('2d');
-            const size = 800; canvas.width = size; canvas.height = size;
-            const scale = Math.max(size / userImg.width, size / userImg.height);
-            const x = (size / 2) - (userImg.width / 2) * scale;
-            const y = (size / 2) - (userImg.height / 2) * scale;
-            ctx.drawImage(userImg, x, y, userImg.width * scale, userImg.height * scale);
-            const frameImg = new Image();
-            frameImg.onload = function() {
-                ctx.drawImage(frameImg, 0, 0, size, size);
-                const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
-                const finalImg = document.getElementById('final-img');
-                finalImg.src = dataUrl;
-                finalImg.style.display = "block";
-                document.getElementById('download-msg').style.display = "block";
-                finalImg.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-            frameImg.src = FRAME_IMG_SRC;
-        }
-        function openShareModal() { document.getElementById('share-modal').style.display = 'flex'; }
-        function closeModal(modalId, e) { if (e.target.id === modalId || e.target.classList.contains('close-modal')) { document.getElementById(modalId).style.display = 'none'; } }
-        function shareTo(platform) { 
-            const url = window.location.href;
-            const title = document.getElementById('spot-title').innerText;
-            const text = `我正在探索汐止深度導覽：${title}，快來看看！`;
-            if (platform === 'line') window.location.href = `https://line.me/R/msg/text/?${encodeURIComponent(text + " " + url)}`;
-            else if (platform === 'fb') window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`);
-            else if (platform === 'copy') {
-                if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => alert("連結已複製！"));
-                else { const textArea = document.createElement("textarea"); textArea.value = url; document.body.appendChild(textArea); textArea.select(); document.execCommand("Copy"); textArea.remove(); alert("連結已複製！"); }
-            } 
-            else if (platform === 'ig') {
-                if (navigator.clipboard) { navigator.clipboard.writeText(url).then(() => { alert("連結已複製！請開啟 Instagram 發佈限時動態。"); window.location.href = "instagram://app"; }); } else { alert("請手動複製網址分享至 Instagram"); }
-            }
-            document.getElementById('share-modal').style.display = 'none';
-        }
-        function toggleDesc() {
-            const container = document.getElementById('spot-desc-container');
-            const btn = document.getElementById('read-more-btn');
-            container.classList.toggle('expanded');
-            if (container.classList.contains('expanded')) { btn.innerText = "▲ 收起簡介"; trackAction('expand_desc'); } else { btn.innerText = "▼ 了解更多故事"; }
-        }
-        function resetProgress() { if(confirm("重置？")) { localStorage.removeItem('xizhi_action_stamps'); location.reload(); } }
-        function trackAction(actionName) { sendToWebhook(actionName, 0); }
-        function trackDuration(taskName, seconds) { sendToWebhook("stay_on_" + taskName, seconds); }
-        function sendToWebhook(action, durationVal) {
-            if (!WEBHOOK_URL) return;
-            let userId = "unknown";
-            try { if (liff.isLoggedIn()) userId = liff.getContext().userId; } catch(e) {}
-            const spotId = new URLSearchParams(window.location.search).get('id') || 'spot1';
-            fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: userId, action: action, spot: spotId, duration: durationVal, timestamp: new Date().toISOString() }) }).catch(console.error);
-        }
-    </script>
-</body>
-</html>
+                    // 4. 設定下一站按鈕
+                    const currentIdNum = parseInt(data.id);
+                    let nextSpotKey = 'spot' + (currentIdNum + 1);
+                    if (currentIdNum >= 2
