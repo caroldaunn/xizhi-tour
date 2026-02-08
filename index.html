@@ -6,181 +6,131 @@
     <title>汐止深度導覽</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
+        * { box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; padding-bottom: 100px; }
         .progress-container { position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: #e0e0e0; z-index: 2000; }
-        .progress-bar { height: 100%; background: linear-gradient(90deg, #ff8a00, #e52e71); width: 0%; transition: width 0.5s ease; border-radius: 0 3px 3px 0; }
-        
-        .beacon-banner { position: fixed; top: -120px; left: 5%; width: 90%; background: rgba(34, 34, 34, 0.95); color: white; padding: 12px 15px; border-radius: 50px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); z-index: 5000; display: flex; align-items: center; gap: 12px; transition: top 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; box-sizing: border-box; }
-        .beacon-banner.show { top: 20px; } 
-        .beacon-icon { width: 36px; height: 36px; background: #06C755; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-        .beacon-text { flex: 1; font-size: 13px; line-height: 1.3; }
-        .beacon-title { font-weight: bold; color: #fff; font-size: 14px; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #ff8a00, #e52e71); width: 0%; transition: width 0.5s ease; }
+        .beacon-banner { position: fixed; top: -120px; left: 5%; width: 90%; background: rgba(34,34,34,0.95); color: white; padding: 12px 15px; border-radius: 50px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); z-index: 5000; display: flex; align-items: center; gap: 12px; transition: top 0.6s cubic-bezier(0.175,0.885,0.32,1.275); cursor: pointer; }
+        .beacon-banner.show { top: 20px; }
+        .beacon-icon { width: 36px; height: 36px; background: #06C755; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .beacon-text { flex: 1; font-size: 13px; }
+        .beacon-title { font-weight: bold; font-size: 14px; }
         .beacon-sub { color: #ccc; font-size: 11px; }
-
         .hero-container { position: relative; width: 100%; height: 35vh; overflow: hidden; }
         .hero-img { width: 100%; height: 100%; object-fit: cover; }
-        
         .content-card { position: relative; background: white; border-radius: 24px 24px 0 0; margin-top: -25px; padding: 25px; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); min-height: 60vh; }
-        
         .title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
         h1 { margin: 0; font-size: 24px; font-weight: 800; color: #2c3e50; }
-        .wish-btn { font-size: 22px; color: #ccc; cursor: pointer; transition: transform 0.2s; padding: 5px; }
+        .wish-btn { font-size: 22px; color: #ccc; cursor: pointer; padding: 5px; }
         .wish-btn.active { color: #ff4757; transform: scale(1.1); }
-
         .sub-tag { display: inline-block; font-size: 12px; color: #fff; background: #2c3e50; padding: 4px 10px; border-radius: 4px; margin-bottom: 10px; font-weight: bold; }
-        .route-info { font-size: 13px; color: #666; margin-bottom: 15px; border-left: 3px solid #ff8a00; padding-left: 8px; line-height: 1.4; }
+        .route-info { font-size: 13px; color: #666; margin-bottom: 15px; border-left: 3px solid #ff8a00; padding-left: 8px; }
         .spot-number { font-size: 12px; color: #888; margin-bottom: 5px; }
-
-        .desc-box { margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .desc-box { margin-bottom: 25px; }
         .desc-text { font-size: 15px; line-height: 1.8; color: #555; }
-        .desc-text.expandable { max-height: 8.0em; overflow: hidden; transition: max-height 0.4s ease; }
-        .desc-text.expanded { max-height: none; overflow: visible; } 
-        
-        .desc-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+        .desc-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
         .read-more-btn { color: #007bff; font-weight: bold; font-size: 14px; cursor: pointer; text-decoration: underline; }
-        
-        .quiz-trigger-btn { background: #ff9f43; color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-
+        .quiz-trigger-btn { background: #ff9f43; color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; }
+        .story-detail { display: none; margin-top: 20px; padding: 20px; background: #fafafa; border-radius: 16px; }
+        .story-detail.show { display: block; animation: fadeIn 0.3s; }
+        .story-section { margin-bottom: 20px; }
+        .story-title { font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .story-title::before { content: ""; width: 4px; height: 16px; background: linear-gradient(180deg, #ff8a00, #e52e71); border-radius: 2px; }
+        .story-text { font-size: 14px; line-height: 1.8; color: #555; text-align: justify; }
+        .story-img { width: 100%; border-radius: 12px; margin: 15px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .story-caption { font-size: 12px; color: #888; text-align: center; margin-top: -10px; margin-bottom: 15px; }
+        .story-quote { background: #fff; border-left: 4px solid #ff8a00; padding: 15px; margin: 15px 0; font-style: italic; color: #666; border-radius: 0 8px 8px 0; }
         .transport-grid { display: flex; gap: 10px; margin-bottom: 20px; }
-        .t-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 10px; border-radius: 12px; text-decoration: none; color: white; font-weight: bold; font-size: 13px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s; text-align: center; }
+        .t-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 10px; border-radius: 12px; text-decoration: none; color: white; font-weight: bold; font-size: 13px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
         .t-btn:active { transform: scale(0.96); }
-        .t-btn i { font-style: normal; font-size: 18px; display: block; margin-bottom: 2px;}
-        .bg-ubike { background: linear-gradient(135deg, #fce38a 0%, #f38181 100%); color: #555; }
-        .bg-bus   { background: #3498db; }
-        .bg-nav   { background: linear-gradient(135deg, #667eea, #764ba2); }
-        .bg-parking { background: #546de5; } 
-        .bus-label { font-size: 11px; opacity: 0.9; line-height: 1.2; }
-
+        .t-btn i { font-style: normal; font-size: 18px; }
+        .bg-ubike { background: linear-gradient(135deg, #fce38a, #f38181); color: #555; }
+        .bg-bus { background: #3498db; }
+        .bg-parking { background: #546de5; }
+        .bus-label { font-size: 11px; }
         .game-section { background: #fff8e1; border: 2px dashed #ffc107; border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 15px; }
         .game-title { font-weight: bold; color: #d35400; margin-bottom: 15px; font-size: 16px; }
-        .task-grid { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
-        .stamp-box { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 55px; }
-        
-        .stamp { width: 40px; height: 40px; border-radius: 50%; background: #e0e0e0; color: #777; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; border: 2px solid #ddd; transition: all 0.3s; }
-        .stamp.active { background: #ff512f; color: white; border-color: #ff512f; transform: scale(1.1); box-shadow: 0 3px 8px rgba(255, 81, 47, 0.3); }
-        .stamp-label { font-size: 10px; color: #888; margin-top: 4px; font-weight: bold;}
-
-        .share-text-link { text-align: center; margin: 15px 0; font-size: 15px; font-weight: bold; color: #555; cursor: pointer; text-decoration: underline; display: block; }
-
-        #survey-box { display: none; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee; }
-        .survey-btn { display: block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; }
-
-        #memorial-box { display: none; margin-top: 25px; text-align: center; background: #fafafa; padding: 20px; border-radius: 12px; }
-        .memorial-title { font-size: 16px; font-weight: 800; color: #2c3e50; margin-bottom: 5px; }
-        .memorial-desc { font-size: 13px; color: #666; margin-bottom: 15px; }
-        
-        .upload-btn-wrapper { position: relative; overflow: hidden; display: inline-block; margin-bottom: 15px; }
-        .btn-upload { border: 2px dashed #007bff; color: #007bff; background-color: white; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
-        .upload-btn-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
-        
+        .task-grid { display: flex; justify-content: center; gap: 10px; }
+        .stamp-box { display: flex; flex-direction: column; align-items: center; width: 55px; }
+        .stamp { width: 40px; height: 40px; border-radius: 50%; background: #e0e0e0; color: #777; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 2px solid #ddd; }
+        .stamp.active { background: #ff512f; color: white; border-color: #ff512f; }
+        .stamp-label { font-size: 10px; color: #888; margin-top: 5px; }
+        .share-text-link { text-align: center; margin: 15px 0; font-size: 15px; color: #555; cursor: pointer; text-decoration: underline; }
+        #survey-box, #memorial-box { display: none; margin-top: 25px; }
+        .survey-btn { display: block; background: linear-gradient(135deg, #667eea, #764ba2); color: white; text-align: center; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; }
+        #memorial-box { text-align: center; background: #fafafa; padding: 20px; border-radius: 12px; }
+        .upload-btn-wrapper { position: relative; overflow: hidden; display: inline-block; }
+        .btn-upload { border: 2px dashed #007bff; color: #007bff; background: white; padding: 8px 16px; border-radius: 8px; font-weight: bold; }
+        .upload-btn-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; }
         #result-canvas { display: none; }
         #final-img { width: 100%; max-width: 280px; border: 2px solid #28a745; display: none; margin: 10px auto; border-radius: 8px; }
-        .download-hint { display: none; color: #28a745; font-weight: bold; font-size: 14px; margin-top: 10px; background: #e8f5e9; padding: 10px; border-radius: 8px;}
-        
+        .download-hint { display: none; color: #28a745; font-size: 14px; margin-top: 10px; background: #e8f5e9; padding: 10px; border-radius: 8px; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 6000; display: none; align-items: flex-end; justify-content: center; }
-        .share-sheet { width: 100%; max-width: 500px; background: white; border-radius: 20px 20px 0 0; padding: 25px 25px 35px 25px; box-sizing: border-box; }
-        .share-title { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 25px; text-align: center; }
-        .share-grid { display: flex; justify-content: space-around; gap: 10px; }
-        .share-item { display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; color: #555; font-size: 12px; width: 70px; }
+        .share-sheet { width: 100%; max-width: 500px; background: white; border-radius: 20px 20px 0 0; padding: 25px; }
+        .share-title { font-size: 16px; font-weight: bold; margin-bottom: 25px; text-align: center; }
+        .share-grid { display: flex; justify-content: space-around; }
+        .share-item { display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; font-size: 12px; }
         .share-icon-box { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; }
         .share-icon-box svg { width: 30px; height: 30px; fill: currentColor; }
-        
         .quiz-box { background: white; width: 85%; max-width: 320px; padding: 20px; border-radius: 16px; text-align: center; align-self: center; }
-        .quiz-question { font-size: 16px; font-weight: bold; margin-bottom: 20px; color: #333; line-height: 1.5; }
+        .quiz-question { font-size: 16px; font-weight: bold; margin-bottom: 20px; line-height: 1.5; }
         .quiz-options { display: flex; flex-direction: column; gap: 10px; }
         .quiz-btn { padding: 12px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 8px; font-size: 14px; cursor: pointer; }
         .close-modal { margin-top: 15px; color: #999; font-size: 12px; text-decoration: underline; cursor: pointer; }
-
-        .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px 15px; box-sizing: border-box; display: flex; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+        .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px 15px; display: flex; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
         .footer-btn { flex: 1; padding: 12px; border-radius: 10px; text-align: center; text-decoration: none; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-map { background: #f1f3f5; color: #495057; }
         .btn-food { background: #ff6b6b; color: white; }
-        .btn-nav-main { background: linear-gradient(135deg, #ff6b6b, #ffa502); color: white; }
-
         .reset-link { margin-top: 30px; text-align: center; font-size: 12px; color: #ccc; text-decoration: underline; cursor: pointer; }
         #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; align-items: center; justify-content: center; z-index: 3000; color: #888; }
-
-        /* ===== 活動頁面專用樣式 ===== */
-        .event-badge { display: inline-block; background: #ff6b6b; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
-        .event-date { font-size: 13px; color: #888; margin: 10px 0; }
-        .tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
-        .tag { background: #fff0f0; color: #ff6b6b; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+        .tags-container { display: none; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
+        .tag { background: #fff0f0; color: #ff6b6b; padding: 6px 14px; border-radius: 20px; font-size: 13px; }
+        #gallery-section, #notice-box { display: none; }
+        .section-title { font-size: 16px; font-weight: 800; color: #2c3e50; margin: 20px 0 15px; display: flex; align-items: center; gap: 8px; }
+        .section-title::before { content: ""; width: 4px; height: 18px; background: linear-gradient(180deg, #ff6b6b, #ffa502); border-radius: 2px; }
         .gallery-item { margin-bottom: 20px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .gallery-img { width: 100%; height: 180px; object-fit: cover; }
-        .gallery-caption { padding: 12px; background: #fafafa; font-size: 14px; color: #666; line-height: 1.6; }
-        .gallery-caption strong { color: #333; }
+        .gallery-caption { padding: 12px; background: #fafafa; font-size: 14px; color: #666; }
         .notice-box { background: #fff8e1; border-left: 4px solid #ffc107; padding: 15px; border-radius: 0 12px 12px 0; margin: 20px 0; }
         .notice-box h4 { margin: 0 0 10px; color: #f57c00; font-size: 14px; }
         .notice-box ul { margin: 0; padding-left: 20px; font-size: 13px; color: #666; line-height: 1.8; }
-        .section-title { font-size: 16px; font-weight: 800; color: #2c3e50; margin: 20px 0 15px; display: flex; align-items: center; gap: 8px; }
-        .section-title::before { content: ""; width: 4px; height: 18px; background: linear-gradient(180deg, #ff6b6b, #ffa502); border-radius: 2px; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
-
     <div id="loading"><div>⏳ 載入中...</div></div>
     <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
-
     <div id="beacon-banner" class="beacon-banner" onclick="handleBeaconClick()">
         <div class="beacon-icon">📡</div>
-        <div class="beacon-text">
-            <div class="beacon-title">偵測到 LINE Beacon 訊號</div>
-            <div class="beacon-sub">附近有隱藏景點！點擊打卡</div>
-        </div>
+        <div class="beacon-text"><div class="beacon-title">偵測到 LINE Beacon 訊號</div><div class="beacon-sub">附近有隱藏景點！點擊打卡</div></div>
     </div>
-
     <div id="main-content" style="display: none;">
         <div class="hero-container"><img id="spot-img" class="hero-img" src="" alt="圖片"></div>
         <div class="content-card">
             <span id="route-tag" class="sub-tag">汐止導覽</span>
             <div id="route-desc" class="route-info"></div>
             <div id="spot-number" class="spot-number"></div>
-            
             <div class="title-row">
                 <h1 id="spot-title"></h1>
                 <div id="wish-btn" class="wish-btn" onclick="triggerWishlist()">♡</div>
             </div>
-            
             <div class="desc-box">
-                <div id="spot-desc-container" class="desc-text expandable"><span id="spot-desc"></span></div>
+                <div id="spot-desc" class="desc-text"></div>
                 <div id="desc-actions" class="desc-actions">
-                    <div id="read-more-btn" class="read-more-btn" onclick="toggleDesc()">▼ 了解更多故事</div>
-                    <div id="quiz-btn" class="quiz-trigger-btn" onclick="openQuizModal()">
-                        <span>🧠 知識小學堂</span>
-                    </div>
+                    <div id="read-more-btn" class="read-more-btn" onclick="toggleStory()">▼ 了解更多故事</div>
+                    <div id="quiz-btn" class="quiz-trigger-btn" onclick="openQuizModal()">🧠 知識小學堂</div>
                 </div>
             </div>
-
-            <!-- 活動專用區域 -->
-            <div id="tags-container" class="tags-container" style="display:none;"></div>
-            <div id="gallery-section" style="display:none;">
-                <div class="section-title">活動花絮</div>
-                <div id="gallery-content"></div>
-            </div>
-            <div id="notice-box" class="notice-box" style="display:none;">
-                <h4>📌 參加須知</h4>
-                <ul id="notice-list"></ul>
-            </div>
-
+            <div id="story-detail" class="story-detail"></div>
+            <div id="tags-container" class="tags-container"></div>
+            <div id="gallery-section"><div class="section-title">活動花絮</div><div id="gallery-content"></div></div>
+            <div id="notice-box" class="notice-box"><h4>📌 參加須知</h4><ul id="notice-list"></ul></div>
             <div class="transport-grid">
-                <a href="https://www.google.com/maps/search/YouBike/" target="_blank" class="t-btn bg-ubike">
-                    <i>🚲</i> YouBike
-                </a>
-                <a id="bus-btn" href="#" target="_blank" class="t-btn bg-bus" onclick="collectAction('bus')">
-                    <i>🚌</i> <span id="bus-label" class="bus-label">去下一站</span>
-                </a>
-                <a id="parking-btn" href="#" target="_blank" class="t-btn bg-parking">
-                    <i>🅿️</i> 找停車場
-                </a>
+                <a href="https://www.google.com/maps/search/YouBike/" target="_blank" class="t-btn bg-ubike"><i>🚲</i> YouBike</a>
+                <a id="bus-btn" href="#" target="_blank" class="t-btn bg-bus" onclick="collectAction('bus')"><i>🚌</i> <span id="bus-label" class="bus-label">去下一站</span></a>
+                <a id="parking-btn" href="#" target="_blank" class="t-btn bg-parking"><i>🅿️</i> 找停車場</a>
             </div>
-
-            <div id="bus-schedule-link" style="text-align: center; margin-bottom: 20px;">
-                <a href="https://www.xizhi.ntpc.gov.tw/home.jsp?id=1ee324bfb5e44418" target="_blank" style="font-size: 12px; color: #999; text-decoration: underline;">
-                    📄 F系列社區巴士時刻表
-                </a>
-            </div>
-
-            <!-- 景點專用：集點區 -->
+            <div id="bus-schedule-link" style="text-align: center; margin-bottom: 20px;"><a href="https://www.xizhi.ntpc.gov.tw/home.jsp?id=1ee324bfb5e44418" target="_blank" style="font-size: 12px; color: #999; text-decoration: underline;">📄 F系列社區巴士時刻表</a></div>
             <div id="game-section" class="game-section">
                 <div class="game-title">🏆 汐止達人挑戰 (進度: <span id="progress-text">0/5</span>)</div>
                 <div class="task-grid">
@@ -190,484 +140,212 @@
                     <div class="stamp-box"><div class="stamp" id="stamp-beacon">📡</div><div class="stamp-label">尋寶</div></div>
                     <div class="stamp-box"><div class="stamp" id="stamp-bus">🚌</div><div class="stamp-label">交通</div></div>
                 </div>
-                <div style="font-size: 12px; color:#888; margin-top:5px;">💡 請從頁面各處尋找互動機會，完成上方挑戰！</div>
             </div>
-
-            <div class="share-text-link" onclick="openShareModal()">📤 覺得不錯？打卡並分享給好友</div>
-
-            <div id="survey-box">
-                <a href="#" target="_blank" class="survey-btn">🎓 任務達成！填寫問卷領取證書</a>
-            </div>
-
+            <div class="share-text-link" onclick="openShareModal()">📤 覺得不錯？分享給好友</div>
+            <div id="survey-box"><a href="#" class="survey-btn">🎓 任務達成！填寫問卷領取證書</a></div>
             <div id="memorial-box">
-                <div class="memorial-title">🎁 額外獎勵：完賽紀念照</div>
-                <p class="memorial-desc">上傳自拍照，合成汐止達人相框！</p>
-                <div class="upload-btn-wrapper">
-                    <button class="btn-upload">📸 選擇照片 / 開啟相機</button>
-                    <input type="file" id="upload-input" accept="image/*" onchange="handleImageUpload(event)">
-                </div>
+                <div style="font-size:16px;font-weight:800;margin-bottom:5px;">🎁 完賽紀念照</div>
+                <p style="font-size:13px;color:#666;margin-bottom:15px;">上傳自拍照，合成汐止達人相框！</p>
+                <div class="upload-btn-wrapper"><button class="btn-upload">📸 選擇照片</button><input type="file" accept="image/*" onchange="handleImageUpload(event)"></div>
                 <canvas id="result-canvas"></canvas>
-                <img id="final-img" src="" alt="合成照片">
-                <div id="download-msg" class="download-hint">👆 請「長按上方圖片」儲存至手機相簿</div>
+                <img id="final-img" src="" alt=""><div id="download-msg" class="download-hint">👆 長按圖片儲存</div>
             </div>
-
             <div id="reset-link" class="reset-link" onclick="resetProgress()">↺ 重置測試進度</div>
         </div>
     </div>
-
     <div class="sticky-footer">
         <a id="map-btn" href="#" class="footer-btn btn-map" target="_blank" onclick="handleClickWithTrack('map')">📍 帶我去</a>
         <a id="food-btn" href="#" class="footer-btn btn-food" target="_blank">🍴 附近美食</a>
     </div>
-
-    <div id="share-modal" class="modal-overlay" onclick="closeModal('share-modal', event)">
+    <div id="share-modal" class="modal-overlay" onclick="closeModal('share-modal',event)">
         <div class="share-sheet">
             <div class="share-title">分享 📢</div>
             <div class="share-grid">
-                <div class="share-item" onclick="shareTo('line')"><div class="share-icon-box" style="background:#06C755;"><svg viewBox="0 0 24 24"><path d="M22 10.3c0-4.7-4.3-8.6-10-8.6-5.4 0-10 3.9-10 8.6 0 4.2 3.8 7.8 8.4 8.5.3 0 .7.2.8.5 0 0 .3 1.1.3 1.3-.1.5-.4 1.8-1.7 2.5 1.4 0 4.3-.9 6-3.1 3.5-1.5 6.2-4.8 6.2-9.7z"/></svg></div><span>LINE</span></div>
+                <div class="share-item" onclick="shareTo('line')"><div class="share-icon-box" style="background:#06C755;"><svg viewBox="0 0 24 24"><path d="M22 10.3c0-4.7-4.3-8.6-10-8.6-5.4 0-10 3.9-10 8.6 0 4.2 3.8 7.8 8.4 8.5.3 0 .7.2.8.5l.3 1.3c-.1.5-.4 1.8-1.7 2.5 1.4 0 4.3-.9 6-3.1 3.5-1.5 6.2-4.8 6.2-9.7z"/></svg></div><span>LINE</span></div>
                 <div class="share-item" onclick="shareTo('fb')"><div class="share-icon-box" style="background:#1877F2;"><svg viewBox="0 0 24 24"><path d="M22 12c0-5.5-4.5-10-10-10S2 6.5 2 12c0 5 3.7 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7C18.3 21.1 22 17 22 12z"/></svg></div><span>Facebook</span></div>
                 <div class="share-item" onclick="shareTo('copy')"><div class="share-icon-box" style="background:#555;"><svg viewBox="0 0 24 24"><path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z"/></svg></div><span>複製連結</span></div>
             </div>
         </div>
     </div>
-
     <div id="quiz-modal" class="modal-overlay">
         <div class="quiz-box">
             <div id="quiz-question" class="quiz-question">Q: 問題載入中...</div>
             <div class="quiz-options">
-                <button class="quiz-btn" id="quiz-opt-1" onclick="checkQuiz(1)">A. 選項1</button>
-                <button class="quiz-btn" id="quiz-opt-2" onclick="checkQuiz(2)">B. 選項2</button>
-                <button class="quiz-btn" id="quiz-opt-3" onclick="checkQuiz(3)">C. 選項3</button>
+                <button class="quiz-btn" id="quiz-opt-1" onclick="checkQuiz(1)">A</button>
+                <button class="quiz-btn" id="quiz-opt-2" onclick="checkQuiz(2)">B</button>
+                <button class="quiz-btn" id="quiz-opt-3" onclick="checkQuiz(3)">C</button>
             </div>
-            <div class="close-modal" onclick="closeModal('quiz-modal', event)">放棄挑戰</div>
+            <div class="close-modal" onclick="closeModal('quiz-modal',event)">放棄挑戰</div>
         </div>
     </div>
+<script>
+var MY_LIFF_ID = "2008941841-8KQq29wn";
+var TASKS = ['map','quiz','wish','beacon','bus'];
+var routesInfo = {
+    "R1": { title: "一茶一礦", desc: "清代包種茶與日治煤礦的雙軌時光", spots: ["spot1","spot2","spot3","spot4","spot5","spot6","spot7","spot8","spot9"] },
+    "R2": { title: "山林秘境", desc: "走進後山，眺望臺北盆地的遼闊景緻", spots: ["spot1","spot10","spot11","spot12","spot13","spot14"] },
+    "R3": { title: "網美打卡", desc: "從偽京都到夢幻湖景", spots: ["spot15","spot16","spot17","spot18","spot19"] },
+    "R4": { title: "百年信仰", desc: "解讀汐止的多層信仰與歷史墓園", spots: ["spot1","spot20","spot21","spot22","spot23"] }
+};
 
-    <script>
-        var MY_LIFF_ID = "2008941841-8KQq29wn"; 
-        var SURVEYCAKE_URL = "https://www.surveycake.com/s/您的問卷代碼"; 
-        var TASKS = ['map', 'quiz', 'wish', 'beacon', 'bus'];
-        var FRAME_IMG_SRC = "./frame.png"; 
+var spotsData = {
+    "spot1": { id:1, route:"R1", title:"汐止火車站", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/TRA_Xizhi_Station_202308.jpg/800px-TRA_Xizhi_Station_202308.jpg", desc:"旅程起點。「汐止」舊稱「水返腳」，意指基隆河潮汐至此而返。站前廣場是感受在地活力的最佳起點。", query:"汐止火車站", hasBeacon:true, quizQ:"Q: 汐止舊稱什麼？", quizA:2, quizOpts:["A. 雞籠","B. 水返腳","C. 艋舺"], story:{ sections:[{title:"水返腳的由來",text:"「水返腳」這個名字源自平埔族語，意指「潮水漲到這裡就折返」。清代時期，基隆河是重要的運輸航道，船隻可從淡水河口一路航行至汐止。",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/TRA_Xizhi_Station_202308.jpg/800px-TRA_Xizhi_Station_202308.jpg",caption:"現代化的汐止火車站"},{title:"車站的演變",text:"汐止火車站始建於1891年（清光緒17年），是臺灣鐵路最早的車站之一。日治時期隨著煤礦與茶葉產業興盛，車站成為貨運重鎮。"},{title:"在地小知識",text:"站前的「水返腳」石碑是1990年代設立，提醒人們這片土地的歷史。每年農曆七月，車站周邊會舉辦中元普渡活動。"}],quote:"「汐止，潮來潮往之地，是一座被河流與鐵道串連的城市。」"}},
+    "spot2": { id:2, route:"R1", title:"濟德宮", img:"https://tour.ntpc.gov.tw/Content/Upload/Place/6d368051-9e7f-44e8-8a4e-1b8f5745778a.jpg", desc:"俗稱汐止媽祖廟，是《通靈少女》取景地，也是在地重要信仰中心，見證了老街的興衰。", query:"汐止濟德宮", hasBeacon:false, quizQ:"Q: 濟德宮曾是哪部戲劇的取景地？", quizA:1, quizOpts:["A. 通靈少女","B. 花甲男孩","C. 俗女養成記"], story:{ sections:[{title:"百年媽祖信仰",text:"濟德宮創建於清咸豐年間（約1856年），主祀天上聖母媽祖，是汐止最古老的廟宇之一。"},{title:"通靈少女的故事",text:"2017年，HBO Asia與公視合製的《通靈少女》選擇濟德宮作為主要拍攝場景。劇中的「金華廟」就是濟德宮。",img:"https://tour.ntpc.gov.tw/Content/Upload/Place/6d368051-9e7f-44e8-8a4e-1b8f5745778a.jpg",caption:"濟德宮正殿"}],quote:"「濟德宮不只是信仰中心，更是汐止人共同的記憶。」"}},
+    "spot3": { id:3, route:"R1", title:"蘇家古厝", img:"https://newtaipei.travel/content/images/attractions/26786/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg", desc:"紅磚拱廊的百年茶商宅邸，見證汐止茶葉外銷黃金年代。", query:"汐止蘇家古厝", hasBeacon:false, quizQ:"Q: 蘇家古厝見證了什麼產業？", quizA:2, quizOpts:["A. 煤礦","B. 茶葉外銷","C. 漁業"], story:{ sections:[{title:"茶商世家",text:"蘇家古厝建於1920年代，是當時汐止首屈一指的茶商家族宅邸。蘇家經營茶葉貿易，將汐止的包種茶銷往南洋與日本。"},{title:"建築美學",text:"這座宅邸融合閩南與西洋建築元素，紅磚拱廊、綠釉花瓶欄杆、彩繪玻璃窗都是特色。",img:"https://newtaipei.travel/content/images/attractions/26786/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg",caption:"蘇家古厝的紅磚拱廊"}],quote:"「一杯茶，一段歷史，蘇家古厝訴說著汐止的黃金年代。」"}},
+    "spot4": { id:4, route:"R1", title:"汐止老街", img:"https://tour.ntpc.gov.tw/Content/Upload/Place/ed979927-567c-48c9-947b-1178c520857b.jpg", desc:"中正老街，清代「峰仔峙庄」商業街遺跡，巴洛克建築殘影。", query:"汐止中正老街", hasBeacon:false, quizQ:"Q: 汐止老街的清代名稱是？", quizA:3, quizOpts:["A. 水返腳街","B. 基隆街","C. 峰仔峙庄"], story:{ sections:[{title:"繁華舊夢",text:"汐止老街（中正路）曾是清代「峰仔峙庄」的商業中心。當時茶葉、煤礦貿易興盛，街上商家林立，熱鬧非凡。"},{title:"巴洛克建築",text:"日治時期，許多商家翻新店面，採用當時流行的巴洛克風格。雖然大部分已改建，但仔細觀察仍能發現一些老建築的痕跡。"}],quote:"「老街的每塊磚石，都是歷史的印記。」"}},
+    "spot5": { id:5, route:"R1", title:"建順茶行", img:"https://newtaipei.travel/content/images/attractions/41830/1024x768_attractions-image-1.jpg", desc:"創立於1885年，汐止現存最古老的茶行，百年茶香與歷史韻味。", query:"汐止建順茶行", hasBeacon:true, quizQ:"Q: 建順茶行創立於哪一年？", quizA:1, quizOpts:["A. 1885年","B. 1900年","C. 1920年"], story:{ sections:[{title:"百年茶香",text:"建順茶行是汐止現存最古老的茶行，創立於清光緒11年（1885年）。店內至今仍保留傳統製茶工具，老闆傳承四代，堅持手工製茶。"},{title:"包種茶的故鄉",text:"汐止曾是台灣包種茶的重要產地。建順茶行見證了汐止茶業從興盛到沒落的歷史，是珍貴的產業文化資產。"}],quote:"「一百多年的時光，建順茶行只做一件事——製好茶。」"}},
+    "spot6": { id:6, route:"R1", title:"茄苳腳鐵路遺跡", img:"https://tour.ntpc.gov.tw/Content/Upload/Place/6d368051-9e7f-44e8-8a4e-1b8f5745778a.jpg", desc:"保留清領至日治鐵路基座，鐵道迷必訪隱藏景點。", query:"汐止茄苳腳鐵路遺跡", hasBeacon:false, quizQ:"Q: 茄苳腳遺跡保留了什麼？", quizA:2, quizOpts:["A. 古井","B. 鐵路基座","C. 城牆"], story:{ sections:[{title:"鐵道記憶",text:"茄苳腳鐵路遺跡位於高架橋下，保留了清代至日治時期的鐵路路基。這裡曾是運送煤礦的重要路段，見證了汐止礦業的興衰。"}],quote:"「鐵軌已不在，但歷史的痕跡依然清晰。」"}},
+    "spot7": { id:7, route:"R1", title:"星光橋", img:"https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg", desc:"橫跨基隆河的單斜塔景觀橋，造型如麥克風，夜間攝影熱點。", query:"汐止星光橋", hasBeacon:true, quizQ:"Q: 星光橋的造型像什麼？", quizA:3, quizOpts:["A. 吉他","B. 帆船","C. 麥克風"], story:{ sections:[{title:"城市新地標",text:"星光橋於2014年啟用，是專為行人與自行車設計的景觀橋。橋塔高75公尺，造型如一支巨大的麥克風，象徵著汐止的活力與創意。"},{title:"夜間光影",text:"夜晚時分，星光橋會點亮LED燈光，色彩變幻，倒映在河面上，是攝影愛好者的熱門取景地。",img:"https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg",caption:"星光橋夜景"}],quote:"「星光橋，連接了汐止的過去與未來。」"}},
+    "spot8": { id:8, route:"R1", title:"東山煤礦遺跡", img:"https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg", desc:"北台灣重要煤礦產地遺跡，訴說當年黑金歲月。", query:"汐止東山煤礦", hasBeacon:false, quizQ:"Q: 汐止曾是什麼重要產地？", quizA:1, quizOpts:["A. 煤礦","B. 金礦","C. 銅礦"], story:{ sections:[{title:"黑金歲月",text:"汐止曾是北台灣重要的煤礦產地。從日治時期到1980年代，煤礦業是汐止的經濟命脈。東山煤礦是其中規模較大的礦場之一。"},{title:"礦工的故事",text:"礦工們每天深入地底數百公尺，在危險的環境中工作。許多老一輩的汐止人都有家人曾在礦場工作的記憶。"}],quote:"「每一塊煤炭，都浸透著礦工的汗水與淚水。」"}},
+    "spot9": { id:9, route:"R1", title:"五堵鐵路隧道", img:"https://newtaipei.travel/content/images/attractions/26786/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg", desc:"日治時期紅磚隧道，現為自行車道，充滿神隱少女氛圍。", query:"五堵台鐵舊隧道", hasBeacon:false, quizQ:"Q: 五堵隧道現在的用途是？", quizA:2, quizOpts:["A. 火車通行","B. 自行車道","C. 步道"], story:{ sections:[{title:"穿越時空",text:"五堵舊隧道建於日治時期，全長約237公尺。紅磚砌成的圓拱造型，加上隧道內的幽暗氛圍，彷彿置身於《神隱少女》的場景。"},{title:"自行車天堂",text:"隧道現已改建為自行車道的一部分，串連汐止到南港的基隆河岸自行車道，是假日親子出遊的熱門路線。",img:"https://newtaipei.travel/content/images/attractions/26786/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg",caption:"五堵舊隧道入口"}],quote:"「穿越百年隧道，彷彿走進時光的通道。」"}},
+    "spot10": { id:10, route:"R2", title:"聖德宮", img:"https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg", desc:"位於大尖山腰，宮廟建築宏偉，視野極佳的休憩點。", query:"汐止聖德宮", hasBeacon:false, quizQ:"Q: 聖德宮主要供奉哪位神明？", quizA:1, quizOpts:["A. 關聖帝君","B. 媽祖","C. 土地公"], story:{ sections:[{title:"山中聖殿",text:"聖德宮位於大尖山半山腰，主祀關聖帝君。廟宇建築宏偉，前有寬闘廣場，是登山途中重要的休憩站。"}],quote:"「登高望遠，聖德宮是心靈與視野的雙重饗宴。」"}},
+    "spot11": { id:11, route:"R2", title:"大尖山天秀宮", img:"https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg", desc:"汐止最著名的賞景點之一，可俯瞰大台北盆地，夕陽夜景迷人。", query:"汐止天秀宮", hasBeacon:true, quizQ:"Q: 天秀宮最著名的景觀是？", quizA:3, quizOpts:["A. 瀑布","B. 古樹","C. 俯瞰大台北盆地"], story:{ sections:[{title:"絕美視野",text:"天秀宮位於大尖山稜線上，廟前廣場可俯瞰整個大台北盆地。天氣好的時候，甚至可以看到101大樓與淡水河口。"},{title:"夕陽與夜景",text:"傍晚時分是天秀宮最美的時刻。金色的夕陽灑落城市，入夜後萬家燈火閃爍，是攝影愛好者的秘密基地。"}],quote:"「站在天秀宮，整個台北盡收眼底。」"}},
+    "spot12": { id:12, route:"R2", title:"大尖山登山步道", img:"https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg", desc:"石階鋪設完善，沿途林蔭茂密，四季皆宜健行。", query:"大尖山登山步道", hasBeacon:false, quizQ:"Q: 大尖山的海拔約多少公尺？", quizA:2, quizOpts:["A. 260 公尺","B. 460 公尺","C. 660 公尺"], story:{ sections:[{title:"汐止人的後花園",text:"大尖山海拔約460公尺，是汐止最知名的郊山。登山步道以石階為主，沿途綠蔭蔽天，即使夏日也相當涼爽。"}],quote:"「大尖山，是汐止人運動健身的最佳去處。」"}},
+    "spot13": { id:13, route:"R2", title:"秀峰瀑布", img:"https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg", desc:"藏身於峽谷之中的清幽瀑布，負離子清涼秘境。", query:"汐止秀峰瀑布", hasBeacon:true, quizQ:"Q: 秀峰瀑布以什麼聞名？", quizA:2, quizOpts:["A. 溫泉","B. 負離子","C. 螢火蟲"], story:{ sections:[{title:"清涼秘境",text:"秀峰瀑布藏身於峽谷深處，瀑布高約15公尺，水流飛濺，產生大量負離子。夏日來此，暑氣全消。"}],quote:"「秀峰瀑布，是汐止最清涼的避暑勝地。」"}},
+    "spot14": { id:14, route:"R2", title:"四分尾山", img:"https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg", desc:"汐止知名小百岳，擁有一等三角點，360度無遮蔽視野。", query:"汐止四分尾山", hasBeacon:false, quizQ:"Q: 四分尾山有什麼特殊標記？", quizA:1, quizOpts:["A. 一等三角點","B. 古蹟碑","C. 觀景台"], story:{ sections:[{title:"小百岳之一",text:"四分尾山海拔641公尺，是台灣小百岳之一。山頂設有一等三角點，視野360度無遮蔽，可遠眺基隆嶼與七星山。"}],quote:"「登上四分尾山，山海美景盡收眼底。」"}},
+    "spot15": { id:15, route:"R3", title:"汐科火車站北站", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/TRA_Xike_Station_20131002.jpg/800px-TRA_Xike_Station_20131002.jpg", desc:"獨特的長型月台設計，軌道攝影愛好者取景地。", query:"汐科火車站", hasBeacon:false, quizQ:"Q: 汐科站有什麼特別之處？", quizA:2, quizOpts:["A. 最古老車站","B. 特長月台設計","C. 海景車站"], story:{ sections:[{title:"獨特設計",text:"汐科站是全台最長的火車站，月台長度超過900公尺，橫跨兩個行政區。流線型的站體設計，是軌道攝影的熱門取景地。"}],quote:"「汐科站，一座打破常規的車站。」"}},
+    "spot16": { id:16, route:"R3", title:"拱北殿", img:"https://newtaipei.travel/content/images/attractions/26786/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg", desc:"北台灣賞楓勝地，著名的「彼岸橋」充滿日式古剎風情。", query:"汐止拱北殿", hasBeacon:true, quizQ:"Q: 拱北殿最著名的是什麼？", quizA:2, quizOpts:["A. 櫻花","B. 楓葉與彼岸橋","C. 瀑布"], story:{ sections:[{title:"偽京都秘境",text:"拱北殿建於1906年，主祀呂洞賓。廟宇依山而建，古色古香。最著名的是「彼岸橋」，秋天楓紅時節，美得如詩如畫，被稱為「台版京都」。"},{title:"賞楓勝地",text:"每年11月至12月是拱北殿楓葉最美的時節。紅葉與古廟、石橋相映成趣，吸引大批攝影愛好者前來。",img:"https://newtaipei.travel/content/images/attractions/26786/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg",caption:"拱北殿彼岸橋"}],quote:"「拱北殿的楓紅，是秋天最美的邂逅。」"}},
+    "spot17": { id:17, route:"R3", title:"新山夢湖", img:"https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg", desc:"夢幻般的碧綠湖泊，婚紗拍攝聖地，IG打卡熱點。", query:"新山夢湖", hasBeacon:true, quizQ:"Q: 新山夢湖以什麼聞名？", quizA:1, quizOpts:["A. 婚紗拍攝聖地","B. 溫泉","C. 古蹟"], story:{ sections:[{title:"夢幻湖泊",text:"夢湖是一座天然湖泊，湖水碧綠如翡翠，四周群山環繞。清晨時分常有雲霧繚繞，如夢似幻。"},{title:"婚紗聖地",text:"湖畔設有白色碼頭與小船，是婚紗攝影的熱門場景。許多新人選擇在此留下浪漫的紀念。"}],quote:"「夢湖，是汐止送給戀人最美的禮物。」"}},
+    "spot18": { id:18, route:"R3", title:"大金剛岩", img:"https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg", desc:"新山稜線上的巨岩，形狀酷似金剛頭部，氣勢磅礡。", query:"新山大金剛岩", hasBeacon:false, quizQ:"Q: 大金剛岩的名稱由來？", quizA:3, quizOpts:["A. 發現者姓名","B. 地名","C. 形狀像金剛"], story:{ sections:[{title:"巨岩奇景",text:"大金剛岩位於新山稜線上，是一塊巨大的裸露岩石。從特定角度看，形狀酷似金剛的頭部，因此得名。"}],quote:"「站在大金剛岩上，有種征服世界的感覺。」"}},
+    "spot19": { id:19, route:"R3", title:"新山", img:"https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg", desc:"海拔499公尺，山頂岩石裸露，俯瞰夢湖全景。", query:"汐止新山", hasBeacon:false, quizQ:"Q: 新山的海拔約多少公尺？", quizA:2, quizOpts:["A. 299 公尺","B. 499 公尺","C. 699 公尺"], story:{ sections:[{title:"野趣登山",text:"新山海拔499公尺，山頂是一大片裸露的岩石，視野極佳。可俯瞰夢湖全景，也能遠眺台北101。"}],quote:"「新山的荒野之美，是登山者最愛的獎勵。」"}},
+    "spot20": { id:20, route:"R4", title:"秀峰山靜修禪院", img:"https://newtaipei.travel/content/images/attractions/26786/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg", desc:"幽靜禪院，環境清幽，庭園造景典雅，日治時期創建。", query:"汐止靜修禪院", hasBeacon:false, quizQ:"Q: 靜修禪院位於哪座山？", quizA:1, quizOpts:["A. 秀峰山","B. 大尖山","C. 四分尾山"], story:{ sections:[{title:"心靈淨土",text:"靜修禪院創建於日治時期，是汐止重要的佛教道場。院內環境清幽，庭園造景典雅，適合靜心冥想。"}],quote:"「在喧囂的城市中，靜修禪院是一方淨土。」"}},
+    "spot21": { id:21, route:"R4", title:"杜月笙墓園", img:"https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg", desc:"上海灘傳奇人物杜月笙的長眠之地，墓園題字出自黨國大老。", query:"杜月笙墓園", hasBeacon:true, quizQ:"Q: 杜月笙是哪裡的傳奇人物？", quizA:3, quizOpts:["A. 台北","B. 香港","C. 上海"], story:{ sections:[{title:"傳奇人物",text:"杜月笙（1888-1951）是民國時期上海灘最具傳奇色彩的人物。他從一個賣水果的小販，成為叱吒風雲的「上海皇帝」。"},{title:"長眠汐止",text:"杜月笙晚年移居香港，1951年病逝。其後人將他安葬於汐止秀峰山，墓園莊嚴肅穆，許多題字出自當時的黨國大老。"}],quote:"「一代梟雄，長眠於此。」"}},
+    "spot22": { id:22, route:"R4", title:"秀峰山彌勒內院", img:"https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg", desc:"供奉彌勒佛的莊嚴道場，建築宏偉，北部重要佛教聖地。", query:"汐止彌勒內院", hasBeacon:false, quizQ:"Q: 彌勒內院主要供奉？", quizA:2, quizOpts:["A. 觀音菩薩","B. 彌勒佛","C. 地藏王菩薩"], story:{ sections:[{title:"彌勒道場",text:"彌勒內院是北台灣重要的佛教聖地，主祀彌勒佛。建築宏偉莊嚴，每逢佛教節日，信眾雲集。"}],quote:"「彌勒內院，是信仰者的心靈歸依。」"}},
+    "spot23": { id:23, route:"R4", title:"忠順廟", img:"https://newtaipei.travel/content/images/attractions/26786/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg", desc:"原址為日治時期「汐止神社」，保留鳥居與石燈籠，中日合璧景觀。", query:"汐止忠順廟", hasBeacon:true, quizQ:"Q: 忠順廟原本是什麼建築？", quizA:2, quizOpts:["A. 媽祖廟","B. 日本神社","C. 孔廟"], story:{ sections:[{title:"神社遺跡",text:"忠順廟的原址是日治時期的「汐止神社」，建於1937年。戰後神社被改建為忠順廟，但仍保留了原本的鳥居與石燈籠。"},{title:"中日合璧",text:"現在的忠順廟呈現獨特的中日合璧景觀。入口處的鳥居與石燈籠是日本神社的遺跡，廟內則供奉中國傳統神明。",img:"https://newtaipei.travel/content/images/attractions/26786/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg",caption:"忠順廟入口的鳥居"}],quote:"「忠順廟，見證了汐止從日治到戰後的歷史變遷。」"}}
+};
 
-        // 路線資訊
-        var routesInfo = {
-            "R1": { title: "一茶一礦", desc: "清代包種茶與日治煤礦的雙軌時光", spots: ["spot1","spot2","spot3","spot4","spot5","spot6","spot7","spot8","spot9"] },
-            "R2": { title: "山林秘境", desc: "走進後山，眺望臺北盆地的遼闊景緻", spots: ["spot1","spot10","spot11","spot12","spot13","spot14"] },
-            "R3": { title: "網美打卡", desc: "從偽京都到夢幻湖景", spots: ["spot15","spot16","spot17","spot18","spot19"] },
-            "R4": { title: "百年信仰", desc: "解讀汐止的多層信仰與歷史墓園", spots: ["spot1","spot20","spot21","spot22","spot23"] }
-        };
+var eventsData = {
+    "E01": { id:"E01", title:"夢想社區嘉年華", date:"2026/12/15", location:"汐止夢想社區", query:"汐止夢想社區", img:"https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800", desc:"全台最瘋狂的藝術遊行，結合森巴鼓與大型花車，展現汐止的熱情與創意。", tags:["🎭 藝術遊行","🥁 森巴鼓","🎪 花車遊行"], gallery:[{img:"https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600",caption:"<strong>森巴鼓隊熱情演出</strong>"}], notices:["活動當天周邊道路管制","請自備環保餐具"] },
+    "E02": { id:"E02", title:"康誥溪櫻花季", date:"2026/02/15", location:"汐止康誥溪畔", query:"汐止康誥溪", img:"https://images.unsplash.com/photo-1522383225653-ed111181a951?w=800", desc:"汐止人的賞櫻秘境！夜間點燈浪漫滿分。", tags:["🌸 山櫻花","🌙 夜間點燈"], gallery:[{img:"https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=600",caption:"<strong>粉紅花海盛開</strong>"}], notices:["花期約2-3週","請勿攀折花木"] },
+    "E03": { id:"E03", title:"汐碇路螢火蟲", date:"2026/04/15", location:"汐止汐碇路", query:"汐止汐碇路 螢火蟲", img:"https://images.unsplash.com/photo-1507400492013-162706c8c05e?w=800", desc:"夢幻夜間小旅行！點點螢光在山林間飛舞。", tags:["✨ 螢火蟲","🌙 夜間導覽"], gallery:[{img:"https://images.unsplash.com/photo-1528818955841-a7f1425c3e36?w=600",caption:"<strong>螢光點點夢幻夜</strong>"}], notices:["請穿著長袖長褲","禁止使用閃光燈"] }
+};
 
-        // 景點資料庫
-        var spotsData = {
-            "spot1": { id: 1, route: "R1", title: "汐止火車站", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/TRA_Xizhi_Station_202308.jpg/800px-TRA_Xizhi_Station_202308.jpg", desc: "旅程起點。「汐止」舊稱「水返腳」，意指基隆河潮汐至此而返。站前廣場是感受在地活力的最佳起點。", query: "汐止火車站", hasBeacon: true, quizQ: "Q: 汐止舊稱什麼？", quizA: 2, quizOpts: ["A. 雞籠", "B. 水返腳", "C. 艋舺"] },
-            "spot2": { id: 2, route: "R1", title: "濟德宮", img: "https://tour.ntpc.gov.tw/Content/Upload/Place/6d368051-9e7f-44e8-8a4e-1b8f5745778a.jpg", desc: "俗稱汐止媽祖廟，是通靈少女的取景地，也是在地重要信仰中心，見證了老街的興衰。", query: "汐止濟德宮", hasBeacon: false, quizQ: "Q: 濟德宮曾是哪部戲劇的取景地？", quizA: 1, quizOpts: ["A. 通靈少女", "B. 花甲男孩", "C. 俗女養成記"] },
-            "spot3": { id: 3, route: "R1", title: "蘇家古厝", img: "https://newtaipei.travel/content/images/attractions/26786/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg", desc: "紅磚拱廊的百年茶商宅邸，見證了汐止茶葉外銷的黃金年代。", query: "汐止蘇家古厝", hasBeacon: false, quizQ: "Q: 蘇家古厝見證了什麼產業？", quizA: 2, quizOpts: ["A. 煤礦", "B. 茶葉外銷", "C. 漁業"] },
-            "spot4": { id: 4, route: "R1", title: "汐止老街", img: "https://tour.ntpc.gov.tw/Content/Upload/Place/ed979927-567c-48c9-947b-1178c520857b.jpg", desc: "中正老街，清代「峰仔峙庄」商業街遺跡。", query: "汐止中正老街", hasBeacon: false, quizQ: "Q: 汐止老街的清代名稱是？", quizA: 3, quizOpts: ["A. 水返腳街", "B. 基隆街", "C. 峰仔峙庄"] },
-            "spot5": { id: 5, route: "R1", title: "建順茶行", img: "https://newtaipei.travel/content/images/attractions/41830/1024x768_attractions-image-1.jpg", desc: "創立於1885年，汐止現存最古老的茶行。", query: "汐止建順茶行", hasBeacon: true, quizQ: "Q: 建順茶行創立於哪一年？", quizA: 1, quizOpts: ["A. 1885年", "B. 1900年", "C. 1920年"] },
-            "spot6": { id: 6, route: "R1", title: "茄苳腳鐵路遺跡", img: "https://tour.ntpc.gov.tw/Content/Upload/Place/6d368051-9e7f-44e8-8a4e-1b8f5745778a.jpg", desc: "保留著清領時期至日治時期的鐵路基座。", query: "汐止茄苳腳鐵路遺跡", hasBeacon: false, quizQ: "Q: 茄苳腳遺跡保留了什麼？", quizA: 2, quizOpts: ["A. 古井", "B. 鐵路基座", "C. 城牆"] },
-            "spot7": { id: 7, route: "R1", title: "星光橋", img: "https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg", desc: "橫跨基隆河的單斜塔景觀橋，造型如麥克風。", query: "汐止星光橋", hasBeacon: true, quizQ: "Q: 星光橋的造型像什麼？", quizA: 3, quizOpts: ["A. 吉他", "B. 帆船", "C. 麥克風"] },
-            "spot8": { id: 8, route: "R1", title: "東山煤礦遺跡", img: "https://newtaipei.travel/content/images/attractions/26815/1024x768_attractions-image-w4q9s3h5g06342s3z9s-qa.jpg", desc: "汐止曾是北台灣重要煤礦產地。", query: "汐止東山煤礦", hasBeacon: false, quizQ: "Q: 汐止曾是什麼重要產地？", quizA: 1, quizOpts: ["A. 煤礦", "B. 金礦", "C. 銅礦"] },
-            "spot9": { id: 9, route: "R1", title: "五堵鐵路隧道", img: "https://newtaipei.travel/content/images/attractions/26786/1024x768_attractions-image-j1o3r4gbu06342s3z9s-qa.jpg", desc: "穿越時空的紅磚隧道，現改建為自行車道。", query: "五堵台鐵舊隧道", hasBeacon: false, quizQ: "Q: 五堵隧道現在的用途是？", quizA: 2, quizOpts: ["A. 火車通行", "B. 自行車道", "C. 步道"] },
-            "spot10": { id: 10, route: "R2", title: "聖德宮", img: "https://duk.tw/QF86I6.jpg", desc: "位於大尖山腰，宮廟建築宏偉，視野極佳。", query: "汐止聖德宮", hasBeacon: false, quizQ: "Q: 聖德宮主要供奉哪位神明？", quizA: 1, quizOpts: ["A. 關聖帝君", "B. 媽祖", "C. 土地公"] },
-            "spot11": { id: 11, route: "R2", title: "大尖山天秀宮", img: "https://duk.tw/QF86I6.jpg", desc: "汐止最著名的賞景點之一，可俯瞰大台北盆地。", query: "汐止天秀宮", hasBeacon: true, quizQ: "Q: 天秀宮最著名的景觀是？", quizA: 3, quizOpts: ["A. 瀑布", "B. 古樹", "C. 俯瞰大台北盆地"] },
-            "spot12": { id: 12, route: "R2", title: "大尖山登山步道", img: "https://duk.tw/QF86I6.jpg", desc: "石階鋪設完善，沿途林蔭茂密。", query: "大尖山登山步道", hasBeacon: false, quizQ: "Q: 大尖山的海拔約多少公尺？", quizA: 2, quizOpts: ["A. 260 公尺", "B. 460 公尺", "C. 660 公尺"] },
-            "spot13": { id: 13, route: "R2", title: "秀峰瀑布", img: "https://duk.tw/QF86I6.jpg", desc: "藏身於峽谷之中的清幽瀑布，充滿負離子。", query: "汐止秀峰瀑布", hasBeacon: true, quizQ: "Q: 秀峰瀑布以什麼聞名？", quizA: 2, quizOpts: ["A. 溫泉", "B. 負離子", "C. 螢火蟲"] },
-            "spot14": { id: 14, route: "R2", title: "四分尾山", img: "https://duk.tw/QF86I6.jpg", desc: "汐止知名小百岳，擁有一等三角點。", query: "汐止四分尾山", hasBeacon: false, quizQ: "Q: 四分尾山有什麼特殊標記？", quizA: 1, quizOpts: ["A. 一等三角點", "B. 古蹟碑", "C. 觀景台"] },
-            "spot15": { id: 15, route: "R3", title: "汐科火車站", img: "https://duk.tw/xAZcvt.jpg", desc: "擁有獨特的長型月台設計。", query: "汐科火車站", hasBeacon: false, quizQ: "Q: 汐科站有什麼特別之處？", quizA: 2, quizOpts: ["A. 最古老車站", "B. 特長月台設計", "C. 海景車站"] },
-            "spot16": { id: 16, route: "R3", title: "拱北殿", img: "https://duk.tw/xAZcvt.jpg", desc: "北台灣賞楓勝地，著名的「彼岸橋」充滿日式古剎風情。", query: "汐止拱北殿", hasBeacon: true, quizQ: "Q: 拱北殿最著名的是什麼？", quizA: 2, quizOpts: ["A. 櫻花", "B. 楓葉與彼岸橋", "C. 瀑布"] },
-            "spot17": { id: 17, route: "R3", title: "新山夢湖", img: "https://duk.tw/xAZcvt.jpg", desc: "夢幻般的碧綠湖泊，婚紗拍攝聖地。", query: "新山夢湖", hasBeacon: true, quizQ: "Q: 新山夢湖以什麼聞名？", quizA: 1, quizOpts: ["A. 婚紗拍攝聖地", "B. 溫泉", "C. 古蹟"] },
-            "spot18": { id: 18, route: "R3", title: "大金剛岩", img: "https://duk.tw/xAZcvt.jpg", desc: "新山稜線上的巨岩，形狀酷似金剛頭部。", query: "新山大金剛岩", hasBeacon: false, quizQ: "Q: 大金剛岩的名稱由來？", quizA: 3, quizOpts: ["A. 發現者姓名", "B. 地名", "C. 形狀像金剛"] },
-            "spot19": { id: 19, route: "R3", title: "新山", img: "https://duk.tw/xAZcvt.jpg", desc: "海拔499公尺，山頂岩石裸露，極具野趣。", query: "汐止新山", hasBeacon: false, quizQ: "Q: 新山的海拔約多少公尺？", quizA: 2, quizOpts: ["A. 299 公尺", "B. 499 公尺", "C. 699 公尺"] },
-            "spot20": { id: 20, route: "R4", title: "秀峰山靜修禪院", img: "https://duk.tw/zESfwL.jpg", desc: "幽靜禪院，環境清幽，庭園造景典雅。", query: "汐止靜修禪院", hasBeacon: false, quizQ: "Q: 靜修禪院位於哪座山？", quizA: 1, quizOpts: ["A. 秀峰山", "B. 大尖山", "C. 四分尾山"] },
-            "spot21": { id: 21, route: "R4", title: "杜月笙墓園", img: "https://duk.tw/zESfwL.jpg", desc: "上海灘傳奇人物杜月笙的長眠之地。", query: "杜月笙墓園", hasBeacon: true, quizQ: "Q: 杜月笙是哪裡的傳奇人物？", quizA: 3, quizOpts: ["A. 台北", "B. 香港", "C. 上海"] },
-            "spot22": { id: 22, route: "R4", title: "秀峰山彌勒內院", img: "https://duk.tw/zESfwL.jpg", desc: "供奉彌勒佛的莊嚴道場，建築宏偉。", query: "汐止彌勒內院", hasBeacon: false, quizQ: "Q: 彌勒內院主要供奉？", quizA: 2, quizOpts: ["A. 觀音菩薩", "B. 彌勒佛", "C. 地藏王菩薩"] },
-            "spot23": { id: 23, route: "R4", title: "忠順廟", img: "https://duk.tw/zESfwL.jpg", desc: "原址為日治時期的「汐止神社」，保留鳥居。", query: "汐止忠順廟", hasBeacon: true, quizQ: "Q: 忠順廟原本是什麼建築？", quizA: 2, quizOpts: ["A. 媽祖廟", "B. 日本神社", "C. 孔廟"] }
-        };
+var currentData = null, isEventPage = false, storyExpanded = false;
 
-        // 活動資料庫
-        var eventsData = {
-            "E01": {
-                id: "E01", title: "夢想社區嘉年華", date: "2026/12/15", location: "汐止夢想社區", query: "汐止夢想社區",
-                img: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800",
-                desc: "全台最瘋狂的藝術遊行，結合森巴鼓與大型花車，展現汐止的熱情與創意。每年吸引上萬人參與，是汐止年度最盛大的社區活動。現場還有美食市集、手作攤位、兒童遊戲區，適合全家大小一同參與！",
-                tags: ["🎭 藝術遊行", "🥁 森巴鼓", "🎪 花車遊行", "🍜 美食市集", "👨‍👩‍👧 親子活動"],
-                gallery: [
-                    { img: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600", caption: "<strong>森巴鼓隊熱情演出</strong><br>來自各地的森巴鼓隊齊聚汐止，用熱情的節奏點燃整條街道！" },
-                    { img: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600", caption: "<strong>繽紛花車遊行</strong><br>社區居民精心打造的花車，展現無限創意與在地特色。" },
-                    { img: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600", caption: "<strong>美食市集飄香</strong><br>超過 50 個攤位，從傳統小吃到異國料理應有盡有！" }
-                ],
-                notices: ["活動當天周邊道路管制，建議搭乘大眾運輸", "現場設有流動廁所及醫護站", "請自備環保餐具響應環保", "寵物請繫牽繩並自行清理排泄物"]
-            },
-            "E02": {
-                id: "E02", title: "康誥溪櫻花季", date: "2026/02/15", location: "汐止康誥溪畔", query: "汐止康誥溪",
-                img: "https://images.unsplash.com/photo-1522383225653-ed111181a951?w=800",
-                desc: "汐止人的賞櫻秘境！康誥溪沿岸種植數百株山櫻花，每年二月盛開時粉紅花海綿延數百公尺。夜間點燈後更添浪漫氛圍，是情侶約會、家庭出遊的絕佳選擇。",
-                tags: ["🌸 山櫻花", "🌙 夜間點燈", "📸 攝影聖地", "💑 浪漫約會", "🚶 輕鬆散步"],
-                gallery: [
-                    { img: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=600", caption: "<strong>粉紅花海盛開</strong><br>數百株山櫻花同時綻放，形成夢幻的粉紅隧道。" },
-                    { img: "https://images.unsplash.com/photo-1462275646964-a0e3571f4f9f?w=600", caption: "<strong>夜櫻點燈活動</strong><br>特別規劃夜間照明，讓您體驗不同於白天的浪漫氛圍。" },
-                    { img: "https://images.unsplash.com/photo-1545048702-79362596cdc9?w=600", caption: "<strong>溪畔悠閒漫步</strong><br>沿著康誥溪步道，一邊賞花一邊聆聽潺潺流水聲。" }
-                ],
-                notices: ["花期約 2-3 週，請密切關注官方公告", "夜間點燈時間：18:00-21:00", "步道部分路段較窄，請注意安全", "請勿攀折花木，共同維護美景"]
-            },
-            "E03": {
-                id: "E03", title: "汐碇路螢火蟲", date: "2026/04/15", location: "汐止汐碇路", query: "汐止汐碇路 螢火蟲",
-                img: "https://images.unsplash.com/photo-1507400492013-162706c8c05e?w=800",
-                desc: "夢幻夜間小旅行！每年四月至五月，汐碇路沿線成為螢火蟲的天堂。點點螢光在山林間飛舞，彷彿置身童話世界。現場有專業導覽解說，帶您認識螢火蟲的生態奧秘。",
-                tags: ["✨ 螢火蟲", "🌙 夜間導覽", "🌲 生態之旅", "📷 夜拍體驗", "🎒 親子教育"],
-                gallery: [
-                    { img: "https://images.unsplash.com/photo-1528818955841-a7f1425c3e36?w=600", caption: "<strong>螢光點點夢幻夜</strong><br>數以千計的螢火蟲在黑暗中飛舞，如同地上的銀河。" },
-                    { img: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600", caption: "<strong>專業生態導覽</strong><br>由在地生態專家帶領，認識螢火蟲的一生與棲地保育。" },
-                    { img: "https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?w=600", caption: "<strong>森林步道探險</strong><br>穿梭在幽靜的山林步道，體驗與自然最親密的接觸。" }
-                ],
-                notices: ["請穿著長袖長褲及包鞋", "禁止使用閃光燈及手電筒白光", "建議攜帶紅色玻璃紙包覆手電筒", "請輕聲細語，勿大聲喧嘩", "請勿捕捉螢火蟲"]
-            }
-        };
+window.onload = function() {
+    liff.init({ liffId: MY_LIFF_ID }).then(function() { renderContent(); }).catch(function(err) { console.error(err); renderContent(); });
+};
 
-        var pendingTask = null, leaveTime = 0, currentData = null, isEventPage = false;
+function renderContent() {
+    try {
+        var urlParams = new URLSearchParams(window.location.search);
+        var pageId = urlParams.get('id') || 'spot1';
+        if (pageId.indexOf('E') === 0 && eventsData[pageId]) { isEventPage = true; renderEventPage(pageId); }
+        else { isEventPage = false; renderSpotPage(pageId); }
+    } catch (e) { document.getElementById('loading').innerHTML = '載入失敗'; }
+}
 
-        window.onload = function() {
-            liff.init({ liffId: MY_LIFF_ID }).then(function() {
-                renderContent();
-            }).catch(function(err) { 
-                console.error("LIFF error:", err); 
-                renderContent(); 
-            });
-        };
+function renderEventPage(eventId) {
+    var data = eventsData[eventId]; currentData = data;
+    document.getElementById('beacon-banner').style.display = 'none';
+    document.getElementById('game-section').style.display = 'none';
+    document.getElementById('survey-box').style.display = 'none';
+    document.getElementById('memorial-box').style.display = 'none';
+    document.getElementById('reset-link').style.display = 'none';
+    document.getElementById('bus-schedule-link').style.display = 'none';
+    document.getElementById('desc-actions').style.display = 'none';
+    document.getElementById('wish-btn').style.display = 'none';
+    document.querySelector('.progress-container').style.display = 'none';
+    document.getElementById('tags-container').style.display = 'flex';
+    document.getElementById('gallery-section').style.display = 'block';
+    document.getElementById('notice-box').style.display = 'block';
+    document.getElementById('spot-img').src = data.img;
+    document.getElementById('route-tag').innerHTML = '🎪 限定活動';
+    document.getElementById('route-tag').style.background = '#ff6b6b';
+    document.getElementById('route-desc').innerHTML = '📅 ' + data.date + ' ｜ 📍 ' + data.location;
+    document.getElementById('spot-number').style.display = 'none';
+    document.getElementById('spot-title').innerText = data.title;
+    document.getElementById('spot-desc').innerText = data.desc;
+    var tagsHtml = ''; for (var i = 0; i < data.tags.length; i++) { tagsHtml += '<span class="tag">' + data.tags[i] + '</span>'; }
+    document.getElementById('tags-container').innerHTML = tagsHtml;
+    var galleryHtml = ''; for (var j = 0; j < data.gallery.length; j++) { galleryHtml += '<div class="gallery-item"><img src="' + data.gallery[j].img + '" class="gallery-img"><div class="gallery-caption">' + data.gallery[j].caption + '</div></div>'; }
+    document.getElementById('gallery-content').innerHTML = galleryHtml;
+    var noticeHtml = ''; for (var k = 0; k < data.notices.length; k++) { noticeHtml += '<li>' + data.notices[k] + '</li>'; }
+    document.getElementById('notice-list').innerHTML = noticeHtml;
+    var mapQuery = encodeURIComponent(data.query);
+    document.getElementById('bus-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
+    document.getElementById('bus-label').innerText = '導航前往';
+    document.getElementById('parking-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+停車場';
+    document.getElementById('map-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
+    document.getElementById('food-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+美食';
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+}
 
-        function renderContent() {
-            try {
-                var urlParams = new URLSearchParams(window.location.search);
-                var pageId = urlParams.get('id') || 'spot1';
+function renderSpotPage(spotKey) {
+    var data = spotsData[spotKey]; if (!data) { data = spotsData['spot1']; spotKey = 'spot1'; }
+    currentData = data;
+    document.getElementById('game-section').style.display = 'block';
+    document.getElementById('bus-schedule-link').style.display = 'block';
+    document.getElementById('desc-actions').style.display = 'flex';
+    document.getElementById('wish-btn').style.display = 'block';
+    document.getElementById('reset-link').style.display = 'block';
+    document.querySelector('.progress-container').style.display = 'block';
+    document.getElementById('tags-container').style.display = 'none';
+    document.getElementById('gallery-section').style.display = 'none';
+    document.getElementById('notice-box').style.display = 'none';
+    document.getElementById('spot-img').src = data.img;
+    document.getElementById('spot-title').innerText = data.title;
+    document.getElementById('spot-desc').innerText = data.desc;
+    var routeKey = data.route || "R1"; var rInfo = routesInfo[routeKey];
+    if (rInfo) {
+        document.getElementById('route-tag').innerText = rInfo.title;
+        document.getElementById('route-desc').innerText = rInfo.desc;
+        var spotIndex = rInfo.spots.indexOf(spotKey);
+        if (spotIndex >= 0) { document.getElementById('spot-number').innerText = "第 " + (spotIndex + 1) + " 站，共 " + rInfo.spots.length + " 站"; }
+    }
+    if (data.quizQ) {
+        document.getElementById('quiz-question').innerText = data.quizQ;
+        if (data.quizOpts) { document.getElementById('quiz-opt-1').innerText = data.quizOpts[0]; document.getElementById('quiz-opt-2').innerText = data.quizOpts[1]; document.getElementById('quiz-opt-3').innerText = data.quizOpts[2]; }
+    }
+    var mapQuery = encodeURIComponent(data.query);
+    document.getElementById('map-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
+    document.getElementById('food-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+美食';
+    document.getElementById('parking-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+停車場';
+    if (rInfo && rInfo.spots) {
+        var currentIdx = rInfo.spots.indexOf(spotKey); var nextIdx = (currentIdx + 1) % rInfo.spots.length; var nextSpotKey = rInfo.spots[nextIdx]; var nextData = spotsData[nextSpotKey];
+        if (nextData) { document.getElementById('bus-btn').href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(nextData.query) + '&travelmode=transit'; document.getElementById('bus-label').innerText = '去' + nextData.title; }
+    }
+    if (data.hasBeacon) { setTimeout(function() { document.getElementById('beacon-banner').classList.add('show'); setTimeout(function() { document.getElementById('beacon-banner').classList.remove('show'); }, 8000); }, 3000); }
+    initTaskProgress();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+}
 
-                if (pageId.indexOf('E') === 0 && eventsData[pageId]) {
-                    isEventPage = true;
-                    renderEventPage(pageId);
-                } else {
-                    isEventPage = false;
-                    renderSpotPage(pageId);
-                }
-            } catch (e) {
-                console.error("renderContent error:", e);
-                document.getElementById('loading').innerHTML = '<div>載入失敗，請重新整理</div>';
-            }
+function toggleStory() {
+    var detail = document.getElementById('story-detail'); var btn = document.getElementById('read-more-btn');
+    if (!storyExpanded && currentData && currentData.story) {
+        var html = '';
+        for (var i = 0; i < currentData.story.sections.length; i++) {
+            var sec = currentData.story.sections[i];
+            html += '<div class="story-section"><div class="story-title">' + sec.title + '</div><p class="story-text">' + sec.text + '</p>';
+            if (sec.img) { html += '<img src="' + sec.img + '" class="story-img"><p class="story-caption">' + (sec.caption || '') + '</p>'; }
+            html += '</div>';
         }
+        if (currentData.story.quote) { html += '<div class="story-quote">' + currentData.story.quote + '</div>'; }
+        detail.innerHTML = html; detail.classList.add('show'); btn.innerText = '▲ 收起故事'; storyExpanded = true;
+    } else { detail.classList.remove('show'); btn.innerText = '▼ 了解更多故事'; storyExpanded = false; }
+}
 
-        // ===== 活動頁面渲染 =====
-        function renderEventPage(eventId) {
-            var data = eventsData[eventId];
-            currentData = data;
-            
-            // 隱藏景點專用元素
-            document.getElementById('beacon-banner').style.display = 'none';
-            document.getElementById('game-section').style.display = 'none';
-            document.getElementById('survey-box').style.display = 'none';
-            document.getElementById('memorial-box').style.display = 'none';
-            document.getElementById('reset-link').style.display = 'none';
-            document.getElementById('bus-schedule-link').style.display = 'none';
-            document.getElementById('desc-actions').style.display = 'none';
-            document.getElementById('wish-btn').style.display = 'none';
-            document.querySelector('.progress-container').style.display = 'none';
-
-            // 顯示活動專用元素
-            document.getElementById('tags-container').style.display = 'flex';
-            document.getElementById('gallery-section').style.display = 'block';
-            document.getElementById('notice-box').style.display = 'block';
-
-            // 渲染基本資訊
-            document.getElementById('spot-img').src = data.img;
-            document.getElementById('route-tag').innerHTML = '<span class="event-badge">🎪 限定活動</span>';
-            document.getElementById('route-tag').style.background = 'transparent';
-            document.getElementById('route-tag').style.padding = '0';
-            document.getElementById('route-desc').innerHTML = '📅 ' + data.date + ' ｜ 📍 ' + data.location;
-            document.getElementById('spot-number').style.display = 'none';
-            document.getElementById('spot-title').innerText = data.title;
-            document.getElementById('spot-desc').innerText = data.desc;
-            document.getElementById('spot-desc-container').classList.remove('expandable');
-
-            // 渲染標籤
-            var tagsHtml = '';
-            for (var i = 0; i < data.tags.length; i++) {
-                tagsHtml += '<span class="tag">' + data.tags[i] + '</span>';
-            }
-            document.getElementById('tags-container').innerHTML = tagsHtml;
-
-            // 渲染圖文花絮
-            var galleryHtml = '';
-            for (var j = 0; j < data.gallery.length; j++) {
-                var item = data.gallery[j];
-                galleryHtml += '<div class="gallery-item">';
-                galleryHtml += '<img src="' + item.img + '" class="gallery-img" alt="活動花絮">';
-                galleryHtml += '<div class="gallery-caption">' + item.caption + '</div>';
-                galleryHtml += '</div>';
-            }
-            document.getElementById('gallery-content').innerHTML = galleryHtml;
-
-            // 渲染注意事項
-            var noticeHtml = '';
-            for (var k = 0; k < data.notices.length; k++) {
-                noticeHtml += '<li>' + data.notices[k] + '</li>';
-            }
-            document.getElementById('notice-list').innerHTML = noticeHtml;
-
-            // 設定交通按鈕
-            var mapQuery = encodeURIComponent(data.query);
-            var busBtn = document.getElementById('bus-btn');
-            busBtn.href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
-            busBtn.className = 't-btn bg-nav';
-            document.getElementById('bus-label').innerText = '導航前往';
-            document.getElementById('parking-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+停車場';
-
-            // 設定底部按鈕
-            document.getElementById('map-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
-            document.getElementById('map-btn').innerHTML = '📍 導航到活動地點';
-            document.getElementById('map-btn').className = 'footer-btn btn-nav-main';
-            document.getElementById('food-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+美食';
-
-            // 顯示頁面
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('main-content').style.display = 'block';
-        }
-
-        // ===== 景點頁面渲染 =====
-        function renderSpotPage(spotKey) {
-            var data = spotsData[spotKey];
-            if (!data) { data = spotsData['spot1']; spotKey = 'spot1'; }
-            currentData = data;
-
-            // 顯示景點專用元素
-            document.getElementById('game-section').style.display = 'block';
-            document.getElementById('bus-schedule-link').style.display = 'block';
-            document.getElementById('desc-actions').style.display = 'flex';
-            document.getElementById('wish-btn').style.display = 'block';
-            document.getElementById('reset-link').style.display = 'block';
-            document.querySelector('.progress-container').style.display = 'block';
-
-            // 隱藏活動專用元素
-            document.getElementById('tags-container').style.display = 'none';
-            document.getElementById('gallery-section').style.display = 'none';
-            document.getElementById('notice-box').style.display = 'none';
-
-            // 渲染基本資訊
-            document.getElementById('spot-img').src = data.img;
-            document.getElementById('spot-title').innerText = data.title;
-            document.getElementById('spot-desc').innerText = data.desc;
-
-            // 路線資訊
-            var routeKey = data.route || "R1";
-            var rInfo = routesInfo[routeKey];
-            if (rInfo) {
-                document.getElementById('route-tag').innerText = rInfo.title;
-                document.getElementById('route-desc').innerText = rInfo.desc;
-                var spotIndex = rInfo.spots.indexOf(spotKey);
-                if (spotIndex >= 0) {
-                    document.getElementById('spot-number').innerText = "第 " + (spotIndex + 1) + " 站，共 " + rInfo.spots.length + " 站";
-                }
-            }
-
-            // 設定問答
-            if (data.quizQ) {
-                document.getElementById('quiz-question').innerText = data.quizQ;
-                if (data.quizOpts) {
-                    document.getElementById('quiz-opt-1').innerText = data.quizOpts[0];
-                    document.getElementById('quiz-opt-2').innerText = data.quizOpts[1];
-                    document.getElementById('quiz-opt-3').innerText = data.quizOpts[2];
-                }
-            }
-
-            // 設定連結
-            var mapQuery = encodeURIComponent(data.query);
-            document.getElementById('map-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
-            document.getElementById('food-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+美食';
-            document.getElementById('parking-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+停車場';
-
-            // 設定下一站按鈕
-            if (rInfo && rInfo.spots) {
-                var currentIdx = rInfo.spots.indexOf(spotKey);
-                var nextIdx = (currentIdx + 1) % rInfo.spots.length;
-                var nextSpotKey = rInfo.spots[nextIdx];
-                var nextData = spotsData[nextSpotKey];
-                if (nextData) {
-                    document.getElementById('bus-btn').href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(nextData.query) + '&travelmode=transit';
-                    document.getElementById('bus-label').innerText = '去' + nextData.title;
-                }
-            }
-
-            // Beacon 模擬
-            if (data.hasBeacon) {
-                setTimeout(function() {
-                    document.getElementById('beacon-banner').classList.add('show');
-                    setTimeout(function() {
-                        document.getElementById('beacon-banner').classList.remove('show');
-                    }, 8000);
-                }, 3000);
-            }
-
-            initTaskProgress();
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('main-content').style.display = 'block';
-        }
-
-        // ===== 集點功能 =====
-        function collectAction(taskName) {
-            var collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
-            if (collected.indexOf(taskName) === -1) {
-                collected.push(taskName);
-                localStorage.setItem('xizhi_action_stamps', JSON.stringify(collected));
-                setTimeout(initTaskProgress, 500);
-            }
-        }
-
-        function handleClickWithTrack(taskName) { collectAction(taskName); }
-
-        function isTaskDone(taskName) {
-            var collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
-            return collected.indexOf(taskName) !== -1;
-        }
-
-        function initTaskProgress() {
-            var collected = JSON.parse(localStorage.getItem('xizhi_action_stamps')) || [];
-            var icons = { 'map': '🗺️', 'quiz': '❓', 'wish': '❤️', 'beacon': '📡', 'bus': '🚌' };
-            
-            for (var i = 0; i < TASKS.length; i++) {
-                var task = TASKS[i];
-                var el = document.getElementById('stamp-' + task);
-                if (el) {
-                    if (collected.indexOf(task) !== -1) {
-                        el.classList.add('active');
-                        el.innerText = '✓';
-                    } else {
-                        el.classList.remove('active');
-                        el.innerText = icons[task];
-                    }
-                }
-            }
-
-            var wishBtn = document.getElementById('wish-btn');
-            if (collected.indexOf('wish') !== -1) {
-                wishBtn.classList.add('active');
-                wishBtn.innerHTML = '❤️';
-            }
-
-            document.getElementById('progress-text').innerText = collected.length + '/5';
-            document.getElementById('progress-bar').style.width = (collected.length / 5) * 100 + '%';
-
-            if (collected.length >= 5) {
-                document.getElementById('survey-box').style.display = 'block';
-                document.getElementById('memorial-box').style.display = 'block';
-            }
-        }
-
-        // ===== 其他功能 =====
-        function handleBeaconClick() {
-            document.getElementById('beacon-banner').classList.remove('show');
-            alert("🎉 恭喜！您找到了隱藏訊號！\n獲得【尋寶印章】");
-            collectAction('beacon');
-        }
-
-        function openQuizModal() {
-            if (isTaskDone('quiz')) { alert("這個任務已經完成囉！"); return; }
-            document.getElementById('quiz-modal').style.display = 'flex';
-        }
-
-        function checkQuiz(answerIdx) {
-            var correctAnswer = currentData ? currentData.quizA : 2;
-            if (answerIdx === correctAnswer) {
-                document.getElementById('quiz-modal').style.display = 'none';
-                alert("⭕ 答對了！真厲害！\n獲得【問答印章】");
-                collectAction('quiz');
-            } else {
-                alert("❌ 答錯了，請再試試看！");
-            }
-        }
-
-        function triggerWishlist() {
-            var btn = document.getElementById('wish-btn');
-            if (btn.classList.contains('active')) {
-                btn.classList.remove('active');
-                btn.innerHTML = '♡';
-                alert("已從清單移除");
-            } else {
-                btn.classList.add('active');
-                btn.innerHTML = '❤️';
-                if (!isTaskDone('wish')) {
-                    alert("已加入最愛！獲得【想去印章】");
-                    collectAction('wish');
-                } else {
-                    alert("已加入最愛！");
-                }
-            }
-        }
-
-        function toggleDesc() {
-            var container = document.getElementById('spot-desc-container');
-            var btn = document.getElementById('read-more-btn');
-            container.classList.toggle('expanded');
-            btn.innerText = container.classList.contains('expanded') ? "▲ 收起簡介" : "▼ 了解更多故事";
-        }
-
-        function openShareModal() { document.getElementById('share-modal').style.display = 'flex'; }
-        
-        function closeModal(modalId, e) {
-            if (e.target.id === modalId || e.target.classList.contains('close-modal')) {
-                document.getElementById(modalId).style.display = 'none';
-            }
-        }
-
-        function shareTo(platform) {
-            var url = window.location.href;
-            var title = document.getElementById('spot-title').innerText;
-            var text = isEventPage ? '【汐止活動】' + title + '，快來參加！' : '我正在探索汐止深度導覽：' + title + '，快來看看！';
-
-            if (platform === 'line') {
-                window.location.href = 'https://line.me/R/msg/text/?' + encodeURIComponent(text + ' ' + url);
-            } else if (platform === 'fb') {
-                window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url));
-            } else if (platform === 'copy') {
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(url).then(function() { alert("連結已複製！"); });
-                }
-            }
-            document.getElementById('share-modal').style.display = 'none';
-        }
-
-        function resetProgress() {
-            if (confirm("重置所有集點進度？")) {
-                localStorage.removeItem('xizhi_action_stamps');
-                location.reload();
-            }
-        }
-
-        function handleImageUpload(e) {
-            var file = e.target.files[0];
-            if (!file) return;
-            var reader = new FileReader();
-            reader.onload = function(event) {
-                var img = new Image();
-                img.onload = function() { drawCanvas(img); };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function drawCanvas(userImg) {
-            var canvas = document.getElementById('result-canvas');
-            var ctx = canvas.getContext('2d');
-            var size = 800;
-            canvas.width = size;
-            canvas.height = size;
-            var scale = Math.max(size / userImg.width, size / userImg.height);
-            ctx.drawImage(userImg, (size / 2) - (userImg.width / 2) * scale, (size / 2) - (userImg.height / 2) * scale, userImg.width * scale, userImg.height * scale);
-            var frameImg = new Image();
-            frameImg.onload = function() {
-                ctx.drawImage(frameImg, 0, 0, size, size);
-                var finalImg = document.getElementById('final-img');
-                finalImg.src = canvas.toDataURL("image/jpeg", 0.8);
-                finalImg.style.display = "block";
-                document.getElementById('download-msg').style.display = "block";
-            };
-            frameImg.src = FRAME_IMG_SRC;
-        }
-    </script>
+function collectAction(taskName) { var c = JSON.parse(localStorage.getItem('xizhi_stamps')) || []; if (c.indexOf(taskName) === -1) { c.push(taskName); localStorage.setItem('xizhi_stamps', JSON.stringify(c)); setTimeout(initTaskProgress, 500); } }
+function handleClickWithTrack(taskName) { collectAction(taskName); }
+function isTaskDone(taskName) { var c = JSON.parse(localStorage.getItem('xizhi_stamps')) || []; return c.indexOf(taskName) !== -1; }
+function initTaskProgress() {
+    var c = JSON.parse(localStorage.getItem('xizhi_stamps')) || []; var icons = { 'map': '🗺️', 'quiz': '❓', 'wish': '❤️', 'beacon': '📡', 'bus': '🚌' };
+    for (var i = 0; i < TASKS.length; i++) { var t = TASKS[i]; var el = document.getElementById('stamp-' + t); if (el) { if (c.indexOf(t) !== -1) { el.classList.add('active'); el.innerText = '✓'; } else { el.classList.remove('active'); el.innerText = icons[t]; } } }
+    var wishBtn = document.getElementById('wish-btn'); if (c.indexOf('wish') !== -1) { wishBtn.classList.add('active'); wishBtn.innerHTML = '❤️'; }
+    document.getElementById('progress-text').innerText = c.length + '/5'; document.getElementById('progress-bar').style.width = (c.length / 5) * 100 + '%';
+    if (c.length >= 5) { document.getElementById('survey-box').style.display = 'block'; document.getElementById('memorial-box').style.display = 'block'; }
+}
+function handleBeaconClick() { document.getElementById('beacon-banner').classList.remove('show'); alert("🎉 獲得【尋寶印章】"); collectAction('beacon'); }
+function openQuizModal() { if (isTaskDone('quiz')) { alert("已完成！"); return; } document.getElementById('quiz-modal').style.display = 'flex'; }
+function checkQuiz(answerIdx) { var correct = currentData ? currentData.quizA : 2; if (answerIdx === correct) { document.getElementById('quiz-modal').style.display = 'none'; alert("⭕ 答對了！獲得【問答印章】"); collectAction('quiz'); } else { alert("❌ 答錯了，再試試！"); } }
+function triggerWishlist() { var btn = document.getElementById('wish-btn'); if (btn.classList.contains('active')) { btn.classList.remove('active'); btn.innerHTML = '♡'; } else { btn.classList.add('active'); btn.innerHTML = '❤️'; if (!isTaskDone('wish')) { alert("獲得【想去印章】"); collectAction('wish'); } } }
+function openShareModal() { document.getElementById('share-modal').style.display = 'flex'; }
+function closeModal(id, e) { if (e.target.id === id || e.target.classList.contains('close-modal')) { document.getElementById(id).style.display = 'none'; } }
+function shareTo(platform) { var url = window.location.href; var title = document.getElementById('spot-title').innerText; var text = '我正在探索汐止：' + title; if (platform === 'line') { window.location.href = 'https://line.me/R/msg/text/?' + encodeURIComponent(text + ' ' + url); } else if (platform === 'fb') { window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url)); } else if (platform === 'copy') { if (navigator.clipboard) { navigator.clipboard.writeText(url).then(function() { alert("連結已複製！"); }); } } document.getElementById('share-modal').style.display = 'none'; }
+function resetProgress() { if (confirm("重置進度？")) { localStorage.removeItem('xizhi_stamps'); location.reload(); } }
+function handleImageUpload(e) { var file = e.target.files[0]; if (!file) return; var reader = new FileReader(); reader.onload = function(event) { var img = new Image(); img.onload = function() { var canvas = document.getElementById('result-canvas'); var ctx = canvas.getContext('2d'); canvas.width = 800; canvas.height = 800; var scale = Math.max(800 / img.width, 800 / img.height); ctx.drawImage(img, 400 - (img.width / 2) * scale, 400 - (img.height / 2) * scale, img.width * scale, img.height * scale); document.getElementById('final-img').src = canvas.toDataURL("image/jpeg", 0.8); document.getElementById('final-img').style.display = "block"; document.getElementById('download-msg').style.display = "block"; }; img.src = event.target.result; }; reader.readAsDataURL(file); }
+</script>
 </body>
 </html>
