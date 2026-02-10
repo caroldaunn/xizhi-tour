@@ -65,6 +65,16 @@
         .bg-bus { background: #3498db; }
         .bg-parking { background: #546de5; }
         .bus-label { font-size: 11px; }
+        
+        /* 公車時刻表按鈕美化 */
+        .bus-schedule-box { background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; padding: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .bus-schedule-icon { width: 44px; height: 44px; background: linear-gradient(135deg, #3498db, #2980b9); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+        .bus-schedule-info { flex: 1; }
+        .bus-schedule-title { font-size: 14px; font-weight: bold; color: #2c3e50; margin-bottom: 2px; }
+        .bus-schedule-desc { font-size: 12px; color: #888; }
+        .bus-schedule-btn { background: #3498db; color: white; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; text-decoration: none; white-space: nowrap; }
+        .bus-schedule-btn:active { transform: scale(0.95); }
+
         .game-section { background: #fff8e1; border: 2px dashed #ffc107; border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 15px; }
         .game-title { font-weight: bold; color: #d35400; margin-bottom: 15px; font-size: 16px; }
         .task-grid { display: flex; justify-content: center; gap: 10px; }
@@ -158,7 +168,15 @@
                 <a id="bus-btn" href="#" target="_blank" class="t-btn bg-bus" onclick="collectAction('bus')"><i>🚌</i> <span id="bus-label" class="bus-label">去下一站</span></a>
                 <a id="parking-btn" href="#" target="_blank" class="t-btn bg-parking"><i>🅿️</i> 找停車場</a>
             </div>
-            <div id="bus-schedule-link" style="text-align: center; margin-bottom: 20px;"><a href="https://www.xizhi.ntpc.gov.tw/home.jsp?id=1ee324bfb5e44418" target="_blank" style="font-size: 12px; color: #999; text-decoration: underline;">📄 F系列社區巴士時刻表</a></div>
+            <!-- 公車時刻表美化版 -->
+            <div id="bus-schedule-link" class="bus-schedule-box">
+                <div class="bus-schedule-icon">🚌</div>
+                <div class="bus-schedule-info">
+                    <div class="bus-schedule-title">F系列社區巴士</div>
+                    <div class="bus-schedule-desc">查看完整時刻表與路線圖</div>
+                </div>
+                <a href="https://www.xizhi.ntpc.gov.tw/home.jsp?id=1ee324bfb5e44418" target="_blank" class="bus-schedule-btn">查看 →</a>
+            </div>
             <div id="game-section" class="game-section">
                 <div class="game-title">🏆 汐止達人挑戰 (進度: <span id="progress-text">0/5</span>)</div>
                 <div class="task-grid">
@@ -177,7 +195,10 @@
                 <canvas id="result-canvas"></canvas>
                 <img id="final-img" src="" alt=""><div id="download-msg" class="download-hint">👆 長按圖片儲存</div>
             </div>
-            <div id="reset-link" class="reset-link" onclick="resetProgress()">↺ 重置測試進度</div>
+            <!-- 隱藏的重置按鈕，需長按遊戲區塊3秒才會顯示 -->
+            <div id="reset-link" class="reset-link" style="display:none;" onclick="resetProgress()">↺ 重置測試進度</div>
+            <!-- 長按觸發區（版本號） -->
+            <div id="dev-trigger" style="text-align:center; padding: 20px 0; color: #ddd; font-size: 11px; user-select: none;">v2.0</div>
         </div>
     </div>
 
@@ -455,6 +476,54 @@ function shareTo(platform) {
 }
 
 function resetProgress() { if (confirm("重置進度？")) { localStorage.removeItem('xizhi_stamps'); location.reload(); } }
+
+// 長按3秒顯示重置按鈕
+var longPressTimer = null;
+var devTrigger = null;
+
+function initDevTrigger() {
+    devTrigger = document.getElementById('dev-trigger');
+    if (!devTrigger) return;
+    
+    // 觸控裝置
+    devTrigger.addEventListener('touchstart', function(e) {
+        longPressTimer = setTimeout(function() {
+            document.getElementById('reset-link').style.display = 'block';
+            if (navigator.vibrate) navigator.vibrate(100); // 震動回饋
+            alert('🔧 開發者模式已啟用');
+        }, 3000);
+    });
+    
+    devTrigger.addEventListener('touchend', function() {
+        clearTimeout(longPressTimer);
+    });
+    
+    devTrigger.addEventListener('touchmove', function() {
+        clearTimeout(longPressTimer);
+    });
+    
+    // 滑鼠裝置
+    devTrigger.addEventListener('mousedown', function() {
+        longPressTimer = setTimeout(function() {
+            document.getElementById('reset-link').style.display = 'block';
+            alert('🔧 開發者模式已啟用');
+        }, 3000);
+    });
+    
+    devTrigger.addEventListener('mouseup', function() {
+        clearTimeout(longPressTimer);
+    });
+    
+    devTrigger.addEventListener('mouseleave', function() {
+        clearTimeout(longPressTimer);
+    });
+}
+
+// 頁面載入後初始化
+window.addEventListener('load', function() {
+    setTimeout(initDevTrigger, 500);
+});
+
 function handleImageUpload(e) { var file = e.target.files[0]; if (!file) return; var reader = new FileReader(); reader.onload = function(event) { var img = new Image(); img.onload = function() { var canvas = document.getElementById('result-canvas'); var ctx = canvas.getContext('2d'); canvas.width = 800; canvas.height = 800; var scale = Math.max(800 / img.width, 800 / img.height); ctx.drawImage(img, 400 - (img.width / 2) * scale, 400 - (img.height / 2) * scale, img.width * scale, img.height * scale); document.getElementById('final-img').src = canvas.toDataURL("image/jpeg", 0.8); document.getElementById('final-img').style.display = "block"; document.getElementById('download-msg').style.display = "block"; }; img.src = event.target.result; }; reader.readAsDataURL(file); }
 </script>
 </body>
