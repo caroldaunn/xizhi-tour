@@ -176,8 +176,7 @@
                 <div class="upload-btn-wrapper"><button class="btn-upload">📸 選擇照片</button><input type="file" accept="image/*" onchange="handleImageUpload(event)"></div>
                 <canvas id="result-canvas"></canvas>
                 <img id="final-img" src="" alt="" onclick="openLightbox()">
-                <button id="download-btn" class="download-btn" onclick="downloadImage()">📥 下載紀念照</button>
-                <div id="download-msg" class="download-hint">👆 點擊圖片可放大，長按可儲存</div>
+                <div id="download-msg" class="download-hint">👆 點擊圖片可放大，長按圖片可儲存到相簿</div>
             </div>
             <!-- V2.0 長按3秒可重置 -->
             <div id="version-trigger" class="version-trigger">v2.0</div>
@@ -454,22 +453,25 @@ var longPressTimer = null;
 function initVersionTrigger() {
     var trigger = document.getElementById('version-trigger');
     if (!trigger) return;
-    trigger.addEventListener('touchstart', function(e) {
-        e.preventDefault();
+    
+    function startPress() {
         longPressTimer = setTimeout(function() {
             if (navigator.vibrate) navigator.vibrate(100);
             if (confirm("🔧 確定要重置所有測試進度嗎？")) { localStorage.removeItem('xizhi_stamps'); location.reload(); }
         }, 3000);
-    });
-    trigger.addEventListener('touchend', function() { clearTimeout(longPressTimer); });
-    trigger.addEventListener('touchmove', function() { clearTimeout(longPressTimer); });
-    trigger.addEventListener('mousedown', function() {
-        longPressTimer = setTimeout(function() {
-            if (confirm("🔧 確定要重置所有測試進度嗎？")) { localStorage.removeItem('xizhi_stamps'); location.reload(); }
-        }, 3000);
-    });
-    trigger.addEventListener('mouseup', function() { clearTimeout(longPressTimer); });
-    trigger.addEventListener('mouseleave', function() { clearTimeout(longPressTimer); });
+    }
+    
+    function cancelPress() {
+        if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+    }
+    
+    trigger.addEventListener('touchstart', startPress, {passive: true});
+    trigger.addEventListener('touchend', cancelPress, {passive: true});
+    trigger.addEventListener('touchcancel', cancelPress, {passive: true});
+    trigger.addEventListener('touchmove', cancelPress, {passive: true});
+    trigger.addEventListener('mousedown', startPress);
+    trigger.addEventListener('mouseup', cancelPress);
+    trigger.addEventListener('mouseleave', cancelPress);
 }
 
 // 紀念照上傳與下載
@@ -502,7 +504,6 @@ function handleImageUpload(e) {
             // 顯示結果
             document.getElementById('final-img').src = canvas.toDataURL("image/jpeg", 0.9);
             document.getElementById('final-img').style.display = "block";
-            document.getElementById('download-btn').style.display = "inline-block";
             document.getElementById('download-msg').style.display = "block";
         }; 
         img.src = event.target.result; 
@@ -522,12 +523,16 @@ function downloadImage() {
 // 燈箱功能
 function openLightbox() {
     var src = document.getElementById('final-img').src;
-    if (src) {
+    if (src && src !== '') {
         document.getElementById('lightbox-img').src = src;
         document.getElementById('lightbox').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
     }
 }
-function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; }
+function closeLightbox() { 
+    document.getElementById('lightbox').style.display = 'none'; 
+    document.body.style.overflow = '';
+}
 </script>
 </body>
 </html>
