@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>汐止深度導覽</title>
+    <title>汐止在地導覽</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         * { box-sizing: border-box; }
@@ -120,7 +120,7 @@
     <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
     <div id="beacon-banner" class="beacon-banner" onclick="handleBeaconClick()">
         <div class="beacon-icon">📡</div>
-        <div class="beacon-text"><div class="beacon-title">偵測到 LINE Beacon 訊號</div><div class="beacon-sub">附近有隱藏景點！點擊打卡</div></div>
+        <div class="beacon-text"><div class="beacon-title">偵測到 LINE Beacon 訊號</div><div class="beacon-sub">找到隱藏景點，點擊打卡!</div></div>
     </div>
     <div id="main-content" style="display: none;">
         <div class="hero-container"><img id="spot-img" class="hero-img" src="" alt="圖片"></div>
@@ -136,7 +136,7 @@
                 <div id="spot-desc" class="desc-text"></div>
                 <div id="desc-actions" class="desc-actions">
                     <div id="read-more-btn" class="read-more-btn" onclick="toggleStory()">▼ 了解更多故事</div>
-                    <div id="quiz-btn" class="quiz-trigger-btn" onclick="openQuizModal()">🧠 知識小學堂</div>
+                    <div id="quiz-btn" class="quiz-trigger-btn" onclick="openQuizModal()">知識小學堂</div>
                 </div>
             </div>
             <div id="story-detail" class="story-detail"></div>
@@ -149,7 +149,7 @@
             </div>
             <div id="tags-container" class="tags-container"></div>
             <div id="gallery-section"><div class="section-title">活動花絮</div><div id="gallery-content"></div></div>
-            <div id="notice-box" class="notice-box"><h4>📌 參加須知</h4><ul id="notice-list"></ul></div>
+            <div id="notice-box" class="notice-box"><h4>參加須知</h4><ul id="notice-list"></ul></div>
             <div class="transport-grid">
                 <a href="https://www.google.com/maps/search/YouBike/" target="_blank" class="t-btn bg-ubike"><i>🚲</i> YouBike</a>
                 <a id="bus-btn" href="#" target="_blank" class="t-btn bg-bus"><i>🚌</i> <span id="bus-label" class="bus-label">去下一站</span></a>
@@ -160,7 +160,7 @@
                 <a href="https://www.xizhi.ntpc.gov.tw/home.jsp?id=1ee324bfb5e44418" target="_blank" style="font-size: 14px; color: #3498db; text-decoration: none;">F系列社區巴士時刻表 查看 →</a>
             </div>
             <div id="game-section" class="game-section">
-                <div class="game-title">🏆 汐止達人挑戰 (進度: <span id="progress-text">0/5</span>)</div>
+                <div class="game-title">汐止達人挑戰 (進度: <span id="progress-text">0/5</span>)</div>
                 <div class="task-grid">
                     <div class="stamp-box"><div class="stamp" id="stamp-map">🗺️</div><div class="stamp-label">找路</div></div>
                     <div class="stamp-box"><div class="stamp" id="stamp-quiz">❓</div><div class="stamp-label">問答</div></div>
@@ -169,32 +169,32 @@
                     <div class="stamp-box"><div class="stamp" id="stamp-share">📤</div><div class="stamp-label">分享</div></div>
                 </div>
             </div>
-            <div id="survey-box"><a href="#" class="survey-btn">🎓 任務達成！填寫問卷領取證書</a></div>
+            <div id="survey-box"><a href="#" class="survey-btn">任務達成！填寫問卷領取證書</a></div>
             <div id="memorial-box">
-                <div style="font-size:16px;font-weight:800;margin-bottom:5px;">🎁 完賽紀念照</div>
+                <div style="font-size:16px;font-weight:800;margin-bottom:5px;">完賽紀念照</div>
                 <p style="font-size:13px;color:#666;margin-bottom:15px;">上傳自拍照，合成汐止達人相框！</p>
-                <div class="upload-btn-wrapper"><button class="btn-upload">📸 選擇照片</button><input type="file" accept="image/*" onchange="handleImageUpload(event)"></div>
+                <div class="upload-btn-wrapper"><button class="btn-upload">選擇照片</button><input type="file" accept="image/*" onchange="handleImageUpload(event)"></div>
                 <canvas id="result-canvas"></canvas>
                 <img id="final-img" src="" alt="" onclick="openLightbox()">
-                <div id="download-msg" class="download-hint">👆 點擊圖片可放大，長按圖片可儲存到相簿</div>
+                <div id="download-msg" class="download-hint">點擊圖片可放大</div>
             </div>
             <!-- V2.0 長按3秒可重置 -->
             <div id="version-trigger" class="version-trigger">v2.0</div>
         </div>
     </div>
     <div class="sticky-footer">
-        <a id="map-btn" href="#" class="footer-btn btn-map" target="_blank" onclick="handleClickWithTrack('map')">📍 帶我去</a>
-        <button class="footer-btn btn-share" onclick="handleShareWithStamp()">📸 打卡分享</button>
+        <a id="map-btn" href="#" class="footer-btn btn-map" target="_blank" onclick="handleClickWithTrack('map')">帶我去</a>
+        <button class="footer-btn btn-share" onclick="handleShareWithStamp()">打卡分享</button>
     </div>
     <!-- 圖片燈箱 -->
     <div id="lightbox" class="lightbox" onclick="closeLightbox()">
         <span class="lightbox-close">✕</span>
         <img id="lightbox-img" src="" alt="">
-        <div class="lightbox-hint">👆 長按圖片可儲存到相簿</div>
+        <div class="lightbox-hint">長按圖片可儲存到相簿</div>
     </div>
     <div id="share-modal" class="modal-overlay" onclick="closeModal('share-modal',event)">
         <div class="share-sheet">
-            <div class="share-title">📸 打卡分享</div>
+            <div class="share-title">打卡分享</div>
             <div class="share-grid">
                 <div class="share-item" onclick="shareTo('line')">
                     <div class="share-icon-box" style="background:#06C755;">
@@ -447,7 +447,7 @@ function shareTo(platform) {
     var url = window.location.href; 
     var title = document.getElementById('spot-title').innerText; 
     var text = '📸 我正在汐止打卡：' + title + '！快來一起探索～'; 
-    if (!isTaskDone('share')) { setTimeout(function() { alert("📸 分享成功！獲得【分享印章】"); collectAction('share'); }, 500); }
+    if (!isTaskDone('share')) { setTimeout(function() { alert("分享成功！獲得【分享印章】"); collectAction('share'); }, 500); }
     if (platform === 'line') { window.location.href = 'https://line.me/R/msg/text/?' + encodeURIComponent(text + ' ' + url); } 
     else if (platform === 'fb') { window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&quote=' + encodeURIComponent(text)); } 
     else if (platform === 'ig') { if (navigator.clipboard) { navigator.clipboard.writeText(text + ' ' + url).then(function() { alert("已複製文字！請打開 Instagram 貼上分享"); }); } } 
@@ -464,7 +464,7 @@ function initVersionTrigger() {
     function startPress() {
         longPressTimer = setTimeout(function() {
             if (navigator.vibrate) navigator.vibrate(100);
-            if (confirm("🔧 確定要重置所有測試進度嗎？")) { localStorage.removeItem('xizhi_stamps'); location.reload(); }
+            if (confirm("確定要重置所有測試進度嗎？")) { localStorage.removeItem('xizhi_stamps'); location.reload(); }
         }, 3000);
     }
     
