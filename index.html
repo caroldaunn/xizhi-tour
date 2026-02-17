@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>汐止在地導覽</title>
+    <title>汐止在地導覽 v4 (Google Sheet版)</title>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         * { box-sizing: border-box; }
@@ -58,9 +58,9 @@
         .t-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 10px; border-radius: 12px; text-decoration: none; color: white; font-weight: bold; font-size: 13px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
         .t-btn:active { transform: scale(0.96); }
         .t-btn i { font-style: normal; font-size: 18px; }
-        .bg-ubike { background: linear-gradient(135deg, #fce38a, #f38181); color: #555; }
-        .bg-bus { background: #3498db; }
-        .bg-parking { background: #546de5; }
+        .bg-ubike { background: #FC9F4D; }
+        .bg-bus { background: #58B2DC; }
+        .bg-parking { background: #0089A7;}
         .bus-label { font-size: 11px; }
         .game-section { background: #fff8e1; border: 2px dashed #ffc107; border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 15px; }
         .game-title { font-weight: bold; color: #d35400; margin-bottom: 15px; font-size: 16px; }
@@ -193,7 +193,7 @@
                 <img id="final-img" src="" alt="" onclick="openLightbox()">
                 <div id="download-msg" class="download-hint">點擊圖片可放大</div>
             </div>
-            <div id="version-trigger" class="version-trigger">v4.0</div>
+            <div id="version-trigger" class="version-trigger">v4.0 (Google Sheet)</div>
         </div>
     </div>
     <div class="sticky-footer">
@@ -779,4 +779,3 @@ function closeLightbox() {
 </script>
 </body>
 </html>
-
