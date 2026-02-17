@@ -94,8 +94,8 @@
         .close-modal { margin-top: 15px; color: #999; font-size: 12px; text-decoration: underline; cursor: pointer; }
         .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px 15px; display: flex; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
         .footer-btn { flex: 1; padding: 12px; border-radius: 10px; text-align: center; text-decoration: none; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; border: none; }
-        .btn-map { background: #77969A; color: #ffffff; }
-        .btn-share { background: #4b59a2; color: white; }
+        .btn-map { background: #dcc5de; color: #ffffff; }
+        .btn-share { background: #adb9f4; color: white; }
         #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; align-items: center; justify-content: center; z-index: 3000; flex-direction: column; }
         .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid #667eea; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
         .loading-text { color: #888; font-size: 14px; }
@@ -136,7 +136,7 @@
     <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
     <div id="beacon-banner" class="beacon-banner" onclick="handleBeaconClick()">
         <div class="beacon-icon">📡</div>
-        <div class="beacon-text"><div class="beacon-title">偵測到 LINE Beacon 訊號</div><div class="beacon-sub">找到隱藏景點，點擊打卡!</div></div>
+        <div class="beacon-text"><div class="beacon-title">偵測到 LINE Beacon 訊號</div><div class="beacon-sub">找到隱藏景點，點擊讀取訊息!</div></div>
     </div>
     <div id="main-content" style="display: none;">
         <div class="hero-container"><img id="spot-img" class="hero-img" src="" alt="圖片"></div>
@@ -197,8 +197,8 @@
         </div>
     </div>
     <div class="sticky-footer">
-        <a id="map-btn" href="#" class="footer-btn btn-map" target="_blank" onclick="handleClickWithTrack('map')">帶我去</a>
-        <button class="footer-btn btn-share" onclick="handleShareWithStamp()">打卡分享</button>
+        <a id="map-btn" href="#" class="footer-btn btn-map" target="_blank" onclick="handleClickWithTrack('map')">帶我來這裡</a>
+        <button class="footer-btn btn-share" onclick="handleShareWithStamp()">打卡或分享</button>
     </div>
     <div id="lightbox" class="lightbox" onclick="closeLightbox()">
         <span class="lightbox-close">✕</span>
@@ -207,7 +207,7 @@
     </div>
     <div id="share-modal" class="modal-overlay" onclick="closeModal('share-modal',event)">
         <div class="share-sheet">
-            <div class="share-title">打卡分享</div>
+            <div class="share-title">打卡或分享</div>
             <div class="share-grid">
                 <div class="share-item" onclick="shareTo('line')">
                     <div class="share-icon-box" style="background:#06C755;">
