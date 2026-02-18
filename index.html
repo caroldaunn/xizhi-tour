@@ -27,7 +27,7 @@
         .route-info { font-size: 13px; color: #666; margin-bottom: 15px; border-left: 3px solid #ff8a00; padding-left: 8px; }
         .spot-number { font-size: 12px; color: #888; margin-bottom: 5px; }
         .desc-box { margin-bottom: 20px; }
-        .desc-text { font-size: 15px; line-height: 1.8; color: #555; } /* 行距：改 line-height 數字，愈大愈鬆 */
+        .desc-text { font-size: 15px; line-height: 1.8; color: #555; }
         .desc-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
         .read-more-btn { color: #007bff; font-weight: bold; font-size: 14px; cursor: pointer; text-decoration: underline; }
         .quiz-trigger-btn { background: #ff9f43; color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; }
@@ -36,7 +36,7 @@
         .story-section { margin-bottom: 20px; }
         .story-title { font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
         .story-title::before { content: ""; width: 4px; height: 16px; background: linear-gradient(180deg, #ff8a00, #e52e71); border-radius: 2px; }
-        .story-text { font-size: 14px; line-height: 1.8; color: #555; text-align: justify; } /* 行距：改 line-height */
+        .story-text { font-size: 14px; line-height: 1.8; color: #555; text-align: justify; }
         .story-img { width: 100%; border-radius: 12px; margin: 15px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .story-caption { font-size: 12px; color: #888; text-align: center; margin-top: -10px; margin-bottom: 15px; }
         .story-quote { background: #fff; border-left: 4px solid #ff8a00; padding: 15px; margin: 15px 0; font-style: italic; color: #666; border-radius: 0 8px 8px 0; }
@@ -136,7 +136,7 @@
     <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
     <div id="beacon-banner" class="beacon-banner" onclick="handleBeaconClick()">
         <div class="beacon-icon">📡</div>
-        <div class="beacon-text"><div class="beacon-title">偵測到 LINE Beacon 訊號</div><div class="beacon-sub">找到隱藏景點，點擊讀取訊息!</div></div>
+        <div class="beacon-text"><div class="beacon-title">偵測到 LINE Beacon 訊號</div><div class="beacon-sub">找到隱藏景點,點擊讀取訊息!</div></div>
     </div>
     <div id="main-content" style="display: none;">
         <div class="hero-container"><img id="spot-img" class="hero-img" src="" alt="圖片"></div>
@@ -184,16 +184,16 @@
                     <div class="stamp-box"><div class="stamp" id="stamp-share">📤</div><div class="stamp-label">分享</div></div>
                 </div>
             </div>
-            <div id="survey-box"><a href="#" class="survey-btn">任務達成，填寫問卷並參加抽獎!</a></div>
+            <div id="survey-box"><a href="#" class="survey-btn">任務達成,填寫問卷並參加抽獎!</a></div>
             <div id="memorial-box">
                 <div style="font-size:16px;font-weight:800;margin-bottom:5px;">完賽紀念照</div>
-                <p style="font-size:13px;color:#666;margin-bottom:15px;">上傳自拍照，合成汐止達人相框！</p>
+                <p style="font-size:13px;color:#666;margin-bottom:15px;">上傳自拍照,合成汐止達人相框!</p>
                 <div class="upload-btn-wrapper"><button class="btn-upload">選擇照片</button><input type="file" accept="image/*" onchange="handleImageUpload(event)"></div>
                 <canvas id="result-canvas"></canvas>
                 <img id="final-img" src="" alt="" onclick="openLightbox()">
                 <div id="download-msg" class="download-hint">點擊圖片可放大</div>
             </div>
-            <div id="version-trigger" class="version-trigger">v4.0</div>
+            <div id="version-trigger" class="version-trigger">v4.0-debug</div>
         </div>
     </div>
     <div class="sticky-footer">
@@ -235,7 +235,7 @@
 // ========================================
 // 🔧 設定區 - Google Apps Script API 網址
 // ========================================
-    const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbzNtCPdBPw5LEEnsqmAAo4RclWvgg1TwdJ8g0td9BZf_UQEqPU-RiZSgJh8pS3VWSyPKg/exec';
+const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbzNtCPdBPw5LEEnsqmAAo4RclWvgg1TwdJ8g0td9BZf_UQEqPU-RiZSgJh8pS3VWSyPKg/exec';
 
 // ========================================
 // 📦 全域變數
@@ -243,33 +243,28 @@
 var MY_LIFF_ID = "2008941841-8KQq29wn";
 var TASKS = ['map','quiz','wish','beacon','share'];
 
-// 完賽紀念照相框設定（改這裡即可更新框的樣式）
-// 相框圖建議上傳到 GitHub，使用 Raw 連結（見 assets/README.md）
-// 範例：'https://raw.githubusercontent.com/你的帳號/倉庫名/main/assets/memorial-frame.png'
+// 完賽紀念照相框設定
 var MEMORIAL_FRAME = {
     canvasSize: 800,
-    bgGradient: { start: '#667eea', end: '#764ba2' },  // 背景漸層起訖色
+    bgGradient: { start: '#667eea', end: '#764ba2' },
     photoCenterX: 400, photoCenterY: 340, photoRadius: 220,
     borderColor: '#fff', borderWidth: 8,
     titleText: '🏆 汐止達人認證 🏆', titleY: 640, titleFont: 'bold 36px sans-serif',
-    subText: '完成所有挑戰！', subY: 690, subFont: '24px sans-serif',
+    subText: '完成所有挑戰!', subY: 690, subFont: '24px sans-serif',
     dateY: 740, dateFont: '16px sans-serif', dateColor: 'rgba(255,255,255,0.7)',
     frameImageUrl: 'https://raw.githubusercontent.com/caroldaunn/xizhi-tour/main/frame.png'
 };
 
-// 這些變數將從 Google Sheet API 載入
 var routesInfo = {};
 var foodsData = {};
 var spotsData = {};
 var eventsData = {};
-
 var currentData = null, isEventPage = false, storyExpanded = false;
 
 // ========================================
 // 🚀 初始化
 // ========================================
 window.onload = function() {
-    // 先載入資料,再初始化 LIFF
     loadDataFromGoogleSheet()
         .then(function() {
             return liff.init({ liffId: MY_LIFF_ID });
@@ -279,7 +274,6 @@ window.onload = function() {
         })
         .catch(function(err) {
             console.error('初始化錯誤:', err);
-            // 即使 LIFF 失敗,如果資料已載入,仍然顯示內容
             if (Object.keys(spotsData).length > 0) {
                 renderContent();
             } else {
@@ -306,7 +300,6 @@ function loadDataFromGoogleSheet() {
                 throw new Error(data.error);
             }
             
-            // 將資料存入全域變數
             routesInfo = data.routes || {};
             spotsData = data.spots || {};
             foodsData = data.foods || {};
@@ -319,7 +312,6 @@ function loadDataFromGoogleSheet() {
                 events: Object.keys(eventsData).length
             });
             
-            // 驗證資料
             if (Object.keys(spotsData).length === 0) {
                 throw new Error('景點資料為空,請檢查 Google Sheet 設定');
             }
@@ -334,9 +326,6 @@ function loadDataFromGoogleSheet() {
         });
 }
 
-// ========================================
-// 🎨 UI 輔助函數
-// ========================================
 function updateLoadingText(text) {
     var loadingText = document.querySelector('.loading-text');
     if (loadingText) {
@@ -378,7 +367,6 @@ function renderEventPage(eventId) {
     }
     currentData = data;
     
-    // 隱藏不需要的區塊
     document.getElementById('beacon-banner').style.display = 'none';
     document.getElementById('game-section').style.display = 'none';
     document.getElementById('food-section').style.display = 'none';
@@ -389,42 +377,36 @@ function renderEventPage(eventId) {
     document.getElementById('wish-btn').style.display = 'none';
     document.querySelector('.progress-container').style.display = 'none';
     
-    // 顯示活動專屬區塊
     document.getElementById('tags-container').style.display = 'flex';
     document.getElementById('gallery-section').style.display = 'block';
     document.getElementById('notice-box').style.display = 'block';
     
-    // 填入資料
     document.getElementById('spot-img').src = data.img;
     document.getElementById('route-tag').innerHTML = '🎪 限定活動';
     document.getElementById('route-tag').style.background = '#ff6b6b';
-    document.getElementById('route-desc').innerHTML = '📅 ' + data.date + ' ｜ 📍 ' + data.location;
+    document.getElementById('route-desc').innerHTML = '📅 ' + data.date + ' | 📍 ' + data.location;
     document.getElementById('spot-number').style.display = 'none';
     document.getElementById('spot-title').innerText = data.title;
     document.getElementById('spot-desc').innerText = data.desc;
     
-    // 標籤
     var tagsHtml = ''; 
     for (var i = 0; i < data.tags.length; i++) { 
         tagsHtml += '<span class="tag">' + data.tags[i] + '</span>'; 
     }
     document.getElementById('tags-container').innerHTML = tagsHtml;
     
-    // 相簿
     var galleryHtml = ''; 
     for (var j = 0; j < data.gallery.length; j++) { 
         galleryHtml += '<div class="gallery-item"><img src="' + data.gallery[j].img + '" class="gallery-img"><div class="gallery-caption">' + data.gallery[j].caption + '</div></div>'; 
     }
     document.getElementById('gallery-content').innerHTML = galleryHtml;
     
-    // 注意事項
     var noticeHtml = ''; 
     for (var k = 0; k < data.notices.length; k++) { 
         noticeHtml += '<li>' + data.notices[k] + '</li>'; 
     }
     document.getElementById('notice-list').innerHTML = noticeHtml;
     
-    // 地圖連結
     var mapQuery = encodeURIComponent(data.query);
     document.getElementById('bus-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
     document.getElementById('bus-label').innerText = '導航前往';
@@ -444,7 +426,6 @@ function renderSpotPage(spotKey) {
     currentData = data; 
     currentData.spotKey = spotKey;
     
-    // 顯示景點專屬區塊
     document.getElementById('game-section').style.display = 'block';
     document.getElementById('food-section').style.display = 'block';
     document.getElementById('bus-schedule-link').style.display = 'block';
@@ -452,17 +433,14 @@ function renderSpotPage(spotKey) {
     document.getElementById('wish-btn').style.display = 'block';
     document.querySelector('.progress-container').style.display = 'block';
     
-    // 隱藏活動專屬區塊
     document.getElementById('tags-container').style.display = 'none';
     document.getElementById('gallery-section').style.display = 'none';
     document.getElementById('notice-box').style.display = 'none';
     
-    // 填入基本資料
     document.getElementById('spot-img').src = data.img;
     document.getElementById('spot-title').innerText = data.title;
     document.getElementById('spot-desc').innerText = data.desc;
     
-    // 路線資訊
     var routeKey = data.route || "R1"; 
     var rInfo = routesInfo[routeKey];
     if (rInfo) {
@@ -470,11 +448,10 @@ function renderSpotPage(spotKey) {
         document.getElementById('route-desc').innerText = rInfo.desc;
         var spotIndex = rInfo.spots.indexOf(spotKey);
         if (spotIndex >= 0) { 
-            document.getElementById('spot-number').innerText = "第 " + (spotIndex + 1) + " 站，共 " + rInfo.spots.length + " 站"; 
+            document.getElementById('spot-number').innerText = "第 " + (spotIndex + 1) + " 站,共 " + rInfo.spots.length + " 站"; 
         }
     }
     
-    // 測驗題目
     if (data.quizQ) {
         document.getElementById('quiz-question').innerText = data.quizQ;
         if (data.quizOpts && data.quizOpts.length >= 3) { 
@@ -484,13 +461,11 @@ function renderSpotPage(spotKey) {
         }
     }
     
-    // 地圖連結
     var mapQuery = encodeURIComponent(data.query);
     document.getElementById('map-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
     document.getElementById('parking-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+停車場';
     document.getElementById('more-food-link').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+美食';
     
-    // 下一站連結
     if (rInfo && rInfo.spots) {
         var currentIdx = rInfo.spots.indexOf(spotKey); 
         var nextIdx = (currentIdx + 1) % rInfo.spots.length; 
@@ -502,10 +477,8 @@ function renderSpotPage(spotKey) {
         }
     }
     
-    // 美食區塊
     renderFoodSection(spotKey);
     
-    // Beacon 提示
     if (data.hasBeacon) { 
         setTimeout(function() { 
             document.getElementById('beacon-banner').classList.add('show'); 
@@ -515,7 +488,6 @@ function renderSpotPage(spotKey) {
         }, 3000); 
     }
     
-    // 任務進度
     initTaskProgress();
     
     document.getElementById('loading').style.display = 'none';
@@ -538,9 +510,6 @@ function renderFoodSection(spotKey) {
     document.getElementById('food-scroll').innerHTML = html;
 }
 
-// ========================================
-// 🎮 互動功能
-// ========================================
 function openFoodMap(query) { 
     window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query), '_blank'); 
 }
@@ -551,7 +520,7 @@ function escapeHtml(str) {
     div.textContent = str;
     return div.innerHTML;
 }
-/** 從 img 欄位取出實際圖片網址（支援純網址或 Markdown [text](url) 格式） */
+
 function getStoryImgUrl(val) {
     if (!val || typeof val !== 'string') return '';
     var s = val.trim();
@@ -559,6 +528,7 @@ function getStoryImgUrl(val) {
     if (m) return m[1];
     return s;
 }
+
 function toggleStory() {
     var detail = document.getElementById('story-detail');
     var btn = document.getElementById('read-more-btn');
@@ -657,7 +627,7 @@ function handleBeaconClick() {
 
 function openQuizModal() { 
     if (isTaskDone('quiz')) { 
-        alert("已完成！"); 
+        alert("已完成!"); 
         return; 
     } 
     document.getElementById('quiz-modal').style.display = 'flex'; 
@@ -667,10 +637,10 @@ function checkQuiz(answerIdx) {
     var correct = currentData ? currentData.quizA : 2; 
     if (answerIdx === correct) { 
         document.getElementById('quiz-modal').style.display = 'none'; 
-        alert("⭕ 答對了！獲得【問答印章】"); 
+        alert("⭕ 答對了!獲得【問答印章】"); 
         collectAction('quiz'); 
     } else { 
-        alert("❌ 答錯了，再試試！"); 
+        alert("❌ 答錯了,再試試!"); 
     } 
 }
 
@@ -702,10 +672,10 @@ function closeModal(id, e) {
 function shareTo(platform) { 
     var url = window.location.href; 
     var title = document.getElementById('spot-title').innerText; 
-    var text = '📸 我正在汐止打卡：' + title + '！快來一起探索～'; 
+    var text = '📸 我正在汐止打卡：' + title + '!快來一起探索～'; 
     if (!isTaskDone('share')) { 
         setTimeout(function() { 
-            alert("分享成功！獲得【分享印章】"); 
+            alert("分享成功!獲得【分享印章】"); 
             collectAction('share'); 
         }, 500); 
     }
@@ -716,20 +686,19 @@ function shareTo(platform) {
     } else if (platform === 'ig') { 
         if (navigator.clipboard) { 
             navigator.clipboard.writeText(text + ' ' + url).then(function() { 
-                alert("已複製文字！請打開 Instagram 貼上分享"); 
+                alert("已複製文字!請打開 Instagram 貼上分享"); 
             }); 
         } 
     } else if (platform === 'copy') { 
         if (navigator.clipboard) { 
             navigator.clipboard.writeText(url).then(function() { 
-                alert("連結已複製！"); 
+                alert("連結已複製!"); 
             }); 
         } 
     } 
     document.getElementById('share-modal').style.display = 'none'; 
 }
 
-// V2.0 長按3秒重置進度
 var longPressTimer = null;
 function initVersionTrigger() {
     var trigger = document.getElementById('version-trigger');
@@ -738,7 +707,7 @@ function initVersionTrigger() {
     function startPress() {
         longPressTimer = setTimeout(function() {
             if (navigator.vibrate) navigator.vibrate(100);
-            if (confirm("確定要重置所有測試進度嗎？")) { 
+            if (confirm("確定要重置所有測試進度嗎?")) { 
                 localStorage.removeItem('xizhi_stamps'); 
                 location.reload(); 
             }
@@ -761,16 +730,24 @@ function initVersionTrigger() {
     trigger.addEventListener('mouseleave', cancelPress);
 }
 
-// 紀念照上傳與下載（使用 MEMORIAL_FRAME 設定）
+// ========================================
+// 🖼️ 加強版相框上傳函數 - 包含詳細除錯訊息
+// ========================================
 function handleImageUpload(e) { 
-    var file = e.target.files[0]; if (!file) return;
-    // 先清除舊結果，避免顯示上一次或預設圖（如 QR code）
+    var file = e.target.files[0]; 
+    if (!file) {
+        alert('❌ 沒有選擇檔案');
+        return;
+    }
+    
+    alert('✅ 開始處理照片...');
+    
     var finalImgEl = document.getElementById('final-img');
     var downloadMsgEl = document.getElementById('download-msg');
     finalImgEl.style.display = 'none';
-    finalImgEl.removeAttribute('src');
     finalImgEl.src = '';
     downloadMsgEl.style.display = 'none';
+    
     var reader = new FileReader(); 
     reader.onload = function(event) { 
         var img = new Image(); 
@@ -779,82 +756,146 @@ function handleImageUpload(e) {
             var S = cfg.canvasSize;
             var canvas = document.getElementById('result-canvas'); 
             var ctx = canvas.getContext('2d'); 
-            canvas.width = S; canvas.height = S;
-            // 背景漸層
+            canvas.width = S; 
+            canvas.height = S;
+            
+            // 1️⃣ 繪製背景漸層
             var gradient = ctx.createLinearGradient(0, 0, S, S);
             gradient.addColorStop(0, cfg.bgGradient.start);
             gradient.addColorStop(1, cfg.bgGradient.end);
-            ctx.fillStyle = gradient; ctx.fillRect(0, 0, S, S);
-            // 使用者照片（圓形）
+            ctx.fillStyle = gradient; 
+            ctx.fillRect(0, 0, S, S);
+            
+            // 2️⃣ 繪製使用者照片（圓形）
             var r = cfg.photoRadius;
             var scale = Math.max((r * 2) / img.width, (r * 2) / img.height);
             var w = img.width * scale, h = img.height * scale;
             ctx.save();
-            ctx.beginPath(); ctx.arc(cfg.photoCenterX, cfg.photoCenterY, r, 0, Math.PI * 2); ctx.closePath(); ctx.clip();
+            ctx.beginPath(); 
+            ctx.arc(cfg.photoCenterX, cfg.photoCenterY, r, 0, Math.PI * 2); 
+            ctx.closePath(); 
+            ctx.clip();
             ctx.drawImage(img, cfg.photoCenterX - w/2, cfg.photoCenterY - h/2, w, h);
             ctx.restore();
-            // 圓形邊框
-            ctx.strokeStyle = cfg.borderColor; ctx.lineWidth = cfg.borderWidth;
-            ctx.beginPath(); ctx.arc(cfg.photoCenterX, cfg.photoCenterY, r + 4, 0, Math.PI * 2); ctx.stroke();
-            // 文字
-            ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
-            ctx.font = cfg.titleFont; ctx.fillText(cfg.titleText, S/2, cfg.titleY);
-            ctx.font = cfg.subFont; ctx.fillText(cfg.subText, S/2, cfg.subY);
-            ctx.font = cfg.dateFont; ctx.fillStyle = cfg.dateColor;
+            
+            // 3️⃣ 繪製圓形邊框
+            ctx.strokeStyle = cfg.borderColor; 
+            ctx.lineWidth = cfg.borderWidth;
+            ctx.beginPath(); 
+            ctx.arc(cfg.photoCenterX, cfg.photoCenterY, r + 4, 0, Math.PI * 2); 
+            ctx.stroke();
+            
+            // 4️⃣ 繪製文字
+            ctx.fillStyle = '#fff'; 
+            ctx.textAlign = 'center';
+            ctx.font = cfg.titleFont; 
+            ctx.fillText(cfg.titleText, S/2, cfg.titleY);
+            ctx.font = cfg.subFont; 
+            ctx.fillText(cfg.subText, S/2, cfg.subY);
+            ctx.font = cfg.dateFont; 
+            ctx.fillStyle = cfg.dateColor;
             var today = new Date();
             ctx.fillText(today.getFullYear() + '/' + (today.getMonth()+1) + '/' + today.getDate(), S/2, cfg.dateY);
-            // 備份無相框的 canvas（若相框造成 tainted 時仍可匯出）
+            
+            alert('✅ 基礎圖層完成!準備載入相框...');
+            
+            // 5️⃣ 備份無相框版本
             var backupCanvas = document.createElement('canvas');
-            backupCanvas.width = S; backupCanvas.height = S;
+            backupCanvas.width = S; 
+            backupCanvas.height = S;
             backupCanvas.getContext('2d').drawImage(canvas, 0, 0);
+            
             var done = false;
             var frameTimeoutId = null;
-            function finishMemorial() {
+            
+            function finishMemorial(message) {
                 if (done) return;
                 done = true;
                 if (frameTimeoutId) clearTimeout(frameTimeoutId);
+                
+                if (message) alert(message);
+                
                 var dataUrl;
                 try {
                     dataUrl = canvas.toDataURL("image/jpeg", 0.9);
                 } catch (err) {
+                    alert('❌ Canvas 轉換失敗,使用備份版本');
                     dataUrl = backupCanvas.toDataURL("image/jpeg", 0.9);
                 }
+                
                 window._lastMemorialDataUrl = dataUrl;
                 document.getElementById('final-img').src = dataUrl;
                 document.getElementById('final-img').style.display = "block";
                 document.getElementById('download-msg').style.display = "block";
             }
-            // 若有相框圖則疊上（先經 GAS 代理，失敗則直接載圖）
-            if (cfg.frameImageUrl) {
-                frameTimeoutId = setTimeout(function() {
-                    if (!done) finishMemorial();
-                }, 6000);
-                var frameImg = new Image();
-                frameImg.onload = function() {
+            
+            // 6️⃣ 載入相框
+            if (!cfg.frameImageUrl) {
+                finishMemorial('ℹ️ 未設定相框,顯示基礎版本');
+                return;
+            }
+            
+            frameTimeoutId = setTimeout(function() {
+                if (!done) {
+                    finishMemorial('⏱️ 相框載入逾時(6秒),顯示無相框版本');
+                }
+            }, 6000);
+            
+            var frameImg = new Image();
+            
+            frameImg.onload = function() {
+                alert('🎉 相框載入成功!開始合成...');
+                try {
                     ctx.drawImage(frameImg, 0, 0, S, S);
-                    finishMemorial();
-                };
-                frameImg.onerror = function() { finishMemorial(); };
-                var proxyUrl = GOOGLE_SHEET_API_URL + '?type=frame&url=' + encodeURIComponent(cfg.frameImageUrl) + '&t=' + Date.now();
-                fetch(proxyUrl).then(function(r) { return r.json(); }).then(function(data) {
+                    finishMemorial('✅ 相框合成完成!');
+                } catch (err) {
+                    finishMemorial('❌ 相框繪製失敗: ' + err.message);
+                }
+            };
+            
+            frameImg.onerror = function(err) { 
+                finishMemorial('❌ 相框圖片載入失敗!\n網址: ' + cfg.frameImageUrl.substring(0, 50) + '...');
+            };
+            
+            var proxyUrl = GOOGLE_SHEET_API_URL + '?type=frame&url=' + encodeURIComponent(cfg.frameImageUrl) + '&t=' + Date.now();
+            
+            alert('🔄 正在透過 GAS 代理載入相框...\n請稍候(最多6秒)');
+            
+            fetch(proxyUrl)
+                .then(function(r) { 
+                    return r.json(); 
+                })
+                .then(function(data) {
                     if (data && data.image) {
+                        alert('✅ GAS 代理成功,開始載入相框圖片');
                         frameImg.src = data.image;
                         return;
                     }
                     if (data && data.error) {
+                        alert('❌ GAS 代理錯誤: ' + data.error + '\n改用直接載入');
                         frameImg.src = cfg.frameImageUrl;
                         return;
                     }
-                    finishMemorial();
-                }).catch(function() {
+                    alert('⚠️ GAS 回應格式異常,改用直接載入');
+                    frameImg.src = cfg.frameImageUrl;
+                })
+                .catch(function(err) {
+                    alert('❌ GAS fetch 失敗: ' + err.message + '\n改用直接載入');
                     frameImg.src = cfg.frameImageUrl;
                 });
-            } else {
-                finishMemorial();
-            }
         }; 
+        
+        img.onerror = function() {
+            alert('❌ 照片載入失敗,請重新選擇');
+        };
+        
         img.src = event.target.result; 
     }; 
+    
+    reader.onerror = function() {
+        alert('❌ 檔案讀取失敗');
+    };
+    
     reader.readAsDataURL(file); 
 }
 
