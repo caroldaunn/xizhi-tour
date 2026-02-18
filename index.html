@@ -761,7 +761,14 @@ function initVersionTrigger() {
 
 // 紀念照上傳與下載（使用 MEMORIAL_FRAME 設定）
 function handleImageUpload(e) { 
-    var file = e.target.files[0]; if (!file) return; 
+    var file = e.target.files[0]; if (!file) return;
+    // 先清除舊結果，避免顯示上一次或預設圖（如 QR code）
+    var finalImgEl = document.getElementById('final-img');
+    var downloadMsgEl = document.getElementById('download-msg');
+    finalImgEl.style.display = 'none';
+    finalImgEl.removeAttribute('src');
+    finalImgEl.src = '';
+    downloadMsgEl.style.display = 'none';
     var reader = new FileReader(); 
     reader.onload = function(event) { 
         var img = new Image(); 
@@ -799,9 +806,11 @@ function handleImageUpload(e) {
             backupCanvas.width = S; backupCanvas.height = S;
             backupCanvas.getContext('2d').drawImage(canvas, 0, 0);
             var done = false;
+            var frameTimeoutId = null;
             function finishMemorial() {
                 if (done) return;
                 done = true;
+                if (frameTimeoutId) clearTimeout(frameTimeoutId);
                 var dataUrl;
                 try {
                     dataUrl = canvas.toDataURL("image/jpeg", 0.9);
@@ -815,6 +824,9 @@ function handleImageUpload(e) {
             }
             // 若有相框圖則疊上（先經 GAS 代理，失敗則直接載圖）
             if (cfg.frameImageUrl) {
+                frameTimeoutId = setTimeout(function() {
+                    if (!done) finishMemorial();
+                }, 6000);
                 var frameImg = new Image();
                 frameImg.onload = function() {
                     ctx.drawImage(frameImg, 0, 0, S, S);
