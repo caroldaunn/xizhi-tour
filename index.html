@@ -794,7 +794,26 @@ function handleImageUpload(e) {
             ctx.font = cfg.dateFont; ctx.fillStyle = cfg.dateColor;
             var today = new Date();
             ctx.fillText(today.getFullYear() + '/' + (today.getMonth()+1) + '/' + today.getDate(), S/2, cfg.dateY);
-            // 若有相框圖則疊上（經 GAS 代理取圖，避免 CORS／跨域）
+            // 備份無相框的 canvas（若相框造成 tainted 時仍可匯出）
+            var backupCanvas = document.createElement('canvas');
+            backupCanvas.width = S; backupCanvas.height = S;
+            backupCanvas.getContext('2d').drawImage(canvas, 0, 0);
+            var done = false;
+            function finishMemorial() {
+                if (done) return;
+                done = true;
+                var dataUrl;
+                try {
+                    dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+                } catch (err) {
+                    dataUrl = backupCanvas.toDataURL("image/jpeg", 0.9);
+                }
+                window._lastMemorialDataUrl = dataUrl;
+                document.getElementById('final-img').src = dataUrl;
+                document.getElementById('final-img').style.display = "block";
+                document.getElementById('download-msg').style.display = "block";
+            }
+            // 若有相框圖則疊上（先經 GAS 代理，失敗則直接載圖）
             if (cfg.frameImageUrl) {
                 var frameImg = new Image();
                 frameImg.onload = function() {
@@ -802,21 +821,22 @@ function handleImageUpload(e) {
                     finishMemorial();
                 };
                 frameImg.onerror = function() { finishMemorial(); };
-                var proxyUrl = GOOGLE_SHEET_API_URL + '?type=frame&url=' + encodeURIComponent(cfg.frameImageUrl);
+                var proxyUrl = GOOGLE_SHEET_API_URL + '?type=frame&url=' + encodeURIComponent(cfg.frameImageUrl) + '&t=' + Date.now();
                 fetch(proxyUrl).then(function(r) { return r.json(); }).then(function(data) {
                     if (data && data.image) {
                         frameImg.src = data.image;
-                    } else {
-                        finishMemorial();
+                        return;
                     }
-                }).catch(function() { finishMemorial(); });
+                    if (data && data.error) {
+                        frameImg.src = cfg.frameImageUrl;
+                        return;
+                    }
+                    finishMemorial();
+                }).catch(function() {
+                    frameImg.src = cfg.frameImageUrl;
+                });
             } else {
                 finishMemorial();
-            }
-            function finishMemorial() {
-                document.getElementById('final-img').src = canvas.toDataURL("image/jpeg", 0.9);
-                document.getElementById('final-img').style.display = "block";
-                document.getElementById('download-msg').style.display = "block";
             }
         }; 
         img.src = event.target.result; 
@@ -826,9 +846,16 @@ function handleImageUpload(e) {
 
 function downloadImage() {
     var canvas = document.getElementById('result-canvas');
+    var dataUrl;
+    try {
+        dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+    } catch (e) {
+        dataUrl = window._lastMemorialDataUrl || '';
+    }
+    if (!dataUrl) return;
     var link = document.createElement('a');
     link.download = '汐止達人紀念照_' + new Date().getTime() + '.jpg';
-    link.href = canvas.toDataURL('image/jpeg', 0.9);
+    link.href = dataUrl;
     link.click();
 }
 
