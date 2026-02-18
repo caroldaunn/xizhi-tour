@@ -797,12 +797,26 @@ function handleImageUpload(e) {
             // 若有相框圖則疊上（PNG 透明中空框）
             if (cfg.frameImageUrl) {
                 var frameImg = new Image();
-                frameImg.crossOrigin = 'anonymous';
+                // 先嘗試不使用 crossOrigin（避免 CORS 問題）
                 frameImg.onload = function() {
                     ctx.drawImage(frameImg, 0, 0, S, S);
                     finishMemorial();
                 };
-                frameImg.onerror = function() { finishMemorial(); };
+                frameImg.onerror = function() {
+                    // 如果載入失敗，嘗試使用 crossOrigin 重試
+                    console.log('相框圖載入失敗，嘗試使用 crossOrigin 重試:', cfg.frameImageUrl);
+                    var retryImg = new Image();
+                    retryImg.crossOrigin = 'anonymous';
+                    retryImg.onload = function() {
+                        ctx.drawImage(retryImg, 0, 0, S, S);
+                        finishMemorial();
+                    };
+                    retryImg.onerror = function() {
+                        console.error('相框圖載入失敗:', cfg.frameImageUrl);
+                        finishMemorial(); // 即使失敗也完成，至少顯示沒有相框的版本
+                    };
+                    retryImg.src = cfg.frameImageUrl;
+                };
                 frameImg.src = cfg.frameImageUrl;
             } else {
                 finishMemorial();
