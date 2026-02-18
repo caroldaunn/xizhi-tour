@@ -794,25 +794,22 @@ function handleImageUpload(e) {
             ctx.font = cfg.dateFont; ctx.fillStyle = cfg.dateColor;
             var today = new Date();
             ctx.fillText(today.getFullYear() + '/' + (today.getMonth()+1) + '/' + today.getDate(), S/2, cfg.dateY);
-            // 若有相框圖則疊上（PNG 透明中空框）
+            // 若有相框圖則疊上（經 GAS 代理取圖，避免 CORS／跨域）
             if (cfg.frameImageUrl) {
                 var frameImg = new Image();
-                frameImg.crossOrigin = 'anonymous';  // 須在設定 src 之前
                 frameImg.onload = function() {
                     ctx.drawImage(frameImg, 0, 0, S, S);
                     finishMemorial();
                 };
-                frameImg.onerror = function() {
-                    // 若 CORS 失敗則不帶 crossOrigin 再試一次
-                    var retryImg = new Image();
-                    retryImg.onload = function() {
-                        ctx.drawImage(retryImg, 0, 0, S, S);
+                frameImg.onerror = function() { finishMemorial(); };
+                var proxyUrl = GOOGLE_SHEET_API_URL + '?type=frame&url=' + encodeURIComponent(cfg.frameImageUrl);
+                fetch(proxyUrl).then(function(r) { return r.json(); }).then(function(data) {
+                    if (data && data.image) {
+                        frameImg.src = data.image;
+                    } else {
                         finishMemorial();
-                    };
-                    retryImg.onerror = function() { finishMemorial(); };
-                    retryImg.src = cfg.frameImageUrl;
-                };
-                frameImg.src = cfg.frameImageUrl;
+                    }
+                }).catch(function() { finishMemorial(); });
             } else {
                 finishMemorial();
             }
