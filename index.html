@@ -252,7 +252,7 @@ var MEMORIAL_FRAME = {
     titleText: '🏆 汐止達人認證 🏆', titleY: 640, titleFont: 'bold 36px sans-serif',
     subText: '完成所有挑戰！', subY: 690, subFont: '24px sans-serif',
     dateY: 740, dateFont: '16px sans-serif', dateColor: 'rgba(255,255,255,0.7)',
-    frameImageUrl: 'https://duk.tw/NQBTOs.png'
+    frameImageUrl: 'https://duk.tw/WQ4adj.png'
 };
 
 // 這些變數將從 Google Sheet API 載入
@@ -797,24 +797,19 @@ function handleImageUpload(e) {
             // 若有相框圖則疊上（PNG 透明中空框）
             if (cfg.frameImageUrl) {
                 var frameImg = new Image();
-                // 先嘗試不使用 crossOrigin（避免 CORS 問題）
+                frameImg.crossOrigin = 'anonymous';  // 須在設定 src 之前
                 frameImg.onload = function() {
                     ctx.drawImage(frameImg, 0, 0, S, S);
                     finishMemorial();
                 };
                 frameImg.onerror = function() {
-                    // 如果載入失敗，嘗試使用 crossOrigin 重試
-                    console.log('相框圖載入失敗，嘗試使用 crossOrigin 重試:', cfg.frameImageUrl);
+                    // 若 CORS 失敗則不帶 crossOrigin 再試一次
                     var retryImg = new Image();
-                    retryImg.crossOrigin = 'anonymous';
                     retryImg.onload = function() {
                         ctx.drawImage(retryImg, 0, 0, S, S);
                         finishMemorial();
                     };
-                    retryImg.onerror = function() {
-                        console.error('相框圖載入失敗:', cfg.frameImageUrl);
-                        finishMemorial(); // 即使失敗也完成，至少顯示沒有相框的版本
-                    };
+                    retryImg.onerror = function() { finishMemorial(); };
                     retryImg.src = cfg.frameImageUrl;
                 };
                 frameImg.src = cfg.frameImageUrl;
