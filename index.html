@@ -538,6 +538,14 @@ function escapeHtml(str) {
     div.textContent = str;
     return div.innerHTML;
 }
+/** 從 img 欄位取出實際圖片網址（支援純網址或 Markdown [text](url) 格式） */
+function getStoryImgUrl(val) {
+    if (!val || typeof val !== 'string') return '';
+    var s = val.trim();
+    var m = s.match(/\]\s*\(\s*(https?:\/\/[^)\s]+)\s*\)/);
+    if (m) return m[1];
+    return s;
+}
 function toggleStory() {
     var detail = document.getElementById('story-detail');
     var btn = document.getElementById('read-more-btn');
@@ -564,7 +572,8 @@ function toggleStory() {
             var text = escapeHtml(sec.text || '');
             html += '<div class="story-section"><div class="story-title">' + title + '</div><p class="story-text">' + text + '</p>';
             if (sec.img) {
-                html += '<img src="' + escapeHtml(sec.img) + '" class="story-img" alt=""><p class="story-caption">' + escapeHtml(sec.caption || '') + '</p>';
+                var imgUrl = getStoryImgUrl(sec.img);
+                if (imgUrl) html += '<img src="' + escapeHtml(imgUrl) + '" class="story-img" alt=""><p class="story-caption">' + escapeHtml(sec.caption || '') + '</p>';
             }
             html += '</div>';
         }
