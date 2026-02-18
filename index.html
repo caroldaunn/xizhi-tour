@@ -27,7 +27,7 @@
         .route-info { font-size: 13px; color: #666; margin-bottom: 15px; border-left: 3px solid #ff8a00; padding-left: 8px; }
         .spot-number { font-size: 12px; color: #888; margin-bottom: 5px; }
         .desc-box { margin-bottom: 20px; }
-        .desc-text { font-size: 15px; line-height: 1.8; color: #555; }
+        .desc-text { font-size: 15px; line-height: 1.8; color: #555; } /* 行距：改 line-height 數字，愈大愈鬆 */
         .desc-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
         .read-more-btn { color: #007bff; font-weight: bold; font-size: 14px; cursor: pointer; text-decoration: underline; }
         .quiz-trigger-btn { background: #ff9f43; color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; }
@@ -36,7 +36,7 @@
         .story-section { margin-bottom: 20px; }
         .story-title { font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
         .story-title::before { content: ""; width: 4px; height: 16px; background: linear-gradient(180deg, #ff8a00, #e52e71); border-radius: 2px; }
-        .story-text { font-size: 14px; line-height: 1.8; color: #555; text-align: justify; }
+        .story-text { font-size: 14px; line-height: 1.8; color: #555; text-align: justify; } /* 行距：改 line-height */
         .story-img { width: 100%; border-radius: 12px; margin: 15px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .story-caption { font-size: 12px; color: #888; text-align: center; margin-top: -10px; margin-bottom: 15px; }
         .story-quote { background: #fff; border-left: 4px solid #ff8a00; padding: 15px; margin: 15px 0; font-style: italic; color: #666; border-radius: 0 8px 8px 0; }
@@ -184,7 +184,7 @@
                     <div class="stamp-box"><div class="stamp" id="stamp-share">📤</div><div class="stamp-label">分享</div></div>
                 </div>
             </div>
-            <div id="survey-box"><a href="#" class="survey-btn">任務達成！填寫問卷領取證書</a></div>
+            <div id="survey-box"><a href="#" class="survey-btn">任務達成，填寫問卷並參加抽獎!</a></div>
             <div id="memorial-box">
                 <div style="font-size:16px;font-weight:800;margin-bottom:5px;">完賽紀念照</div>
                 <p style="font-size:13px;color:#666;margin-bottom:15px;">上傳自拍照，合成汐止達人相框！</p>
@@ -243,6 +243,18 @@
 // ========================================
 var MY_LIFF_ID = "2008941841-8KQq29wn";
 var TASKS = ['map','quiz','wish','beacon','share'];
+
+// 完賽紀念照相框設定（改這裡即可更新框的樣式）
+var MEMORIAL_FRAME = {
+    canvasSize: 800,
+    bgGradient: { start: '#667eea', end: '#764ba2' },  // 背景漸層起訖色
+    photoCenterX: 400, photoCenterY: 340, photoRadius: 220,
+    borderColor: '#fff', borderWidth: 8,
+    titleText: '🏆 汐止達人認證 🏆', titleY: 640, titleFont: 'bold 36px sans-serif',
+    subText: '完成所有挑戰！', subY: 690, subFont: '24px sans-serif',
+    dateY: 740, dateFont: '16px sans-serif', dateColor: 'rgba(255,255,255,0.7)',
+    frameImageUrl: 'https://duk.tw/NQBTOs.png'  // 選填：相框圖網址（PNG 透明中空），填了會疊在照片與背景之上
+};
 
 // 這些變數將從 Google Sheet API 載入
 var routesInfo = {};
@@ -748,37 +760,59 @@ function initVersionTrigger() {
     trigger.addEventListener('mouseleave', cancelPress);
 }
 
-// 紀念照上傳與下載
+// 紀念照上傳與下載（使用 MEMORIAL_FRAME 設定）
 function handleImageUpload(e) { 
     var file = e.target.files[0]; if (!file) return; 
     var reader = new FileReader(); 
     reader.onload = function(event) { 
         var img = new Image(); 
         img.onload = function() { 
+            var cfg = MEMORIAL_FRAME;
+            var S = cfg.canvasSize;
             var canvas = document.getElementById('result-canvas'); 
             var ctx = canvas.getContext('2d'); 
-            canvas.width = 800; canvas.height = 800;
+            canvas.width = S; canvas.height = S;
             // 背景漸層
-            var gradient = ctx.createLinearGradient(0, 0, 800, 800);
-            gradient.addColorStop(0, '#667eea'); gradient.addColorStop(1, '#764ba2');
-            ctx.fillStyle = gradient; ctx.fillRect(0, 0, 800, 800);
+            var gradient = ctx.createLinearGradient(0, 0, S, S);
+            gradient.addColorStop(0, cfg.bgGradient.start);
+            gradient.addColorStop(1, cfg.bgGradient.end);
+            ctx.fillStyle = gradient; ctx.fillRect(0, 0, S, S);
             // 使用者照片（圓形）
-            var scale = Math.max(500 / img.width, 500 / img.height);
-            ctx.save(); ctx.beginPath(); ctx.arc(400, 340, 220, 0, Math.PI * 2); ctx.closePath(); ctx.clip();
-            ctx.drawImage(img, 400 - (img.width / 2) * scale, 340 - (img.height / 2) * scale, img.width * scale, img.height * scale);
+            var r = cfg.photoRadius;
+            var scale = Math.max((r * 2) / img.width, (r * 2) / img.height);
+            var w = img.width * scale, h = img.height * scale;
+            ctx.save();
+            ctx.beginPath(); ctx.arc(cfg.photoCenterX, cfg.photoCenterY, r, 0, Math.PI * 2); ctx.closePath(); ctx.clip();
+            ctx.drawImage(img, cfg.photoCenterX - w/2, cfg.photoCenterY - h/2, w, h);
             ctx.restore();
-            // 白色邊框
-            ctx.strokeStyle = '#fff'; ctx.lineWidth = 8; ctx.beginPath(); ctx.arc(400, 340, 224, 0, Math.PI * 2); ctx.stroke();
+            // 圓形邊框
+            ctx.strokeStyle = cfg.borderColor; ctx.lineWidth = cfg.borderWidth;
+            ctx.beginPath(); ctx.arc(cfg.photoCenterX, cfg.photoCenterY, r + 4, 0, Math.PI * 2); ctx.stroke();
             // 文字
-            ctx.fillStyle = '#fff'; ctx.font = 'bold 36px sans-serif'; ctx.textAlign = 'center';
-            ctx.fillText('🏆 汐止達人認證 🏆', 400, 640);
-            ctx.font = '24px sans-serif'; ctx.fillText('完成所有挑戰！', 400, 690);
-            ctx.font = '16px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.7)';
-            var today = new Date(); ctx.fillText(today.getFullYear() + '/' + (today.getMonth()+1) + '/' + today.getDate(), 400, 740);
-            // 顯示結果
-            document.getElementById('final-img').src = canvas.toDataURL("image/jpeg", 0.9);
-            document.getElementById('final-img').style.display = "block";
-            document.getElementById('download-msg').style.display = "block";
+            ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+            ctx.font = cfg.titleFont; ctx.fillText(cfg.titleText, S/2, cfg.titleY);
+            ctx.font = cfg.subFont; ctx.fillText(cfg.subText, S/2, cfg.subY);
+            ctx.font = cfg.dateFont; ctx.fillStyle = cfg.dateColor;
+            var today = new Date();
+            ctx.fillText(today.getFullYear() + '/' + (today.getMonth()+1) + '/' + today.getDate(), S/2, cfg.dateY);
+            // 若有相框圖則疊上（PNG 透明中空框）
+            if (cfg.frameImageUrl) {
+                var frameImg = new Image();
+                frameImg.crossOrigin = 'anonymous';
+                frameImg.onload = function() {
+                    ctx.drawImage(frameImg, 0, 0, S, S);
+                    finishMemorial();
+                };
+                frameImg.onerror = function() { finishMemorial(); };
+                frameImg.src = cfg.frameImageUrl;
+            } else {
+                finishMemorial();
+            }
+            function finishMemorial() {
+                document.getElementById('final-img').src = canvas.toDataURL("image/jpeg", 0.9);
+                document.getElementById('final-img').style.display = "block";
+                document.getElementById('download-msg').style.display = "block";
+            }
         }; 
         img.src = event.target.result; 
     }; 
