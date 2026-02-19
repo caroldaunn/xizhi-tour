@@ -25,6 +25,8 @@
         .wish-btn.active { color: #ff4757; transform: scale(1.1); }
         .sub-tag { display: inline-block; font-size: 12px; color: #fff; background: #2c3e50; padding: 4px 10px; border-radius: 4px; margin-bottom: 10px; font-weight: bold; }
         .route-info { font-size: 13px; color: #666; margin-bottom: 15px; border-left: 3px solid #ff8a00; padding-left: 8px; }
+        .event-calendar-btn { cursor: pointer; margin-left: 4px; opacity: 0.9; }
+        .event-calendar-btn:active { opacity: 0.6; }
         .spot-number { font-size: 12px; color: #888; margin-bottom: 5px; }
         .desc-box { margin-bottom: 20px; }
         .desc-text { font-size: 15px; line-height: 1.8; color: #555; }
@@ -146,7 +148,7 @@
             <div id="spot-number" class="spot-number"></div>
             <div class="title-row">
                 <h1 id="spot-title"></h1>
-                <div id="wish-btn" class="wish-btn" onclick="triggerWishlist()">♡</div>
+                <div id="wish-btn" class="wish-btn" style="display:none;"></div>
             </div>
             <div class="desc-box">
                 <div id="spot-desc" class="desc-text"></div>
@@ -179,7 +181,7 @@
                 <div class="task-grid">
                     <div class="stamp-box"><div class="stamp" id="stamp-map">🗺️</div><div class="stamp-label">找路</div></div>
                     <div class="stamp-box"><div class="stamp" id="stamp-quiz">❓</div><div class="stamp-label">問答</div></div>
-                    <div class="stamp-box"><div class="stamp" id="stamp-wish">❤️</div><div class="stamp-label">想去</div></div>
+                    <div class="stamp-box"><div class="stamp" id="stamp-wish">📅</div><div class="stamp-label">活動</div></div>
                     <div class="stamp-box"><div class="stamp" id="stamp-beacon">📡</div><div class="stamp-label">尋寶</div></div>
                     <div class="stamp-box"><div class="stamp" id="stamp-share">📤</div><div class="stamp-label">分享</div></div>
                 </div>
@@ -387,7 +389,8 @@ function renderEventPage(eventId) {
     document.getElementById('spot-img').src = data.img;
     document.getElementById('route-tag').innerHTML = '🎪 限定活動';
     document.getElementById('route-tag').style.background = '#ff6b6b';
-    document.getElementById('route-desc').innerHTML = '📅 ' + data.date + ' | 📍 ' + data.location;
+    var dateStr = formatDate(data.date);
+    document.getElementById('route-desc').innerHTML = '📅 <span id="event-date-text">' + dateStr + '</span> <span id="event-date-add" class="event-calendar-btn" onclick="addEventToCalendar()" title="加入行事曆">📅</span> | 📍 ' + data.location;
     document.getElementById('spot-number').style.display = 'none';
     document.getElementById('spot-title').innerText = data.title;
     document.getElementById('spot-desc').innerText = data.desc;
@@ -433,7 +436,7 @@ function renderSpotPage(spotKey) {
     document.getElementById('food-section').style.display = 'block';
     document.getElementById('bus-schedule-link').style.display = 'block';
     document.getElementById('desc-actions').style.display = 'flex';
-    document.getElementById('wish-btn').style.display = 'block';
+    document.getElementById('wish-btn').style.display = 'none';
     document.querySelector('.progress-container').style.display = 'block';
     
     document.getElementById('tags-container').style.display = 'none';
@@ -524,6 +527,23 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    var date;
+    if (typeof dateStr === 'string' && dateStr.indexOf('T') >= 0) {
+        date = new Date(dateStr);
+    } else if (dateStr instanceof Date) {
+        date = dateStr;
+    } else {
+        return dateStr;
+    }
+    if (isNaN(date.getTime())) return dateStr;
+    var year = date.getFullYear();
+    var month = String(date.getMonth() + 1).padStart(2, '0');
+    var day = String(date.getDate()).padStart(2, '0');
+    return year + '/' + month + '/' + day;
+}
+
 function getStoryImgUrl(val) {
     if (!val || typeof val !== 'string') return '';
     var s = val.trim();
@@ -595,7 +615,7 @@ function isTaskDone(taskName) {
 
 function initTaskProgress() {
     var c = JSON.parse(localStorage.getItem('xizhi_stamps')) || []; 
-    var icons = { 'map': '🗺️', 'quiz': '❓', 'wish': '❤️', 'beacon': '📡', 'share': '📤' };
+    var icons = { 'map': '🗺️', 'quiz': '❓', 'wish': '📅', 'beacon': '📡', 'share': '📤' };
     for (var i = 0; i < TASKS.length; i++) { 
         var t = TASKS[i]; 
         var el = document.getElementById('stamp-' + t); 
@@ -609,11 +629,8 @@ function initTaskProgress() {
             } 
         } 
     }
-    var wishBtn = document.getElementById('wish-btn'); 
-    if (c.indexOf('wish') !== -1) { 
-        wishBtn.classList.add('active'); 
-        wishBtn.innerHTML = '❤️'; 
-    }
+    var wishBtn = document.getElementById('wish-btn');
+    if (wishBtn) wishBtn.style.display = 'none';
     document.getElementById('progress-text').innerText = c.length + '/5'; 
     document.getElementById('progress-bar').style.width = (c.length / 5) * 100 + '%';
     if (c.length >= 5) { 
@@ -647,19 +664,13 @@ function checkQuiz(answerIdx) {
     } 
 }
 
-function triggerWishlist() { 
-    var btn = document.getElementById('wish-btn'); 
-    if (btn.classList.contains('active')) { 
-        btn.classList.remove('active'); 
-        btn.innerHTML = '♡'; 
-    } else { 
-        btn.classList.add('active'); 
-        btn.innerHTML = '❤️'; 
-        if (!isTaskDone('wish')) { 
-            alert("❤️ 獲得【想去印章】"); 
-            collectAction('wish'); 
-        } 
-    } 
+function addEventToCalendar() {
+    if (!confirm('將此活動加入行事曆？')) return;
+    if (!isTaskDone('wish')) {
+        collectAction('wish');
+        setTimeout(initTaskProgress, 300);
+    }
+    alert('已加入行事曆！');
 }
 
 function handleShareWithStamp() { 
