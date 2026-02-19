@@ -762,15 +762,20 @@ function handleImageUpload(e) {
             // 1️⃣ 透明背景（不繪製漸層）
             ctx.clearRect(0, 0, S, S);
             
-            // 2️⃣ 繪製使用者照片（完整矩形，不裁切）
+            // 2️⃣ 繪製使用者照片（滿版填滿相框區域，多餘裁切）
             var photoW = cfg.photoWidth;
             var photoH = cfg.photoHeight;
-            var scale = Math.min(photoW / img.width, photoH / img.height);
+            var scale = Math.max(photoW / img.width, photoH / img.height);
             var w = img.width * scale;
             var h = img.height * scale;
             var x = cfg.photoX + (photoW - w) / 2;
             var y = cfg.photoY + (photoH - h) / 2;
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(cfg.photoX, cfg.photoY, photoW, photoH);
+            ctx.clip();
             ctx.drawImage(img, x, y, w, h);
+            ctx.restore();
             
             
             
