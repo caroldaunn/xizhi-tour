@@ -390,7 +390,7 @@ function renderEventPage(eventId) {
     document.getElementById('route-tag').innerHTML = '🎪 限定活動';
     document.getElementById('route-tag').style.background = '#ff6b6b';
     var dateStr = formatDate(data.date);
-    document.getElementById('route-desc').innerHTML = '📅 <span id="event-date-text">' + dateStr + '</span> <span id="event-date-add" class="event-calendar-btn" onclick="addEventToCalendar()" title="加入行事曆">📅</span> | 📍 ' + data.location;
+    document.getElementById('route-desc').innerHTML = '<span id="event-date-text">' + dateStr + '</span> <span id="event-date-add" class="event-calendar-btn" onclick="addEventToCalendar()" title="加入行事曆">📅</span> | 📍 ' + data.location;
     document.getElementById('spot-number').style.display = 'none';
     document.getElementById('spot-title').innerText = data.title;
     document.getElementById('spot-desc').innerText = data.desc;
@@ -907,3 +907,4 @@ function closeLightbox() {
 </script>
 </body>
 </html>
+
