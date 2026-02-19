@@ -410,6 +410,7 @@ function renderEventPage(eventId) {
     } else if (data.intro && typeof data.intro === 'object') {
         introHtml = buildStoryHtml(data.intro);
     }
+    console.log('活動更多故事 debug:', { hasIntro: !!data.intro, introType: typeof data.intro, introHtmlLength: introHtml ? introHtml.length : 0 });
     if (introHtml) {
         introSection.style.display = 'block';
         introDetail.innerHTML = introHtml;
