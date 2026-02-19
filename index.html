@@ -404,7 +404,12 @@ function renderEventPage(eventId) {
     var introSection = document.getElementById('event-intro-section');
     var introDetail = document.getElementById('event-intro-detail');
     var introBtn = document.getElementById('event-intro-btn');
-    var introHtml = buildStoryHtml(data.intro);
+    var introHtml = '';
+    if (data.intro && typeof data.intro === 'string') {
+        introHtml = '<p class="story-text">' + escapeHtml(data.intro) + '</p>';
+    } else if (data.intro && typeof data.intro === 'object') {
+        introHtml = buildStoryHtml(data.intro);
+    }
     if (introHtml) {
         introSection.style.display = 'block';
         introDetail.innerHTML = introHtml;
