@@ -857,32 +857,9 @@ function handleImageUpload(e) {
                 finishMemorial('❌ 相框圖片載入失敗!\n網址: ' + cfg.frameImageUrl.substring(0, 50) + '...');
             };
             
-            var proxyUrl = GOOGLE_SHEET_API_URL + '?type=frame&url=' + encodeURIComponent(cfg.frameImageUrl) + '&t=' + Date.now();
-            
-            alert('🔄 正在透過 GAS 代理載入相框...\n請稍候(最多6秒)');
-            
-            fetch(proxyUrl)
-                .then(function(r) { 
-                    return r.json(); 
-                })
-                .then(function(data) {
-                    if (data && data.image) {
-                        alert('✅ GAS 代理成功,開始載入相框圖片');
-                        frameImg.src = data.image;
-                        return;
-                    }
-                    if (data && data.error) {
-                        alert('❌ GAS 代理錯誤: ' + data.error + '\n改用直接載入');
-                        frameImg.src = cfg.frameImageUrl;
-                        return;
-                    }
-                    alert('⚠️ GAS 回應格式異常,改用直接載入');
-                    frameImg.src = cfg.frameImageUrl;
-                })
-                .catch(function(err) {
-                    alert('❌ GAS fetch 失敗: ' + err.message + '\n改用直接載入');
-                    frameImg.src = cfg.frameImageUrl;
-                });
+            // 直接從 GitHub 載入相框（跳過 GAS 代理）
+            alert('🔄 正在載入相框...\n請稍候(最多6秒)');
+            frameImg.src = cfg.frameImageUrl + '?t=' + Date.now();
         }; 
         
         img.onerror = function() {
