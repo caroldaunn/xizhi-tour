@@ -25,8 +25,11 @@
         .wish-btn.active { color: #ff4757; transform: scale(1.1); }
         .sub-tag { display: inline-block; font-size: 12px; color: #fff; background: #2c3e50; padding: 4px 10px; border-radius: 4px; margin-bottom: 10px; font-weight: bold; }
         .route-info { font-size: 13px; color: #666; margin-bottom: 15px; border-left: 3px solid #ff8a00; padding-left: 8px; }
-        .event-calendar-btn { cursor: pointer; margin-left: 4px; opacity: 0.9; }
-        .event-calendar-btn:active { opacity: 0.6; }
+        .event-date-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .event-date-location { flex: 1; min-width: 0; }
+        .event-calendar-btn-large { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; background: #f0f4ff; border: 1px solid #667eea; border-radius: 12px; color: #667eea; font-size: 15px; font-weight: bold; cursor: pointer; white-space: nowrap; }
+        .event-calendar-btn-large:active { opacity: 0.8; }
+        .event-calendar-btn-large .icon { font-size: 22px; }
         .spot-number { font-size: 12px; color: #888; margin-bottom: 5px; }
         .desc-box { margin-bottom: 20px; }
         .desc-text { font-size: 15px; line-height: 1.8; color: #555; }
@@ -390,7 +393,7 @@ function renderEventPage(eventId) {
     document.getElementById('route-tag').innerHTML = '🎪 限定活動';
     document.getElementById('route-tag').style.background = '#ff6b6b';
     var dateStr = formatDate(data.date);
-    document.getElementById('route-desc').innerHTML = '<span id="event-date-text">' + dateStr + '</span> <span id="event-date-add" class="event-calendar-btn" onclick="addEventToCalendar()" title="加入行事曆">📅</span> | 📍 ' + data.location;
+    document.getElementById('route-desc').innerHTML = '<div class="event-date-row"><div class="event-date-location">' + dateStr + ' | ' + data.location + '</div><div class="event-calendar-btn-large" onclick="addEventToCalendar()"><span class="icon">📅</span>加入行事曆</div></div>';
     document.getElementById('spot-number').style.display = 'none';
     document.getElementById('spot-title').innerText = data.title;
     document.getElementById('spot-desc').innerText = data.desc;
@@ -907,4 +910,3 @@ function closeLightbox() {
 </script>
 </body>
 </html>
-
