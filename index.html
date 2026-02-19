@@ -193,7 +193,7 @@
                 <img id="final-img" src="" alt="" onclick="openLightbox()">
                 <div id="download-msg" class="download-hint">點擊圖片可放大</div>
             </div>
-            <div id="version-trigger" class="version-trigger">v4.0-debug</div>
+            <div id="version-trigger" class="version-trigger">v4.0-final</div>
         </div>
     </div>
     <div class="sticky-footer">
@@ -739,11 +739,8 @@ function initVersionTrigger() {
 function handleImageUpload(e) { 
     var file = e.target.files[0]; 
     if (!file) {
-        alert('❌ 沒有選擇檔案');
-        return;
     }
     
-    alert('✅ 開始處理照片...');
     
     var finalImgEl = document.getElementById('final-img');
     var downloadMsgEl = document.getElementById('download-msg');
@@ -775,7 +772,7 @@ function handleImageUpload(e) {
             var y = cfg.photoY + (photoH - h) / 2;
             ctx.drawImage(img, x, y, w, h);
             
-            alert('✅ 基礎圖層完成!準備載入相框...');
+            
             
             // 5️⃣ 備份無相框版本
             var backupCanvas = document.createElement('canvas');
@@ -786,18 +783,18 @@ function handleImageUpload(e) {
             var done = false;
             var frameTimeoutId = null;
             
-            function finishMemorial(message) {
+            function finishMemorial() {
                 if (done) return;
                 done = true;
                 if (frameTimeoutId) clearTimeout(frameTimeoutId);
                 
-                if (message) alert(message);
+                
                 
                 var dataUrl;
                 try {
                     dataUrl = canvas.toDataURL("image/jpeg", 0.9);
                 } catch (err) {
-                    alert('❌ Canvas 轉換失敗,使用備份版本');
+                    
                     dataUrl = backupCanvas.toDataURL("image/jpeg", 0.9);
                 }
                 
@@ -809,13 +806,13 @@ function handleImageUpload(e) {
             
             // 6️⃣ 載入相框
             if (!cfg.frameImageUrl) {
-                finishMemorial('ℹ️ 未設定相框,顯示基礎版本');
+                finishMemorial();
                 return;
             }
             
             frameTimeoutId = setTimeout(function() {
                 if (!done) {
-                    finishMemorial('⏱️ 相框載入逾時(6秒),顯示無相框版本');
+                    finishMemorial();
                 }
             }, 6000);
             
@@ -823,33 +820,33 @@ function handleImageUpload(e) {
             frameImg.crossOrigin = 'anonymous'; // 啟用 CORS，避免 Canvas 污染
             
             frameImg.onload = function() {
-                alert('🎉 相框載入成功!開始合成...');
+                
                 try {
                     ctx.drawImage(frameImg, 0, 0, S, S);
-                    finishMemorial('✅ 相框合成完成!');
+                    finishMemorial();
                 } catch (err) {
-                    finishMemorial('❌ 相框繪製失敗: ' + err.message);
+                    finishMemorial();
                 }
             };
             
             frameImg.onerror = function(err) { 
-                finishMemorial('❌ 相框圖片載入失敗!\n網址: ' + cfg.frameImageUrl.substring(0, 50) + '...');
+                finishMemorial();
             };
             
             // 直接從 GitHub 載入相框（跳過 GAS 代理）
-            alert('🔄 正在載入相框...\n請稍候(最多6秒)');
+            
             frameImg.src = cfg.frameImageUrl + '?t=' + Date.now();
         }; 
         
         img.onerror = function() {
-            alert('❌ 照片載入失敗,請重新選擇');
+            
         };
         
         img.src = event.target.result; 
     }; 
     
     reader.onerror = function() {
-        alert('❌ 檔案讀取失敗');
+        
     };
     
     reader.readAsDataURL(file); 
