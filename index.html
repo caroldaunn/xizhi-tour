@@ -246,15 +246,15 @@ var TASKS = ['map','quiz','wish','beacon','share'];
 // 完賽紀念照相框設定
 var MEMORIAL_FRAME = {
     canvasSize: 800,
-    // 移除背景漸層，使用透明背景
     bgColor: 'transparent',
-    // 照片顯示為完整矩形，不裁切
-    photoX: 100,        // 照片左上角 X 座標
-    photoY: 100,        // 照片左上角 Y 座標
-    photoWidth: 600,    // 照片寬度
-    photoHeight: 600,   // 照片高度
-    // 移除文字顯示
+    photoX: 100,
+    photoY: 100,
+    photoWidth: 600,
+    photoHeight: 600,
     showText: false,
+    // 'stretch' = 強制拉伸滿版（無黑邊，會變形）
+    // 'cover' = 等比放大貼齊邊緣，多餘裁切（不變形，推薦）
+    photoFillMode: 'cover',
     frameImageUrl: 'https://raw.githubusercontent.com/caroldaunn/xizhi-tour/main/frame.png'
 };
 
@@ -762,20 +762,26 @@ function handleImageUpload(e) {
             // 1️⃣ 透明背景（不繪製漸層）
             ctx.clearRect(0, 0, S, S);
             
-            // 2️⃣ 繪製使用者照片（滿版填滿相框區域，多餘裁切）
+            // 2️⃣ 繪製使用者照片：'stretch' 拉伸滿版 | 'cover' 等比放到邊緣裁切
             var photoW = cfg.photoWidth;
             var photoH = cfg.photoHeight;
-            var scale = Math.max(photoW / img.width, photoH / img.height);
-            var w = img.width * scale;
-            var h = img.height * scale;
-            var x = cfg.photoX + (photoW - w) / 2;
-            var y = cfg.photoY + (photoH - h) / 2;
-            ctx.save();
-            ctx.beginPath();
-            ctx.rect(cfg.photoX, cfg.photoY, photoW, photoH);
-            ctx.clip();
-            ctx.drawImage(img, x, y, w, h);
-            ctx.restore();
+            var px = cfg.photoX, py = cfg.photoY;
+            var fillMode = cfg.photoFillMode || 'cover';
+            if (fillMode === 'stretch') {
+                // 強制拉伸：填滿相框，無黑邊，會變形
+                ctx.drawImage(img, 0, 0, img.width, img.height, px, py, photoW, photoH);
+            } else {
+                // 等比放到邊緣：放大到貼齊邊緣，多出部分裁切，不變形
+                var scale = Math.max(photoW / img.width, photoH / img.height);
+                var w = img.width * scale, h = img.height * scale;
+                var x = px + (photoW - w) / 2, y = py + (photoH - h) / 2;
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(px, py, photoW, photoH);
+                ctx.clip();
+                ctx.drawImage(img, x, y, w, h);
+                ctx.restore();
+            }
             
             
             
