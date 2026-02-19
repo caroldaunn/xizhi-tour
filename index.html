@@ -404,9 +404,10 @@ function renderEventPage(eventId) {
     var introSection = document.getElementById('event-intro-section');
     var introDetail = document.getElementById('event-intro-detail');
     var introBtn = document.getElementById('event-intro-btn');
-    if (data.intro) {
+    var introHtml = buildStoryHtml(data.intro);
+    if (introHtml) {
         introSection.style.display = 'block';
-        introDetail.innerHTML = '<p class="story-text">' + escapeHtml(data.intro) + '</p>';
+        introDetail.innerHTML = introHtml;
         introDetail.classList.remove('show');
         introBtn.innerText = '▼ 了解更多故事';
         eventIntroExpanded = false;
@@ -575,6 +576,24 @@ function getStoryImgUrl(val) {
     return s;
 }
 
+function buildStoryHtml(story) {
+    if (!story || !story.sections || !Array.isArray(story.sections) || story.sections.length === 0) return '';
+    var html = '';
+    for (var i = 0; i < story.sections.length; i++) {
+        var sec = story.sections[i];
+        var title = escapeHtml(sec.title || '');
+        var text = escapeHtml(sec.text || '');
+        html += '<div class="story-section"><div class="story-title">' + title + '</div><p class="story-text">' + text + '</p>';
+        if (sec.img) {
+            var imgUrl = getStoryImgUrl(sec.img);
+            if (imgUrl) html += '<img src="' + escapeHtml(imgUrl) + '" class="story-img" alt=""><p class="story-caption">' + escapeHtml(sec.caption || '') + '</p>';
+        }
+        html += '</div>';
+    }
+    if (story.quote) html += '<div class="story-quote">' + escapeHtml(story.quote) + '</div>';
+    return html;
+}
+
 function toggleStory() {
     var detail = document.getElementById('story-detail');
     var btn = document.getElementById('read-more-btn');
@@ -592,23 +611,8 @@ function toggleStory() {
         return;
     }
     var story = currentData.story;
-    var sections = story && story.sections && Array.isArray(story.sections) ? story.sections : null;
-    if (sections && sections.length > 0) {
-        var html = '';
-        for (var i = 0; i < sections.length; i++) {
-            var sec = sections[i];
-            var title = escapeHtml(sec.title || '');
-            var text = escapeHtml(sec.text || '');
-            html += '<div class="story-section"><div class="story-title">' + title + '</div><p class="story-text">' + text + '</p>';
-            if (sec.img) {
-                var imgUrl = getStoryImgUrl(sec.img);
-                if (imgUrl) html += '<img src="' + escapeHtml(imgUrl) + '" class="story-img" alt=""><p class="story-caption">' + escapeHtml(sec.caption || '') + '</p>';
-            }
-            html += '</div>';
-        }
-        if (story.quote) {
-            html += '<div class="story-quote">' + escapeHtml(story.quote) + '</div>';
-        }
+    var html = buildStoryHtml(story);
+    if (html) {
         detail.innerHTML = html;
     } else {
         detail.innerHTML = '<p class="story-text">此景點暫無故事內容。</p>';
