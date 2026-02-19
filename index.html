@@ -30,6 +30,7 @@
         .event-calendar-btn-large { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; color: #667eea; font-size: 15px; font-weight: bold; cursor: pointer; white-space: nowrap; }
         .event-calendar-btn-large:active { opacity: 0.8; }
         .event-calendar-btn-large .icon { font-size: 22px; }
+        .event-intro { font-size: 13px; color: #666; margin-bottom: 12px; line-height: 1.6; }
         .spot-number { font-size: 12px; color: #888; margin-bottom: 5px; }
         .desc-box { margin-bottom: 20px; }
         .desc-text { font-size: 15px; line-height: 1.8; color: #555; }
@@ -148,6 +149,7 @@
         <div class="content-card">
             <span id="route-tag" class="sub-tag">汐止導覽</span>
             <div id="route-desc" class="route-info"></div>
+            <div id="event-intro" class="event-intro" style="display:none;"></div>
             <div id="spot-number" class="spot-number"></div>
             <div class="title-row">
                 <h1 id="spot-title"></h1>
@@ -394,6 +396,8 @@ function renderEventPage(eventId) {
     document.getElementById('route-tag').style.background = '#ff6b6b';
     var dateStr = formatDate(data.date);
     document.getElementById('route-desc').innerHTML = '<div class="event-date-row"><div class="event-date-location">' + dateStr + ' | ' + data.location + '</div><div class="event-calendar-btn-large" onclick="addEventToCalendar()"><span class="icon">📅</span>加入行事曆</div></div>';
+    var introEl = document.getElementById('event-intro');
+    if (data.intro) { introEl.textContent = data.intro; introEl.style.display = 'block'; } else { introEl.style.display = 'none'; }
     document.getElementById('spot-number').style.display = 'none';
     document.getElementById('spot-title').innerText = data.title;
     document.getElementById('spot-desc').innerText = data.desc;
@@ -445,6 +449,7 @@ function renderSpotPage(spotKey) {
     document.getElementById('tags-container').style.display = 'none';
     document.getElementById('gallery-section').style.display = 'none';
     document.getElementById('notice-box').style.display = 'none';
+    document.getElementById('event-intro').style.display = 'none';
     
     document.getElementById('spot-img').src = data.img;
     document.getElementById('spot-title').innerText = data.title;
