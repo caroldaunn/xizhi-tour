@@ -76,7 +76,7 @@
         .btn-upload { border: 2px dashed #007bff; color: #007bff; background: white; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .upload-btn-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; }
         #result-canvas { display: none; }
-        #final-img { width: 100%; max-width: 280px; border: 2px solid #28a745; display: none; margin: 10px auto; border-radius: 8px; cursor: pointer; }
+        #final-img { width: 100%; max-width: 100%; display: none; margin: 10px 0; border-radius: 8px; cursor: pointer; }
         .download-hint { display: none; color: #28a745; font-size: 14px; margin-top: 10px; background: #e8f5e9; padding: 10px; border-radius: 8px; }
         .download-btn { display: none; margin-top: 10px; background: #28a745; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 14px; }
         .download-btn:active { transform: scale(0.95); }
@@ -193,7 +193,7 @@
                 <img id="final-img" src="" alt="" onclick="openLightbox()">
                 <div id="download-msg" class="download-hint">點擊圖片可放大</div>
             </div>
-            <div id="version-trigger" class="version-trigger">v4.0-final</div>
+            <div id="version-trigger" class="version-trigger">v5.0</div>
         </div>
     </div>
     <div class="sticky-footer">
@@ -710,7 +710,7 @@ function initVersionTrigger() {
     function startPress() {
         longPressTimer = setTimeout(function() {
             if (navigator.vibrate) navigator.vibrate(100);
-            if (confirm("確定要重置所有測試進度嗎?")) { 
+            if (confirm("確定要重置所有進度嗎?")) { 
                 localStorage.removeItem('xizhi_stamps'); 
                 location.reload(); 
             }
@@ -799,9 +799,11 @@ function handleImageUpload(e) {
                 }
                 
                 window._lastMemorialDataUrl = dataUrl;
-                document.getElementById('final-img').src = dataUrl;
-                document.getElementById('final-img').style.display = "block";
+                var finalEl = document.getElementById('final-img');
+                finalEl.src = dataUrl;
+                finalEl.style.display = "block";
                 document.getElementById('download-msg').style.display = "block";
+                finalEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
             
             // 6️⃣ 載入相框
