@@ -246,12 +246,15 @@ var TASKS = ['map','quiz','wish','beacon','share'];
 // 完賽紀念照相框設定
 var MEMORIAL_FRAME = {
     canvasSize: 800,
-    bgGradient: { start: '#667eea', end: '#764ba2' },
-    photoCenterX: 400, photoCenterY: 340, photoRadius: 220,
-    borderColor: '#fff', borderWidth: 8,
-    titleText: '🏆 汐止達人認證 🏆', titleY: 640, titleFont: 'bold 36px sans-serif',
-    subText: '完成所有挑戰!', subY: 690, subFont: '24px sans-serif',
-    dateY: 740, dateFont: '16px sans-serif', dateColor: 'rgba(255,255,255,0.7)',
+    // 移除背景漸層，使用透明背景
+    bgColor: 'transparent',
+    // 照片顯示為完整矩形，不裁切
+    photoX: 100,        // 照片左上角 X 座標
+    photoY: 100,        // 照片左上角 Y 座標
+    photoWidth: 600,    // 照片寬度
+    photoHeight: 600,   // 照片高度
+    // 移除文字顯示
+    showText: false,
     frameImageUrl: 'https://raw.githubusercontent.com/caroldaunn/xizhi-tour/main/frame.png'
 };
 
@@ -759,43 +762,18 @@ function handleImageUpload(e) {
             canvas.width = S; 
             canvas.height = S;
             
-            // 1️⃣ 繪製背景漸層
-            var gradient = ctx.createLinearGradient(0, 0, S, S);
-            gradient.addColorStop(0, cfg.bgGradient.start);
-            gradient.addColorStop(1, cfg.bgGradient.end);
-            ctx.fillStyle = gradient; 
-            ctx.fillRect(0, 0, S, S);
+            // 1️⃣ 透明背景（不繪製漸層）
+            ctx.clearRect(0, 0, S, S);
             
-            // 2️⃣ 繪製使用者照片（圓形）
-            var r = cfg.photoRadius;
-            var scale = Math.max((r * 2) / img.width, (r * 2) / img.height);
-            var w = img.width * scale, h = img.height * scale;
-            ctx.save();
-            ctx.beginPath(); 
-            ctx.arc(cfg.photoCenterX, cfg.photoCenterY, r, 0, Math.PI * 2); 
-            ctx.closePath(); 
-            ctx.clip();
-            ctx.drawImage(img, cfg.photoCenterX - w/2, cfg.photoCenterY - h/2, w, h);
-            ctx.restore();
-            
-            // 3️⃣ 繪製圓形邊框
-            ctx.strokeStyle = cfg.borderColor; 
-            ctx.lineWidth = cfg.borderWidth;
-            ctx.beginPath(); 
-            ctx.arc(cfg.photoCenterX, cfg.photoCenterY, r + 4, 0, Math.PI * 2); 
-            ctx.stroke();
-            
-            // 4️⃣ 繪製文字
-            ctx.fillStyle = '#fff'; 
-            ctx.textAlign = 'center';
-            ctx.font = cfg.titleFont; 
-            ctx.fillText(cfg.titleText, S/2, cfg.titleY);
-            ctx.font = cfg.subFont; 
-            ctx.fillText(cfg.subText, S/2, cfg.subY);
-            ctx.font = cfg.dateFont; 
-            ctx.fillStyle = cfg.dateColor;
-            var today = new Date();
-            ctx.fillText(today.getFullYear() + '/' + (today.getMonth()+1) + '/' + today.getDate(), S/2, cfg.dateY);
+            // 2️⃣ 繪製使用者照片（完整矩形，不裁切）
+            var photoW = cfg.photoWidth;
+            var photoH = cfg.photoHeight;
+            var scale = Math.min(photoW / img.width, photoH / img.height);
+            var w = img.width * scale;
+            var h = img.height * scale;
+            var x = cfg.photoX + (photoW - w) / 2;
+            var y = cfg.photoY + (photoH - h) / 2;
+            ctx.drawImage(img, x, y, w, h);
             
             alert('✅ 基礎圖層完成!準備載入相框...');
             
