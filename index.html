@@ -842,6 +842,7 @@ function handleImageUpload(e) {
             }, 6000);
             
             var frameImg = new Image();
+            frameImg.crossOrigin = 'anonymous'; // 啟用 CORS，避免 Canvas 污染
             
             frameImg.onload = function() {
                 alert('🎉 相框載入成功!開始合成...');
