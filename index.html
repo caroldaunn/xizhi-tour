@@ -479,9 +479,11 @@ function renderSpotPage(spotKey) {
     
     var routeKey = data.route || "R1"; 
     var rInfo = routesInfo[routeKey];
+    var routeColors = { R1: '#967249', R2: '#7BA23F', R3: '#FEDFE1', R4: '#F6C555', R5: '#008B8B' };
     if (rInfo) {
         document.getElementById('route-tag').innerText = rInfo.title;
         document.getElementById('route-desc').innerText = rInfo.desc;
+        document.getElementById('route-tag').style.background = routeColors[routeKey] || '#2c3e50';
         var spotIndex = rInfo.spots.indexOf(spotKey);
         if (spotIndex >= 0) { 
             document.getElementById('spot-number').innerText = "第 " + (spotIndex + 1) + " 站,共 " + rInfo.spots.length + " 站"; 
