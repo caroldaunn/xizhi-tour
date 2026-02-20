@@ -7,7 +7,7 @@
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; padding-bottom: 100px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; padding-bottom: 140px; }
         .progress-container { position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: #e0e0e0; z-index: 2000; }
         .progress-bar { height: 100%; background: linear-gradient(90deg, #ff8a00, #e52e71); width: 0%; transition: width 0.5s ease; }
         .beacon-banner { position: fixed; top: -120px; left: 5%; width: 90%; background: rgba(34,34,34,0.95); color: white; padding: 12px 15px; border-radius: 50px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); z-index: 5000; display: flex; align-items: center; gap: 12px; transition: top 0.6s cubic-bezier(0.175,0.885,0.32,1.275); cursor: pointer; }
@@ -100,7 +100,13 @@
         .quiz-options { display: flex; flex-direction: column; gap: 10px; }
         .quiz-btn { padding: 12px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 8px; font-size: 14px; cursor: pointer; }
         .close-modal { margin-top: 15px; color: #999; font-size: 12px; text-decoration: underline; cursor: pointer; }
-        .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px 15px; display: flex; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+        .bottom-toolbar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; flex-direction: column; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+        .toolbar-row { display: flex; align-items: center; justify-content: space-around; padding: 8px 12px; gap: 8px; border-top: 1px solid #eee; }
+        .toolbar-row:first-child { border-top: none; }
+        .toolbar-icon { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: none; background: none; cursor: pointer; color: #555; font-size: 20px; padding: 0; border-radius: 8px; }
+        .toolbar-icon:active { background: #f0f0f0; }
+        .toolbar-icon svg { width: 22px; height: 22px; }
+        .sticky-footer { padding: 10px 15px; display: flex; gap: 10px; }
         .footer-btn { flex: 1; padding: 12px; border-radius: 10px; text-align: center; text-decoration: none; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; border: none; }
         .btn-map { background: #F2E4E0; color:#4c506e; }
         .btn-share { background: #ece7c3; color: #4c506e; }
@@ -178,6 +184,9 @@
             <div id="tags-container" class="tags-container"></div>
             <div id="gallery-section"><div class="section-title">活動花絮</div><div id="gallery-content"></div></div>
             <div id="notice-box" class="notice-box"><h4>參加須知</h4><ul id="notice-list"></ul></div>
+            <div id="event-refresh-row" style="display:none; text-align:center; margin:16px 0;">
+                <a href="javascript:void(0)" onclick="forceReloadData()" style="font-size:13px; color:#666; text-decoration:none;">🔄 重新整理活動資料</a>
+            </div>
             <div class="transport-grid">
                 <a href="https://www.google.com/maps/search/YouBike/" target="_blank" class="t-btn bg-ubike"><i>🚲</i> YouBike</a>
                 <a id="bus-btn" href="#" target="_blank" class="t-btn bg-bus"><i>🚌</i> <span id="bus-label" class="bus-label">去下一站</span></a>
@@ -208,9 +217,18 @@
             <div id="version-trigger" class="version-trigger">v5.0</div>
         </div>
     </div>
-    <div class="sticky-footer">
-        <a id="map-btn" href="#" class="footer-btn btn-map" target="_blank" onclick="handleClickWithTrack('map')">帶我來這裡</a>
-        <button class="footer-btn btn-share" onclick="handleShareWithStamp()">打卡或分享</button>
+    <div class="bottom-toolbar">
+        <div class="toolbar-row">
+            <button type="button" class="toolbar-icon" onclick="history.back()" title="上一頁" aria-label="上一頁"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button>
+            <button type="button" class="toolbar-icon" onclick="history.forward()" title="下一頁" aria-label="下一頁"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg></button>
+            <button type="button" class="toolbar-icon" onclick="forceReloadData()" title="重新整理" aria-label="重新整理"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></button>
+            <button type="button" class="toolbar-icon" onclick="handleShareWithStamp()" title="分享" aria-label="分享"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg></button>
+            <button type="button" class="toolbar-icon" onclick="openToolbarMenu()" title="選單" aria-label="選單"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg></button>
+        </div>
+        <div class="sticky-footer">
+            <a id="map-btn" href="#" class="footer-btn btn-map" target="_blank" onclick="handleClickWithTrack('map')">帶我來這裡</a>
+            <button class="footer-btn btn-share" onclick="handleShareWithStamp()">打卡或分享</button>
+        </div>
     </div>
     <div id="lightbox" class="lightbox" onclick="closeLightbox()">
         <span class="lightbox-close">✕</span>
@@ -543,6 +561,7 @@ function renderEventPage(eventId) {
     document.getElementById('tags-container').style.display = 'flex';
     document.getElementById('gallery-section').style.display = 'block';
     document.getElementById('notice-box').style.display = 'block';
+    document.getElementById('event-refresh-row').style.display = 'block';
     
     document.getElementById('spot-img').src = data.img;
     document.getElementById('route-tag').innerHTML = '🎪 限定活動';
@@ -620,6 +639,7 @@ function renderSpotPage(spotKey) {
     document.getElementById('gallery-section').style.display = 'none';
     document.getElementById('notice-box').style.display = 'none';
     document.getElementById('event-intro-section').style.display = 'none';
+    document.getElementById('event-refresh-row').style.display = 'none';
     
     document.getElementById('spot-img').src = data.img;
     document.getElementById('spot-title').innerText = data.title;
@@ -871,6 +891,10 @@ function addEventToCalendar() {
 
 function handleShareWithStamp() { 
     document.getElementById('share-modal').style.display = 'flex'; 
+}
+
+function openToolbarMenu() {
+    document.getElementById('share-modal').style.display = 'flex';
 }
 
 function closeModal(id, e) { 
