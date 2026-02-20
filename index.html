@@ -479,13 +479,934 @@ function renderSpotPage(spotKey) {
     
     var routeKey = data.route || "R1"; 
     var rInfo = routesInfo[routeKey];
-    var routeColors = { R1: '#967249', R2: '#7BA23F', R3: '#FEDFE1', R4: '#F6C555', R5: '#008B8B' };
-    var routeTextColors = { R3: '#E16B8C' }; // 網美打卡字色
     if (rInfo) {
         document.getElementById('route-tag').innerText = rInfo.title;
         document.getElementById('route-desc').innerText = rInfo.desc;
-        document.getElementById('route-tag').style.background = routeColors[routeKey] || '#2c3e50';
-        document.getElementById('route-tag').style.color = routeTextColors[routeKey] || '#fff';
+        var spotIndex = rInfo.spots.indexOf(spotKey);
+        if (spotIndex >= 0) { 
+            document.getElementById('spot-number').innerText = "第 " + (spotIndex + 1) + " 站,共 " + rInfo.spots.length + " 站"; 
+        }
+    }
+    
+    if (data.quizQ) {
+        document.getElementById('quiz-question').innerText = data.quizQ;
+        if (data.quizOpts && data.quizOpts.length >= 3) { 
+            document.getElementById('quiz-opt-1').innerText = data.quizOpts[0]; 
+            document.getElementById('quiz-opt-2').innerText = data.quizOpts[1]; 
+            document.getElementById('quiz-opt-3').innerText = data.quizOpts[2]; 
+        }
+    }
+    
+    var mapQuery = encodeURIComponent(data.query);
+    document.getElementById('map-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
+    document.getElementById('parking-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+停車場';
+    document.getElementById('more-food-link').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+美食';
+    
+    if (rInfo && rInfo.spots) {
+        var currentIdx = rInfo.spots.indexOf(spotKey); 
+        var nextIdx = (currentIdx + 1) % rInfo.spots.length; 
+        var nextSpotKey = rInfo.spots[nextIdx]; 
+        var nextData = spotsData[nextSpotKey];
+        if (nextData) { 
+            document.getElementById('bus-btn').href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(nextData.query) + '&travelmode=transit'; 
+            document.getElementById('bus-label').innerText = '去' + nextData.title; 
+        }
+    }
+    
+    renderFoodSection(spotKey);
+    
+    if (data.hasBeacon) { 
+        setTimeout(function() { 
+            document.getElementById('beacon-banner').classList.add('show'); 
+            setTimeout(function() { 
+                document.getElementById('beacon-banner').classList.remove('show'); 
+            }, 8000); 
+        }, 3000); 
+    }
+    
+    initTaskProgress();
+    
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+}
+
+function renderFoodSection(spotKey) {
+    var foods = foodsData[spotKey] || foodsData['default'] || [];
+    var html = '';
+    for (var i = 0; i < foods.length; i++) {
+        var f = foods[i];
+        html += '<div class="food-card" onclick="openFoodMap(\'' + f.query + '\')">';
+        html += '<img src="' + f.img + '" class="food-img" onerror="this.src=\'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=300\'">';
+        html += '<div class="food-info">';
+        html += '<div class="food-type">' + f.type + '</div>';
+        html += '<div class="food-name">' + f.name + '</div>';
+        html += '<div class="food-desc">' + f.desc + '</div>';
+        html += '</div></div>';
+    }
+    document.getElementById('food-scroll').innerHTML = html;
+}
+
+function openFoodMap(query) { 
+    window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query), '_blank'); 
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    var date;
+    if (typeof dateStr === 'string' && dateStr.indexOf('T') >= 0) {
+        date = new Date(dateStr);
+    } else if (dateStr instanceof Date) {
+        date = dateStr;
+    } else {
+        return dateStr;
+    }
+    if (isNaN(date.getTime())) return dateStr;
+    var year = date.getFullYear();
+    var month = String(date.getMonth() + 1).padStart(2, '0');
+    var day = String(date.getDate()).padStart(2, '0');
+    return year + '/' + month + '/' + day;
+}
+
+function getStoryImgUrl(val) {
+    if (!val || typeof val !== 'string') return '';
+    var s = val.trim();
+    var m = s.match(/\]\s*\(\s*(https?:\/\/[^)\s]+)\s*\)/);
+    if (m) return m[1];
+    return s;
+}
+
+function buildStoryHtml(story) {
+    if (!story || !story.sections || !Array.isArray(story.sections) || story.sections.length === 0) return '';
+    var html = '';
+    for (var i = 0; i < story.sections.length; i++) {
+        var sec = story.sections[i];
+        var title = escapeHtml(sec.title || '');
+        var text = escapeHtml(sec.text || '');
+        html += '<div class="story-section"><div class="story-title">' + title + '</div><p class="story-text">' + text + '</p>';
+        if (sec.img) {
+            var imgUrl = getStoryImgUrl(sec.img);
+            if (imgUrl) html += '<img src="' + escapeHtml(imgUrl) + '" class="story-img" alt=""><p class="story-caption">' + escapeHtml(sec.caption || '') + '</p>';
+        }
+        html += '</div>';
+    }
+    if (story.quote) html += '<div class="story-quote">' + escapeHtml(story.quote) + '</div>';
+    return html;
+}
+
+function toggleStory() {
+    var detail = document.getElementById('story-detail');
+    var btn = document.getElementById('read-more-btn');
+    if (storyExpanded) {
+        detail.classList.remove('show');
+        btn.innerText = '▼ 了解更多故事';
+        storyExpanded = false;
+        return;
+    }
+    if (!currentData) {
+        detail.innerHTML = '<p class="story-text">無法取得景點資料。</p>';
+        detail.classList.add('show');
+        btn.innerText = '▲ 收起故事';
+        storyExpanded = true;
+        return;
+    }
+    var story = currentData.story;
+    var html = buildStoryHtml(story);
+    if (html) {
+        detail.innerHTML = html;
+    } else {
+        detail.innerHTML = '<p class="story-text">此景點暫無故事內容。</p>';
+    }
+    detail.classList.add('show');
+    btn.innerText = '▲ 收起故事';
+    storyExpanded = true;
+}
+
+function toggleEventIntro() {
+    var detail = document.getElementById('event-intro-detail');
+    var btn = document.getElementById('event-intro-btn');
+    if (!detail || !btn) return;
+    if (eventIntroExpanded) {
+        detail.classList.remove('show');
+        btn.innerText = '▼ 了解更多故事';
+        eventIntroExpanded = false;
+    } else {
+        detail.classList.add('show');
+        btn.innerText = '▲ 收起故事';
+        eventIntroExpanded = true;
+    }
+}
+
+function collectAction(taskName) { 
+    var c = JSON.parse(localStorage.getItem('xizhi_stamps')) || []; 
+    if (c.indexOf(taskName) === -1) { 
+        c.push(taskName); 
+        localStorage.setItem('xizhi_stamps', JSON.stringify(c)); 
+        setTimeout(initTaskProgress, 500); 
+    } 
+}
+
+function handleClickWithTrack(taskName) { 
+    collectAction(taskName); 
+}
+
+function isTaskDone(taskName) { 
+    var c = JSON.parse(localStorage.getItem('xizhi_stamps')) || []; 
+    return c.indexOf(taskName) !== -1; 
+}
+
+function initTaskProgress() {
+    var c = JSON.parse(localStorage.getItem('xizhi_stamps')) || []; 
+    var icons = { 'map': '🗺️', 'quiz': '❓', 'wish': '📅', 'beacon': '📡', 'share': '📤' };
+    for (var i = 0; i < TASKS.length; i++) { 
+        var t = TASKS[i]; 
+        var el = document.getElementById('stamp-' + t); 
+        if (el) { 
+            if (c.indexOf(t) !== -1) { 
+                el.classList.add('active'); 
+                el.innerText = '✓'; 
+            } else { 
+                el.classList.remove('active'); 
+                el.innerText = icons[t]; 
+            } 
+        } 
+    }
+    var wishBtn = document.getElementById('wish-btn');
+    if (wishBtn) wishBtn.style.display = 'none';
+    document.getElementById('progress-text').innerText = c.length + '/5'; 
+    document.getElementById('progress-bar').style.width = (c.length / 5) * 100 + '%';
+    if (c.length >= 5) { 
+        document.getElementById('survey-box').style.display = 'block'; 
+        document.getElementById('memorial-box').style.display = 'block'; 
+    }
+}
+
+function handleBeaconClick() { 
+    document.getElementById('beacon-banner').classList.remove('show'); 
+    alert("🎉 獲得【尋寶印章】"); 
+    collectAction('beacon'); 
+}
+
+function openQuizModal() { 
+    if (isTaskDone('quiz')) { 
+        alert("已完成!"); 
+        return; 
+    } 
+    document.getElementById('quiz-modal').style.display = 'flex'; 
+}
+
+function checkQuiz(answerIdx) { 
+    var correct = currentData ? currentData.quizA : 2; 
+    if (answerIdx === correct) { 
+        document.getElementById('quiz-modal').style.display = 'none'; 
+        alert("⭕ 答對了!獲得【問答印章】"); 
+        collectAction('quiz'); 
+    } else { 
+        alert("❌ 答錯了,再試試!"); 
+    } 
+}
+
+function addEventToCalendar() {
+    if (!confirm('將此活動加入行事曆？')) return;
+    if (!isTaskDone('wish')) {
+        collectAction('wish');
+        setTimeout(initTaskProgress, 300);
+    }
+    alert('已加入行事曆！');
+}
+
+function handleShareWithStamp() { 
+    document.getElementById('share-modal').style.display = 'flex'; 
+}
+
+function closeModal(id, e) { 
+    if (e.target.id === id || e.target.classList.contains('close-modal')) { 
+        document.getElementById(id).style.display = 'none'; 
+    } 
+}
+
+function shareTo(platform) { 
+    var url = window.location.href; 
+    var title = document.getElementById('spot-title').innerText; 
+    var text = '📸 我正在汐止打卡：' + title + '!快來一起探索～'; 
+    if (!isTaskDone('share')) { 
+        setTimeout(function() { 
+            alert("分享成功!獲得【分享印章】"); 
+            collectAction('share'); 
+        }, 500); 
+    }
+    if (platform === 'line') { 
+        window.location.href = 'https://line.me/R/msg/text/?' + encodeURIComponent(text + ' ' + url); 
+    } else if (platform === 'fb') { 
+        window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&quote=' + encodeURIComponent(text)); 
+    } else if (platform === 'ig') { 
+        if (navigator.clipboard) { 
+            navigator.clipboard.writeText(text + ' ' + url).then(function() { 
+                alert("已複製文字!請打開 Instagram 貼上分享"); 
+            }); 
+        } 
+    } else if (platform === 'copy') { 
+        if (navigator.clipboard) { 
+            navigator.clipboard.writeText(url).then(function() { 
+                alert("連結已複製!"); 
+            }); 
+        } 
+    } 
+    document.getElementById('share-modal').style.display = 'none'; 
+}
+
+var longPressTimer = null;
+function initVersionTrigger() {
+    var trigger = document.getElementById('version-trigger');
+    if (!trigger) return;
+    
+    function startPress() {
+        longPressTimer = setTimeout(function() {
+            if (navigator.vibrate) navigator.vibrate(100);
+            if (confirm("確定要重置所有進度嗎?")) { 
+                localStorage.removeItem('xizhi_stamps'); 
+                location.reload(); 
+            }
+        }, 3000);
+    }
+    
+    function cancelPress() {
+        if (longPressTimer) { 
+            clearTimeout(longPressTimer); 
+            longPressTimer = null; 
+        }
+    }
+    
+    trigger.addEventListener('touchstart', startPress, {passive: true});
+    trigger.addEventListener('touchend', cancelPress, {passive: true});
+    trigger.addEventListener('touchcancel', cancelPress, {passive: true});
+    trigger.addEventListener('touchmove', cancelPress, {passive: true});
+    trigger.addEventListener('mousedown', startPress);
+    trigger.addEventListener('mouseup', cancelPress);
+    trigger.addEventListener('mouseleave', cancelPress);
+}
+
+// ========================================
+// 🖼️ 加強版相框上傳函數 - 包含詳細除錯訊息
+// ========================================
+function handleImageUpload(e) { 
+    var file = e.target.files[0]; 
+    if (!file) {
+    }
+    
+    
+    var finalImgEl = document.getElementById('final-img');
+    var downloadMsgEl = document.getElementById('download-msg');
+    finalImgEl.style.display = 'none';
+    finalImgEl.src = '';
+    downloadMsgEl.style.display = 'none';
+    
+    var reader = new FileReader(); 
+    reader.onload = function(event) { 
+        var img = new Image(); 
+        img.onload = function() { 
+            var cfg = MEMORIAL_FRAME;
+            var S = cfg.canvasSize;
+            var canvas = document.getElementById('result-canvas'); 
+            var ctx = canvas.getContext('2d'); 
+            canvas.width = S; 
+            canvas.height = S;
+            
+            // 1️⃣ 透明背景（不繪製漸層）
+            ctx.clearRect(0, 0, S, S);
+            
+            // 2️⃣ 繪製使用者照片：'stretch' 拉伸滿版 | 'cover' 等比放到邊緣裁切
+            var photoW = cfg.photoWidth;
+            var photoH = cfg.photoHeight;
+            var px = cfg.photoX, py = cfg.photoY;
+            var fillMode = cfg.photoFillMode || 'cover';
+            if (fillMode === 'stretch') {
+                // 強制拉伸：填滿相框，無黑邊，會變形
+                ctx.drawImage(img, 0, 0, img.width, img.height, px, py, photoW, photoH);
+            } else {
+                // 等比放到邊緣：放大到貼齊邊緣，多出部分裁切，不變形
+                var scale = Math.max(photoW / img.width, photoH / img.height);
+                var w = img.width * scale, h = img.height * scale;
+                var x = px + (photoW - w) / 2, y = py + (photoH - h) / 2;
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(px, py, photoW, photoH);
+                ctx.clip();
+                ctx.drawImage(img, x, y, w, h);
+                ctx.restore();
+            }
+            
+            
+            
+            // 5️⃣ 備份無相框版本
+            var backupCanvas = document.createElement('canvas');
+            backupCanvas.width = S; 
+            backupCanvas.height = S;
+            backupCanvas.getContext('2d').drawImage(canvas, 0, 0);
+            
+            var done = false;
+            var frameTimeoutId = null;
+            
+            function finishMemorial() {
+                if (done) return;
+                done = true;
+                if (frameTimeoutId) clearTimeout(frameTimeoutId);
+                
+                
+                
+                var dataUrl;
+                try {
+                    dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+                } catch (err) {
+                    
+                    dataUrl = backupCanvas.toDataURL("image/jpeg", 0.9);
+                }
+                
+                window._lastMemorialDataUrl = dataUrl;
+                var finalEl = document.getElementById('final-img');
+                finalEl.src = dataUrl;
+                finalEl.style.display = "block";
+                document.getElementById('download-msg').style.display = "block";
+                finalEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            
+            // 6️⃣ 載入相框
+            if (!cfg.frameImageUrl) {
+                finishMemorial();
+                return;
+            }
+            
+            frameTimeoutId = setTimeout(function() {
+                if (!done) {
+                    finishMemorial();
+                }
+            }, 6000);
+            
+            var frameImg = new Image();
+            frameImg.crossOrigin = 'anonymous'; // 啟用 CORS，避免 Canvas 污染
+            
+            frameImg.onload = function() {
+                
+                try {
+                    ctx.drawImage(frameImg, 0, 0, S, S);
+                    finishMemorial();
+                } catch (err) {
+                    finishMemorial();
+                }
+            };
+            
+            frameImg.onerror = function(err) { 
+                finishMemorial();
+            };
+            
+            // 直接從 GitHub 載入相框（跳過 GAS 代理）
+            
+            frameImg.src = cfg.frameImageUrl + '?t=' + Date.now();
+        }; 
+        
+        img.onerror = function() {
+            
+        };
+        
+        img.src = event.target.result; 
+    }; 
+    
+    reader.onerror = function() {
+        
+    };
+    
+    reader.readAsDataURL(file); 
+}
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汐止在地導覽</title>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; padding-bottom: 100px; }
+        .progress-container { position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: #e0e0e0; z-index: 2000; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #ff8a00, #e52e71); width: 0%; transition: width 0.5s ease; }
+        .beacon-banner { position: fixed; top: -120px; left: 5%; width: 90%; background: rgba(34,34,34,0.95); color: white; padding: 12px 15px; border-radius: 50px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); z-index: 5000; display: flex; align-items: center; gap: 12px; transition: top 0.6s cubic-bezier(0.175,0.885,0.32,1.275); cursor: pointer; }
+        .beacon-banner.show { top: 20px; }
+        .beacon-icon { width: 36px; height: 36px; background: #06C755; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .beacon-text { flex: 1; font-size: 13px; }
+        .beacon-title { font-weight: bold; font-size: 14px; }
+        .beacon-sub { color: #ccc; font-size: 11px; }
+        .hero-container { position: relative; width: 100%; height: 35vh; overflow: hidden; }
+        .hero-img { width: 100%; height: 100%; object-fit: cover; }
+        .content-card { position: relative; background: white; border-radius: 24px 24px 0 0; margin-top: -25px; padding: 25px; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); min-height: 60vh; }
+        .title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        h1 { margin: 0; font-size: 24px; font-weight: 800; color: #2c3e50; }
+        .wish-btn { font-size: 22px; color: #ccc; cursor: pointer; padding: 5px; transition: all 0.2s; }
+        .wish-btn.active { color: #ff4757; transform: scale(1.1); }
+        .sub-tag { display: inline-block; font-size: 12px; color: #fff; background: #2c3e50; padding: 4px 10px; border-radius: 4px; margin-bottom: 10px; font-weight: bold; }
+        .route-info { font-size: 13px; color: #666; margin-bottom: 15px; border-left: 3px solid #ff8a00; padding-left: 8px; }
+        .event-date-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .event-date-location { flex: 1; min-width: 0; }
+        .event-calendar-btn-large { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; color: #667eea; font-size: 15px; font-weight: bold; cursor: pointer; white-space: nowrap; }
+        .event-calendar-btn-large:active { opacity: 0.8; }
+        .event-calendar-btn-large .icon { font-size: 22px; }
+        #event-intro-btn { font-size: 14px; }
+        #event-intro-detail.story-detail { padding: 20px; }
+        #event-intro-detail .story-text { font-size: 14px; line-height: 1.8; color: #555; text-align: justify; }
+        .spot-number { font-size: 12px; color: #888; margin-bottom: 5px; }
+        .desc-box { margin-bottom: 20px; }
+        .desc-text { font-size: 15px; line-height: 1.8; color: #555; }
+        .desc-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .read-more-btn { color: #007bff; font-weight: bold; font-size: 14px; cursor: pointer; text-decoration: underline; }
+        .quiz-trigger-btn { background: #ff9f43; color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; }
+        .story-detail { display: none; margin-top: 20px; padding: 20px; background: #fafafa; border-radius: 16px; }
+        .story-detail.show { display: block; animation: fadeIn 0.3s; }
+        .story-section { margin-bottom: 20px; }
+        .story-title { font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .story-title::before { content: ""; width: 4px; height: 16px; background: linear-gradient(180deg, #ff8a00, #e52e71); border-radius: 2px; }
+        .story-text { font-size: 14px; line-height: 1.8; color: #555; text-align: justify; }
+        .story-img { width: 100%; border-radius: 12px; margin: 15px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .story-caption { font-size: 12px; color: #888; text-align: center; margin-top: -10px; margin-bottom: 15px; }
+        .story-quote { background: #fff; border-left: 4px solid #ff8a00; padding: 15px; margin: 15px 0; font-style: italic; color: #666; border-radius: 0 8px 8px 0; }
+        .food-section { margin: 25px 0; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .section-title { font-size: 16px; font-weight: 800; color: #2c3e50; display: flex; align-items: center; gap: 8px; margin: 0; }
+        .section-title::before { content: ""; width: 4px; height: 18px; background: linear-gradient(180deg, #ff6b6b, #ffa502); border-radius: 2px; }
+        .more-link { font-size: 13px; color: #007bff; text-decoration: none; }
+        .food-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+        .food-scroll::-webkit-scrollbar { display: none; }
+        .food-card { min-width: 140px; max-width: 140px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; scroll-snap-align: start; cursor: pointer; transition: transform 0.2s; flex-shrink: 0; }
+        .food-card:active { transform: scale(0.97); }
+        .food-img { width: 100%; height: 90px; object-fit: cover; background: #f0f0f0; }
+        .food-info { padding: 10px; }
+        .food-name { font-size: 14px; font-weight: bold; color: #333; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .food-type { font-size: 11px; color: #ff6b6b; background: #fff0f0; padding: 2px 8px; border-radius: 10px; display: inline-block; margin-bottom: 4px; }
+        .food-desc { font-size: 11px; color: #888; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .transport-grid { display: flex; gap: 10px; margin-bottom: 20px; }
+        .t-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 10px; border-radius: 12px; text-decoration: none; color: white; font-weight: bold; font-size: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
+        .t-btn:active { transform: scale(0.96); }
+        .t-btn i { font-style: normal; font-size: 18px; }
+        .bg-ubike { background: #FFC470; }
+        .bg-bus { background: #779ae4; }
+        .bg-parking { background: #81C7D4;}
+        .bus-label { font-size: 12px; }
+        .game-section { background: #fff8e1; border: 2px dashed #ffc107; border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 15px; }
+        .game-title { font-weight: bold; color: #d35400; margin-bottom: 15px; font-size: 16px; }
+        .task-grid { display: flex; justify-content: center; gap: 10px; }
+        .stamp-box { display: flex; flex-direction: column; align-items: center; width: 55px; }
+        .stamp { width: 40px; height: 40px; border-radius: 50%; background: #e0e0e0; color: #777; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 2px solid #ddd; }
+        .stamp.active { background: #ff512f; color: white; border-color: #ff512f; }
+        .stamp-label { font-size: 10px; color: #888; margin-top: 5px; }
+        #survey-box, #memorial-box { display: none; margin-top: 25px; }
+        .survey-btn { display: block; background: linear-gradient(135deg, #667eea, #764ba2); color: white; text-align: center; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; }
+        #memorial-box { text-align: center; background: #fafafa; padding: 20px; border-radius: 12px; }
+        .upload-btn-wrapper { position: relative; overflow: hidden; display: inline-block; }
+        .btn-upload { border: 2px dashed #007bff; color: #007bff; background: white; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .upload-btn-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; }
+        #result-canvas { display: none; }
+        #final-img { width: 100%; max-width: 100%; display: none; margin: 10px 0; border-radius: 8px; cursor: pointer; }
+        .download-hint { display: none; color: #28a745; font-size: 14px; margin-top: 10px; background: #e8f5e9; padding: 10px; border-radius: 8px; }
+        .download-btn { display: none; margin-top: 10px; background: #28a745; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .download-btn:active { transform: scale(0.95); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 6000; display: none; align-items: flex-end; justify-content: center; }
+        .share-sheet { width: 100%; max-width: 500px; background: white; border-radius: 20px 20px 0 0; padding: 25px; }
+        .share-title { font-size: 16px; font-weight: bold; margin-bottom: 25px; text-align: center; }
+        .share-grid { display: flex; justify-content: space-around; }
+        .share-item { display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; font-size: 12px; }
+        .share-icon-box { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; }
+        .share-icon-box svg { width: 30px; height: 30px; fill: currentColor; }
+        .quiz-box { background: white; width: 85%; max-width: 320px; padding: 20px; border-radius: 16px; text-align: center; align-self: center; }
+        .quiz-question { font-size: 16px; font-weight: bold; margin-bottom: 20px; line-height: 1.5; }
+        .quiz-options { display: flex; flex-direction: column; gap: 10px; }
+        .quiz-btn { padding: 12px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 8px; font-size: 14px; cursor: pointer; }
+        .close-modal { margin-top: 15px; color: #999; font-size: 12px; text-decoration: underline; cursor: pointer; }
+        .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px 15px; display: flex; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+        .footer-btn { flex: 1; padding: 12px; border-radius: 10px; text-align: center; text-decoration: none; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; border: none; }
+        .btn-map { background: #F2E4E0; color:#4c506e; }
+        .btn-share { background: #ece7c3; color: #4c506e; }
+        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; align-items: center; justify-content: center; z-index: 3000; flex-direction: column; }
+        .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid #667eea; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        .loading-text { color: #888; font-size: 14px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-box { padding: 20px; margin: 20px; background: #ffe6e6; border-left: 4px solid #ff4444; border-radius: 8px; }
+        .error-title { color: #ff4444; font-weight: bold; margin-bottom: 10px; }
+        .error-msg { color: #666; font-size: 14px; line-height: 1.6; }
+        .tags-container { display: none; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
+        .tag { background: #fff0f0; color: #ff6b6b; padding: 6px 14px; border-radius: 20px; font-size: 13px; }
+        #gallery-section, #notice-box { display: none; }
+        .gallery-item { margin-bottom: 20px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .gallery-img { width: 100%; height: 180px; object-fit: cover; }
+        .gallery-caption { padding: 12px; background: #fafafa; font-size: 14px; color: #666; }
+        .notice-box { background: #fff8e1; border-left: 4px solid #ffc107; padding: 15px; border-radius: 0 12px 12px 0; margin: 20px 0; }
+        .notice-box h4 { margin: 0 0 10px; color: #f57c00; font-size: 14px; }
+        .notice-box ul { margin: 0; padding-left: 20px; font-size: 13px; color: #666; line-height: 1.8; }
+        .version-trigger { text-align: center; padding: 25px 0; color: #ccc; font-size: 12px; user-select: none; -webkit-user-select: none; cursor: default; }
+        .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9000; align-items: center; justify-content: center; flex-direction: column; }
+        .lightbox img { max-width: 95%; max-height: 80%; object-fit: contain; }
+        .lightbox-close { position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; cursor: pointer; }
+        .lightbox-hint { color: white; margin-top: 15px; font-size: 14px; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">⏳ 載入資料中...</div>
+    </div>
+    
+    <div id="error-container" style="display:none;">
+        <div class="error-box">
+            <div class="error-title">⚠️ 資料載入失敗</div>
+            <div class="error-msg" id="error-msg"></div>
+        </div>
+    </div>
+    
+    <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
+    <div id="beacon-banner" class="beacon-banner" onclick="handleBeaconClick()">
+        <div class="beacon-icon">📡</div>
+        <div class="beacon-text"><div class="beacon-title">偵測到 LINE Beacon 訊號</div><div class="beacon-sub">找到隱藏景點,點擊讀取訊息!</div></div>
+    </div>
+    <div id="main-content" style="display: none;">
+        <div class="hero-container"><img id="spot-img" class="hero-img" src="" alt="圖片"></div>
+        <div class="content-card">
+            <span id="route-tag" class="sub-tag">汐止導覽</span>
+            <div id="route-desc" class="route-info"></div>
+            <div id="spot-number" class="spot-number"></div>
+            <div class="title-row">
+                <h1 id="spot-title"></h1>
+                <div id="wish-btn" class="wish-btn" style="display:none;"></div>
+            </div>
+            <div class="desc-box">
+                <div id="spot-desc" class="desc-text"></div>
+                <div id="desc-actions" class="desc-actions">
+                    <div id="read-more-btn" class="read-more-btn" onclick="toggleStory()">▼ 了解更多故事</div>
+                    <div id="quiz-btn" class="quiz-trigger-btn" onclick="openQuizModal()">知識小學堂</div>
+                </div>
+            </div>
+            <div id="story-detail" class="story-detail"></div>
+            <div id="food-section" class="food-section">
+                <div class="section-header">
+                    <div class="section-title">🍜 附近推薦美食</div>
+                    <a id="more-food-link" href="#" target="_blank" class="more-link">更多美食 →</a>
+                </div>
+                <div id="food-scroll" class="food-scroll"></div>
+            </div>
+            <div id="tags-container" class="tags-container"></div>
+            <div id="gallery-section"><div class="section-title">活動花絮</div><div id="gallery-content"></div></div>
+            <div id="event-intro-section" style="display:none;">
+                <div id="event-intro-btn" class="read-more-btn" onclick="toggleEventIntro()">▼ 了解更多故事</div>
+                <div id="event-intro-detail" class="story-detail"></div>
+            </div>
+            <div id="notice-box" class="notice-box"><h4>參加須知</h4><ul id="notice-list"></ul></div>
+            <div class="transport-grid">
+                <a href="https://www.google.com/maps/search/YouBike/" target="_blank" class="t-btn bg-ubike"><i>🚲</i> YouBike</a>
+                <a id="bus-btn" href="#" target="_blank" class="t-btn bg-bus"><i>🚌</i> <span id="bus-label" class="bus-label">去下一站</span></a>
+                <a id="parking-btn" href="#" target="_blank" class="t-btn bg-parking"><i>🅿️</i> 找停車場</a>
+            </div>
+            <div id="bus-schedule-link" style="text-align: center; margin-bottom: 20px;">
+                <a href="https://www.xizhi.ntpc.gov.tw/home.jsp?id=1ee324bfb5e44418" target="_blank" style="font-size: 14px; color: #3498db; text-decoration: none;">汐止社區巴士時刻表 查看 →</a>
+            </div>
+            <div id="game-section" class="game-section">
+                <div class="game-title">汐止達人挑戰 (進度: <span id="progress-text">0/5</span>)</div>
+                <div class="task-grid">
+                    <div class="stamp-box"><div class="stamp" id="stamp-map">🗺️</div><div class="stamp-label">找路</div></div>
+                    <div class="stamp-box"><div class="stamp" id="stamp-quiz">❓</div><div class="stamp-label">問答</div></div>
+                    <div class="stamp-box"><div class="stamp" id="stamp-wish">📅</div><div class="stamp-label">活動</div></div>
+                    <div class="stamp-box"><div class="stamp" id="stamp-beacon">📡</div><div class="stamp-label">尋寶</div></div>
+                    <div class="stamp-box"><div class="stamp" id="stamp-share">📤</div><div class="stamp-label">分享</div></div>
+                </div>
+            </div>
+            <div id="survey-box"><a href="#" class="survey-btn">任務達成,填寫問卷並參加抽獎!</a></div>
+            <div id="memorial-box">
+                <div style="font-size:16px;font-weight:800;margin-bottom:5px;">完賽紀念照</div>
+                <p style="font-size:13px;color:#666;margin-bottom:15px;">上傳自拍照,合成汐止達人相框!</p>
+                <div class="upload-btn-wrapper"><button class="btn-upload">選擇照片</button><input type="file" accept="image/*" onchange="handleImageUpload(event)"></div>
+                <canvas id="result-canvas"></canvas>
+                <img id="final-img" src="" alt="" onclick="openLightbox()">
+                <div id="download-msg" class="download-hint">點擊圖片可放大</div>
+            </div>
+            <div id="version-trigger" class="version-trigger">v5.0</div>
+        </div>
+    </div>
+    <div class="sticky-footer">
+        <a id="map-btn" href="#" class="footer-btn btn-map" target="_blank" onclick="handleClickWithTrack('map')">帶我來這裡</a>
+        <button class="footer-btn btn-share" onclick="handleShareWithStamp()">打卡或分享</button>
+    </div>
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close">✕</span>
+        <img id="lightbox-img" src="" alt="">
+    </div>
+    <div id="share-modal" class="modal-overlay" onclick="closeModal('share-modal',event)">
+        <div class="share-sheet">
+            <div class="share-title">打卡或分享</div>
+            <div class="share-grid">
+                <div class="share-item" onclick="shareTo('line')">
+                    <div class="share-icon-box" style="background:#06C755;">
+                        <svg viewBox="0 0 24 24" fill="white"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+                    </div>
+                    <span>LINE</span>
+                </div>
+                <div class="share-item" onclick="shareTo('fb')"><div class="share-icon-box" style="background:#1877F2;"><svg viewBox="0 0 24 24"><path d="M22 12c0-5.5-4.5-10-10-10S2 6.5 2 12c0 5 3.7 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7C18.3 21.1 22 17 22 12z"/></svg></div><span>Facebook</span></div>
+                <div class="share-item" onclick="shareTo('ig')"><div class="share-icon-box" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.8.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1.1.4 2.2.1 1.3.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1.1.4-2.2.4-1.3.1-1.6.1-4.8.1s-3.6 0-4.8-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1.1-.4-2.2-.1-1.3-.1-1.6-.1-4.8s0-3.6.1-4.8c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1.1-.4 2.2-.4 1.2-.1 1.6-.1 4.8-.1M12 0C8.7 0 8.3 0 7.1.1 5.8.1 4.9.3 4.1.6c-.8.3-1.5.7-2.2 1.4C1.2 2.6.8 3.3.5 4.1c-.3.8-.5 1.7-.5 3 0 1.2 0 1.6 0 4.9s0 3.7.1 4.9c.1 1.3.3 2.1.6 2.9.3.8.7 1.5 1.4 2.2.7.7 1.4 1.1 2.2 1.4.8.3 1.6.5 2.9.6 1.2.1 1.6.1 4.9.1s3.7 0 4.9-.1c1.3-.1 2.1-.3 2.9-.6.8-.3 1.5-.7 2.2-1.4.7-.7 1.1-1.4 1.4-2.2.3-.8.5-1.6.6-2.9.1-1.2.1-1.6.1-4.9s0-3.7-.1-4.9c-.1-1.3-.3-2.1-.6-2.9-.3-.8-.7-1.5-1.4-2.2-.7-.7-1.4-1.1-2.2-1.4-.8-.3-1.6-.5-2.9-.6C15.7 0 15.3 0 12 0zm0 5.8c-3.4 0-6.2 2.8-6.2 6.2s2.8 6.2 6.2 6.2 6.2-2.8 6.2-6.2-2.8-6.2-6.2-6.2zm0 10.2c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4zm6.4-11.8c-.8 0-1.4.6-1.4 1.4 0 .8.6 1.4 1.4 1.4.8 0 1.4-.6 1.4-1.4 0-.8-.6-1.4-1.4-1.4z"/></svg></div><span>Instagram</span></div>
+                <div class="share-item" onclick="shareTo('copy')"><div class="share-icon-box" style="background:#555;"><svg viewBox="0 0 24 24"><path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z"/></svg></div><span>複製連結</span></div>
+            </div>
+        </div>
+    </div>
+    <div id="quiz-modal" class="modal-overlay">
+        <div class="quiz-box">
+            <div id="quiz-question" class="quiz-question">Q: 問題載入中...</div>
+            <div class="quiz-options">
+                <button class="quiz-btn" id="quiz-opt-1" onclick="checkQuiz(1)">A</button>
+                <button class="quiz-btn" id="quiz-opt-2" onclick="checkQuiz(2)">B</button>
+                <button class="quiz-btn" id="quiz-opt-3" onclick="checkQuiz(3)">C</button>
+            </div>
+            <div class="close-modal" onclick="closeModal('quiz-modal',event)">放棄挑戰</div>
+        </div>
+    </div>
+<script>
+// ========================================
+// 🔧 設定區 - Google Apps Script API 網址
+// ========================================
+const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbzNtCPdBPw5LEEnsqmAAo4RclWvgg1TwdJ8g0td9BZf_UQEqPU-RiZSgJh8pS3VWSyPKg/exec';
+
+// ========================================
+// 📦 全域變數
+// ========================================
+var MY_LIFF_ID = "2008941841-8KQq29wn";
+var TASKS = ['map','quiz','wish','beacon','share'];
+
+// 完賽紀念照相框設定
+var MEMORIAL_FRAME = {
+    canvasSize: 800,
+    bgColor: 'transparent',
+    photoX: 10,
+    photoY: 10,
+    photoWidth: 760,
+    photoHeight: 760,
+    showText: false,
+    // 'stretch' = 強制拉伸滿版（無黑邊，會變形）
+    // 'cover' = 等比放大貼齊邊緣，多餘裁切（不變形，推薦）
+    photoFillMode: 'cover',
+    frameImageUrl: 'https://raw.githubusercontent.com/caroldaunn/xizhi-tour/main/frame.png'
+};
+
+var routesInfo = {};
+var foodsData = {};
+var spotsData = {};
+var eventsData = {};
+var currentData = null, isEventPage = false, storyExpanded = false, eventIntroExpanded = false;
+
+// ========================================
+// 🚀 初始化
+// ========================================
+window.onload = function() {
+    loadDataFromGoogleSheet()
+        .then(function() {
+            return liff.init({ liffId: MY_LIFF_ID });
+        })
+        .then(function() {
+            renderContent();
+        })
+        .catch(function(err) {
+            console.error('初始化錯誤:', err);
+            if (Object.keys(spotsData).length > 0) {
+                renderContent();
+            } else {
+                showError('初始化失敗: ' + err.message);
+            }
+        });
+};
+
+// ========================================
+// 📡 從 Google Sheet 載入資料
+// ========================================
+function loadDataFromGoogleSheet() {
+    updateLoadingText('正在從雲端載入資料...');
+    
+    return fetch(GOOGLE_SHEET_API_URL + '?type=all&t=' + new Date().getTime())
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('API 回應錯誤: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            routesInfo = data.routes || {};
+            spotsData = data.spots || {};
+            foodsData = data.foods || {};
+            eventsData = data.events || {};
+            
+            console.log('✅ 資料載入成功:', {
+                routes: Object.keys(routesInfo).length,
+                spots: Object.keys(spotsData).length,
+                foods: Object.keys(foodsData).length,
+                events: Object.keys(eventsData).length
+            });
+            
+            if (Object.keys(spotsData).length === 0) {
+                throw new Error('景點資料為空,請檢查 Google Sheet 設定');
+            }
+            
+            updateLoadingText('資料載入完成!');
+            return true;
+        })
+        .catch(function(error) {
+            console.error('❌ 資料載入失敗:', error);
+            showError('無法載入資料: ' + error.message + '<br><br>請確認:<br>1. Google Apps Script 已正確部署<br>2. API 網址正確<br>3. 試算表權限設定正確');
+            throw error;
+        });
+}
+
+function updateLoadingText(text) {
+    var loadingText = document.querySelector('.loading-text');
+    if (loadingText) {
+        loadingText.innerHTML = '⏳ ' + text;
+    }
+}
+
+function showError(message) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error-msg').innerHTML = message;
+    document.getElementById('error-container').style.display = 'block';
+}
+
+// ========================================
+// 📄 頁面渲染函數
+// ========================================
+function renderContent() {
+    try {
+        var urlParams = new URLSearchParams(window.location.search);
+        var pageId = urlParams.get('id') || 'spot1';
+        if (pageId.indexOf('E') === 0 && eventsData[pageId]) { 
+            isEventPage = true; 
+            renderEventPage(pageId); 
+        } else { 
+            isEventPage = false; 
+            renderSpotPage(pageId); 
+        }
+        initVersionTrigger();
+    } catch (e) { 
+        showError('頁面渲染失敗: ' + e.message);
+    }
+}
+
+function renderEventPage(eventId) {
+    var data = eventsData[eventId]; 
+    if (!data) {
+        showError('找不到活動資料: ' + eventId);
+        return;
+    }
+    currentData = data;
+    
+    document.getElementById('beacon-banner').style.display = 'none';
+    document.getElementById('game-section').style.display = 'none';
+    document.getElementById('food-section').style.display = 'none';
+    document.getElementById('survey-box').style.display = 'none';
+    document.getElementById('memorial-box').style.display = 'none';
+    document.getElementById('bus-schedule-link').style.display = 'none';
+    document.getElementById('desc-actions').style.display = 'none';
+    document.getElementById('wish-btn').style.display = 'none';
+    document.querySelector('.progress-container').style.display = 'none';
+    
+    document.getElementById('tags-container').style.display = 'flex';
+    document.getElementById('gallery-section').style.display = 'block';
+    document.getElementById('notice-box').style.display = 'block';
+    
+    document.getElementById('spot-img').src = data.img;
+    document.getElementById('route-tag').innerHTML = '🎪 限定活動';
+    document.getElementById('route-tag').style.background = '#ff6b6b';
+    var dateStr = formatDate(data.date);
+    document.getElementById('route-desc').innerHTML = '<div class="event-date-row"><div class="event-date-location">' + dateStr + ' | ' + data.location + '</div><div class="event-calendar-btn-large" onclick="addEventToCalendar()"><span class="icon">📅</span>加入行事曆</div></div>';
+    var introSection = document.getElementById('event-intro-section');
+    var introDetail = document.getElementById('event-intro-detail');
+    var introBtn = document.getElementById('event-intro-btn');
+    var introHtml = '';
+    if (data.intro && typeof data.intro === 'string') {
+        introHtml = '<p class="story-text">' + escapeHtml(data.intro) + '</p>';
+    } else if (data.intro && typeof data.intro === 'object') {
+        introHtml = buildStoryHtml(data.intro);
+    }
+    console.log('活動更多故事 debug:', { hasIntro: !!data.intro, introType: typeof data.intro, introHtmlLength: introHtml ? introHtml.length : 0 });
+    if (introHtml) {
+        introSection.style.display = 'block';
+        introDetail.innerHTML = introHtml;
+        introDetail.classList.remove('show');
+        introBtn.innerText = '▼ 了解更多故事';
+        eventIntroExpanded = false;
+    } else {
+        introSection.style.display = 'none';
+    }
+    document.getElementById('spot-number').style.display = 'none';
+    document.getElementById('spot-title').innerText = data.title;
+    document.getElementById('spot-desc').innerText = data.desc;
+    
+    var tagsHtml = ''; 
+    for (var i = 0; i < data.tags.length; i++) { 
+        tagsHtml += '<span class="tag">' + data.tags[i] + '</span>'; 
+    }
+    document.getElementById('tags-container').innerHTML = tagsHtml;
+    
+    var galleryHtml = ''; 
+    for (var j = 0; j < data.gallery.length; j++) { 
+        galleryHtml += '<div class="gallery-item"><img src="' + data.gallery[j].img + '" class="gallery-img"><div class="gallery-caption">' + data.gallery[j].caption + '</div></div>'; 
+    }
+    document.getElementById('gallery-content').innerHTML = galleryHtml;
+    
+    var noticeHtml = ''; 
+    for (var k = 0; k < data.notices.length; k++) { 
+        noticeHtml += '<li>' + data.notices[k] + '</li>'; 
+    }
+    document.getElementById('notice-list').innerHTML = noticeHtml;
+    
+    var mapQuery = encodeURIComponent(data.query);
+    document.getElementById('bus-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
+    document.getElementById('bus-label').innerText = '導航前往';
+    document.getElementById('parking-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+停車場';
+    document.getElementById('map-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
+    
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+}
+
+function renderSpotPage(spotKey) {
+    var data = spotsData[spotKey]; 
+    if (!data) { 
+        data = spotsData['spot1']; 
+        spotKey = 'spot1'; 
+    }
+    currentData = data; 
+    currentData.spotKey = spotKey;
+    
+    document.getElementById('game-section').style.display = 'block';
+    document.getElementById('food-section').style.display = 'block';
+    document.getElementById('bus-schedule-link').style.display = 'block';
+    document.getElementById('desc-actions').style.display = 'flex';
+    document.getElementById('wish-btn').style.display = 'none';
+    document.querySelector('.progress-container').style.display = 'block';
+    
+    document.getElementById('tags-container').style.display = 'none';
+    document.getElementById('gallery-section').style.display = 'none';
+    document.getElementById('notice-box').style.display = 'none';
+    document.getElementById('event-intro-section').style.display = 'none';
+    
+    document.getElementById('spot-img').src = data.img;
+    document.getElementById('spot-title').innerText = data.title;
+    document.getElementById('spot-desc').innerText = data.desc;
+    
+    var routeKey = data.route || "R1"; 
+    var rInfo = routesInfo[routeKey];
+    if (rInfo) {
+        document.getElementById('route-tag').innerText = rInfo.title;
+        document.getElementById('route-desc').innerText = rInfo.desc;
         var spotIndex = rInfo.spots.indexOf(spotKey);
         if (spotIndex >= 0) { 
             document.getElementById('spot-number').innerText = "第 " + (spotIndex + 1) + " 站,共 " + rInfo.spots.length + " 站"; 
@@ -928,6 +1849,37 @@ function handleImageUpload(e) {
     reader.readAsDataURL(file); 
 }
 
+function downloadImage() {
+    var canvas = document.getElementById('result-canvas');
+    var dataUrl;
+    try {
+        dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+    } catch (e) {
+        dataUrl = window._lastMemorialDataUrl || '';
+    }
+    if (!dataUrl) return;
+    var link = document.createElement('a');
+    link.download = '汐止達人紀念照_' + new Date().getTime() + '.jpg';
+    link.href = dataUrl;
+    link.click();
+}
+
+function openLightbox() {
+    var src = document.getElementById('final-img').src;
+    if (src && src !== '') {
+        document.getElementById('lightbox-img').src = src;
+        document.getElementById('lightbox').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeLightbox() { 
+    document.getElementById('lightbox').style.display = 'none'; 
+    document.body.style.overflow = '';
+}
+</script>
+</body>
+</html>
 function downloadImage() {
     var canvas = document.getElementById('result-canvas');
     var dataUrl;
