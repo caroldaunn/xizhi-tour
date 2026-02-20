@@ -245,9 +245,22 @@
     </div>
 <script>
 // ========================================
-// 🔧 設定區 - Google Apps Script API 網址
+// 🔧 設定區 - 資料來源（二擇一或並用）
 // ========================================
 const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbzNtCPdBPw5LEEnsqmAAo4RclWvgg1TwdJ8g0td9BZf_UQEqPU-RiZSgJh8pS3VWSyPKg/exec';
+
+// 改為 true 時優先從靜態 JSON 載入（較快），失敗則自動改從 Google Sheet API 載入
+var USE_STATIC_JSON = true;
+// 使用 jsDelivr CDN（較穩、較快）；若改回 GitHub raw 可換成下一行
+var DATA_JSON_URL = 'https://cdn.jsdelivr.net/gh/caroldaunn/xizhi-tour@main/data.json';
+// var DATA_JSON_URL = 'https://raw.githubusercontent.com/caroldaunn/xizhi-tour/main/data.json';
+
+// 快取用 key / 版本 / 過期時間（先定義，供 loadDataFromStaticJSON、loadDataFromGoogleSheet 使用）
+var DATA_CACHE_KEY = 'xizhi_liff_data_v2';
+var DATA_VERSION_KEY = 'xizhi_data_version';
+var DATA_TIME_KEY = 'xizhi_data_time';
+var DATA_CACHE_DURATION = 30 * 60 * 1000;   // 30 分鐘
+var CURRENT_DATA_VERSION = '1.0';            // 資料結構大改時改此版本號，強制所有人重抓
 
 // ========================================
 // 📦 全域變數
@@ -280,65 +293,200 @@ var currentData = null, isEventPage = false, storyExpanded = false, eventIntroEx
 // 🚀 初始化
 // ========================================
 window.onload = function() {
-    loadDataFromGoogleSheet()
-        .then(function() {
-            return liff.init({ liffId: MY_LIFF_ID });
-        })
-        .then(function() {
+    // 並行：同時載入資料與初始化 LIFF，兩者都完成後再渲染
+    var loadPromise = USE_STATIC_JSON
+        ? loadDataFromStaticJSON().catch(function() { return loadDataFromGoogleSheet(); })
+        : loadDataFromGoogleSheet();
+    Promise.all([
+        loadPromise,
+        liff.init({ liffId: MY_LIFF_ID }).catch(function() { return true; })
+    ]).then(function() {
+        renderContent();
+    }).catch(function(err) {
+        console.error('初始化錯誤:', err);
+        if (Object.keys(spotsData).length > 0) {
             renderContent();
-        })
-        .catch(function(err) {
-            console.error('初始化錯誤:', err);
-            if (Object.keys(spotsData).length > 0) {
-                renderContent();
-            } else {
-                showError('初始化失敗: ' + err.message);
-            }
-        });
+        } else {
+            showError('無法載入資料，請檢查網路或稍後再試。' + (err.message ? ' ' + err.message : ''));
+        }
+    });
 };
 
 // ========================================
-// 📡 從 Google Sheet 載入資料
+// 📡 從靜態 JSON 載入（最快速，適合已部署 data.json 時使用）
 // ========================================
-function loadDataFromGoogleSheet() {
-    updateLoadingText('正在從雲端載入資料...');
-    
-    return fetch(GOOGLE_SHEET_API_URL + '?type=all&t=' + new Date().getTime())
+function loadDataFromStaticJSON() {
+    updateLoadingText('正在載入資料...');
+    return fetch((DATA_JSON_URL || '').replace(/\/$/, '') + '?t=' + Date.now())
         .then(function(response) {
             if (!response.ok) {
-                throw new Error('API 回應錯誤: ' + response.status);
+                throw new Error('無法載入資料檔案: ' + response.status);
             }
             return response.json();
         })
         .then(function(data) {
-            if (data.error) {
-                throw new Error(data.error);
+            if (data.error) throw new Error(data.error);
+            applyData(data);
+            if (Object.keys(spotsData).length === 0) throw new Error('景點資料為空');
+            try {
+                sessionStorage.setItem(DATA_CACHE_KEY, JSON.stringify({ data: data, at: Date.now() }));
+            } catch (e) {}
+            updateLoadingText('資料載入完成!');
+            console.log('✅ 資料載入成功（靜態 JSON）');
+            return true;
+        });
+}
+
+// ========================================
+// 📡 優化版資料載入（完整快取 + 背景更新 + 降級策略）
+// ========================================
+function loadDataFromGoogleSheet() {
+    var cached = null;
+    var cacheValid = false;
+    
+    try {
+        var cachedData = localStorage.getItem(DATA_CACHE_KEY);
+        var cachedVersion = localStorage.getItem(DATA_VERSION_KEY);
+        var cacheTime = localStorage.getItem(DATA_TIME_KEY);
+        
+        if (cachedData && cachedVersion === CURRENT_DATA_VERSION && cacheTime) {
+            var timeDiff = Date.now() - parseInt(cacheTime, 10);
+            if (timeDiff < DATA_CACHE_DURATION) {
+                var obj = JSON.parse(cachedData);
+                if (obj.routes && obj.spots && obj.foods && obj.events && Object.keys(obj.spots).length > 0) {
+                    cached = obj;
+                    cacheValid = true;
+                    console.log('✅ 使用 localStorage 快取 (剩餘 ' + Math.round((DATA_CACHE_DURATION - timeDiff) / 1000 / 60) + ' 分鐘)');
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('快取讀取失敗，清除並重新載入:', e);
+        clearDataCache();
+    }
+    
+    if (cacheValid && cached) {
+        updateLoadingText('從快取載入資料...');
+        applyData(cached);
+        updateLoadingText('資料載入完成!');
+        backgroundUpdateData();
+        return Promise.resolve(true);
+    }
+    
+    updateLoadingText('正在從雲端載入資料...');
+    return fetchAndCacheData();
+}
+
+function fetchAndCacheData() {
+    return fetch(GOOGLE_SHEET_API_URL + '?type=all&t=' + Date.now())
+        .then(function(response) {
+            if (!response.ok) throw new Error('API 錯誤: ' + response.status);
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.error) throw new Error(data.error);
+            if (!data.routes || !data.spots || Object.keys(data.spots).length === 0) {
+                throw new Error('資料不完整');
             }
             
-            routesInfo = data.routes || {};
-            spotsData = data.spots || {};
-            foodsData = data.foods || {};
-            eventsData = data.events || {};
+            applyData(data);
             
-            console.log('✅ 資料載入成功:', {
-                routes: Object.keys(routesInfo).length,
-                spots: Object.keys(spotsData).length,
-                foods: Object.keys(foodsData).length,
-                events: Object.keys(eventsData).length
-            });
-            
-            if (Object.keys(spotsData).length === 0) {
-                throw new Error('景點資料為空,請檢查 Google Sheet 設定');
+            try {
+                localStorage.setItem(DATA_CACHE_KEY, JSON.stringify(data));
+                localStorage.setItem(DATA_VERSION_KEY, CURRENT_DATA_VERSION);
+                localStorage.setItem(DATA_TIME_KEY, String(Date.now()));
+                console.log('💾 資料已快取到 localStorage');
+            } catch (e) {
+                if (e.name === 'QuotaExceededError') {
+                    console.warn('儲存空間不足，清除舊快取後重試');
+                    clearDataCache();
+                    try {
+                        localStorage.setItem(DATA_CACHE_KEY, JSON.stringify(data));
+                        localStorage.setItem(DATA_VERSION_KEY, CURRENT_DATA_VERSION);
+                        localStorage.setItem(DATA_TIME_KEY, String(Date.now()));
+                    } catch (e2) {
+                        console.warn('快取儲存失敗（不影響使用）:', e2);
+                    }
+                } else {
+                    console.warn('快取儲存失敗:', e);
+                }
             }
             
             updateLoadingText('資料載入完成!');
             return true;
         })
         .catch(function(error) {
-            console.error('❌ 資料載入失敗:', error);
-            showError('無法載入資料: ' + error.message + '<br><br>請確認:<br>1. Google Apps Script 已正確部署<br>2. API 網址正確<br>3. 試算表權限設定正確');
+            console.error('❌ 網路載入失敗:', error);
+            try {
+                var emergencyCache = localStorage.getItem(DATA_CACHE_KEY);
+                if (emergencyCache) {
+                    var data = JSON.parse(emergencyCache);
+                    if (data.spots && Object.keys(data.spots).length > 0) {
+                        console.log('⚠️ 使用降級快取（可能較舊）');
+                        applyData(data);
+                        updateLoadingText('已載入本地資料（可能較舊）');
+                        return Promise.resolve(true);
+                    }
+                }
+            } catch (e) {
+                console.error('降級快取也無法使用:', e);
+            }
+            
+            showError('無法載入資料: ' + error.message + '<br><br>請確認:<br>1. 網路連線正常<br>2. Google Apps Script 已部署<br>3. 稍後再試');
             throw error;
         });
+}
+
+function backgroundUpdateData() {
+    fetch(GOOGLE_SHEET_API_URL + '?type=all&t=' + Date.now())
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+            if (data && !data.error && data.spots && Object.keys(data.spots).length > 0) {
+                try {
+                    localStorage.setItem(DATA_CACHE_KEY, JSON.stringify(data));
+                    localStorage.setItem(DATA_VERSION_KEY, CURRENT_DATA_VERSION);
+                    localStorage.setItem(DATA_TIME_KEY, String(Date.now()));
+                    console.log('✅ 背景更新完成');
+                } catch (e) {
+                    console.warn('背景更新儲存失敗:', e);
+                }
+            }
+        })
+        .catch(function() {});
+}
+
+function clearDataCache() {
+    try {
+        localStorage.removeItem(DATA_CACHE_KEY);
+        localStorage.removeItem(DATA_VERSION_KEY);
+        localStorage.removeItem(DATA_TIME_KEY);
+        console.log('🗑️ 快取已清除');
+    } catch (e) {
+        console.warn('清除快取失敗:', e);
+    }
+}
+
+// 強制重新載入：清除快取後重整。Console 可執行 forceReloadData() 或 clearDataCache()
+function forceReloadData() {
+    clearDataCache();
+    try { sessionStorage.removeItem(DATA_CACHE_KEY); } catch (e) {}
+    location.reload();
+}
+
+window.clearDataCache = clearDataCache;
+window.forceReloadData = forceReloadData;
+
+function applyData(data) {
+    routesInfo = data.routes || {};
+    spotsData = data.spots || {};
+    foodsData = data.foods || {};
+    eventsData = data.events || {};
+    console.log('✅ 資料載入成功:', {
+        routes: Object.keys(routesInfo).length,
+        spots: Object.keys(spotsData).length,
+        foods: Object.keys(foodsData).length,
+        events: Object.keys(eventsData).length
+    });
 }
 
 function updateLoadingText(text) {
