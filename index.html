@@ -100,7 +100,8 @@
         .quiz-options { display: flex; flex-direction: column; gap: 10px; }
         .quiz-btn { padding: 12px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 8px; font-size: 14px; cursor: pointer; }
         .close-modal { margin-top: 15px; color: #999; font-size: 12px; text-decoration: underline; cursor: pointer; }
-        .bottom-toolbar { position: fixed; bottom: 56px; left: 0; width: 100%; background: #f8f9fa; padding: 8px 12px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.06); z-index: 999; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+        .bottom-toolbar { position: fixed; bottom: 56px; left: 0; width: 100%; background: #f8f9fa; padding: 8px 12px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.06); z-index: 999; padding-bottom: max(8px, env(safe-area-inset-bottom)); transition: transform 0.3s ease; transform: translateY(100%); }
+        .bottom-toolbar.toolbar-scroll-visible { transform: translateY(0); }
         .toolbar-icon { font-size: 22px; color: #555; cursor: pointer; padding: 6px 12px; user-select: none; -webkit-tap-highlight-color: transparent; }
         .toolbar-icon:active { opacity: 0.7; }
         .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px 15px; display: flex; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
@@ -298,6 +299,14 @@ var foodsData = {};
 var spotsData = {};
 var eventsData = {};
 var currentData = null, isEventPage = false, storyExpanded = false, eventIntroExpanded = false;
+var TOOLBAR_SCROLL_THRESHOLD = 100;
+
+function updateToolbarScrollVisibility() {
+    var toolbar = document.getElementById('bottom-toolbar');
+    if (!toolbar || toolbar.style.display !== 'flex') return;
+    if (window.scrollY >= TOOLBAR_SCROLL_THRESHOLD) toolbar.classList.add('toolbar-scroll-visible'); else toolbar.classList.remove('toolbar-scroll-visible');
+}
+window.addEventListener('scroll', updateToolbarScrollVisibility, { passive: true });
 
 // ========================================
 // 🚀 初始化
@@ -560,7 +569,10 @@ function renderEventPage(eventId) {
     document.getElementById('tags-container').style.display = 'flex';
     document.getElementById('gallery-section').style.display = 'block';
     document.getElementById('notice-box').style.display = 'block';
-    document.getElementById('bottom-toolbar').style.display = 'flex';
+    var toolbarEl = document.getElementById('bottom-toolbar');
+    toolbarEl.style.display = 'flex';
+    toolbarEl.classList.remove('toolbar-scroll-visible');
+    updateToolbarScrollVisibility();
     
     document.getElementById('spot-img').src = data.img;
     document.getElementById('route-tag').innerHTML = '🎪 限定活動';
@@ -638,7 +650,9 @@ function renderSpotPage(spotKey) {
     document.getElementById('gallery-section').style.display = 'none';
     document.getElementById('notice-box').style.display = 'none';
     document.getElementById('event-intro-section').style.display = 'none';
-    document.getElementById('bottom-toolbar').style.display = 'none';
+    var toolbarEl = document.getElementById('bottom-toolbar');
+    toolbarEl.style.display = 'none';
+    toolbarEl.classList.remove('toolbar-scroll-visible');
     
     document.getElementById('spot-img').src = data.img;
     document.getElementById('spot-title').innerText = data.title;
