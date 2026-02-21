@@ -100,10 +100,6 @@
         .quiz-options { display: flex; flex-direction: column; gap: 10px; }
         .quiz-btn { padding: 12px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 8px; font-size: 14px; cursor: pointer; }
         .close-modal { margin-top: 15px; color: #999; font-size: 12px; text-decoration: underline; cursor: pointer; }
-        .bottom-toolbar { position: fixed; bottom: 56px; left: 0; width: 100%; background: #f8f9fa; padding: 8px 12px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.06); z-index: 999; padding-bottom: max(8px, env(safe-area-inset-bottom)); transition: transform 0.3s ease; transform: translateY(100%); }
-        .bottom-toolbar.toolbar-scroll-visible { transform: translateY(0); }
-        .toolbar-icon { font-size: 22px; color: #555; cursor: pointer; padding: 6px 12px; user-select: none; -webkit-tap-highlight-color: transparent; }
-        .toolbar-icon:active { opacity: 0.7; }
         .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px 15px; display: flex; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
         .footer-btn { flex: 1; padding: 12px; border-radius: 10px; text-align: center; text-decoration: none; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; border: none; }
         .btn-map { background: #F2E4E0; color:#4c506e; }
@@ -212,13 +208,6 @@
             <div id="version-trigger" class="version-trigger">v6.0</div>
         </div>
     </div>
-    <div id="bottom-toolbar" class="bottom-toolbar" style="display:none;">
-        <span class="toolbar-icon" onclick="history.back()" title="上一頁">‹</span>
-        <span class="toolbar-icon" onclick="history.forward()" title="下一頁">›</span>
-        <span class="toolbar-icon" onclick="handleToolbarRefresh()" title="重新整理">↻</span>
-        <span class="toolbar-icon" onclick="handleShareWithStamp()" title="分享">⤴</span>
-        <span class="toolbar-icon" onclick="toggleToolbarMenu()" title="選單">⋮</span>
-    </div>
     <div class="sticky-footer">
         <a id="map-btn" href="#" class="footer-btn btn-map" target="_blank" onclick="handleClickWithTrack('map')">帶我來這裡</a>
         <button class="footer-btn btn-share" onclick="handleShareWithStamp()">打卡或分享</button>
@@ -299,14 +288,6 @@ var foodsData = {};
 var spotsData = {};
 var eventsData = {};
 var currentData = null, isEventPage = false, storyExpanded = false, eventIntroExpanded = false;
-var TOOLBAR_SCROLL_THRESHOLD = 100;
-
-function updateToolbarScrollVisibility() {
-    var toolbar = document.getElementById('bottom-toolbar');
-    if (!toolbar || toolbar.style.display !== 'flex') return;
-    if (window.scrollY >= TOOLBAR_SCROLL_THRESHOLD) toolbar.classList.add('toolbar-scroll-visible'); else toolbar.classList.remove('toolbar-scroll-visible');
-}
-window.addEventListener('scroll', updateToolbarScrollVisibility, { passive: true });
 
 // ========================================
 // 🚀 初始化
@@ -495,12 +476,6 @@ function forceReloadData() {
 window.clearDataCache = clearDataCache;
 window.forceReloadData = forceReloadData;
 
-function handleToolbarRefresh() {
-    forceReloadData();
-}
-function toggleToolbarMenu() {
-    // 選單：可之後擴充（例如更多選項、關於、回首頁等）
-}
 
 function applyData(data) {
     routesInfo = data.routes || {};
@@ -569,10 +544,6 @@ function renderEventPage(eventId) {
     document.getElementById('tags-container').style.display = 'flex';
     document.getElementById('gallery-section').style.display = 'block';
     document.getElementById('notice-box').style.display = 'block';
-    var toolbarEl = document.getElementById('bottom-toolbar');
-    toolbarEl.style.display = 'flex';
-    toolbarEl.classList.remove('toolbar-scroll-visible');
-    updateToolbarScrollVisibility();
     
     document.getElementById('spot-img').src = data.img;
     document.getElementById('route-tag').innerHTML = '🎪 限定活動';
@@ -650,9 +621,6 @@ function renderSpotPage(spotKey) {
     document.getElementById('gallery-section').style.display = 'none';
     document.getElementById('notice-box').style.display = 'none';
     document.getElementById('event-intro-section').style.display = 'none';
-    var toolbarEl = document.getElementById('bottom-toolbar');
-    toolbarEl.style.display = 'none';
-    toolbarEl.classList.remove('toolbar-scroll-visible');
     
     document.getElementById('spot-img').src = data.img;
     document.getElementById('spot-title').innerText = data.title;
