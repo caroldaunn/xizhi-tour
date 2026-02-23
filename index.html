@@ -298,6 +298,28 @@ var foodsData = {};
 var spotsData = {};
 var eventsData = {};
 var currentData = null, isEventPage = false, storyExpanded = false, eventIntroExpanded = false;
+var currentPageId = '';
+var spotEnterTime = 0;
+var behaviorUserId = '';
+var behaviorSessionId = '';
+
+// ========================================
+// 📊 行為事件日誌（簡化版，不配對問卷）
+// ========================================
+function logEvent(eventAction, eventValue, durationSec) {
+    var base = (GOOGLE_SHEET_API_URL || '').split('?')[0];
+    var q = [
+        'type=log',
+        'user_id=' + encodeURIComponent(behaviorUserId || ''),
+        'session_id=' + encodeURIComponent(behaviorSessionId || ''),
+        'timestamp=' + encodeURIComponent(new Date().toISOString()),
+        'event_action=' + encodeURIComponent(eventAction || ''),
+        'event_value=' + encodeURIComponent(eventValue || ''),
+        'duration_sec=' + (durationSec !== undefined && durationSec !== '' ? encodeURIComponent(String(durationSec)) : '')
+    ].join('&');
+    var img = new Image();
+    img.src = base + '?' + q;
+}
 
 // ========================================
 // 🚀 初始化
@@ -311,6 +333,14 @@ window.onload = function() {
         loadPromise,
         liff.init({ liffId: MY_LIFF_ID }).catch(function() { return true; })
     ]).then(function() {
+        behaviorSessionId = sessionStorage.getItem('xizhi_sid');
+        if (!behaviorSessionId) {
+            behaviorSessionId = Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+            sessionStorage.setItem('xizhi_sid', behaviorSessionId);
+        }
+        if (typeof liff.getContext === 'function') {
+            liff.getContext().then(function(ctx) { behaviorUserId = (ctx && ctx.userId) ? ctx.userId : ''; }).catch(function() {});
+        }
         renderContent();
     }).catch(function(err) {
         console.error('初始化錯誤:', err);
@@ -539,6 +569,13 @@ function renderEventPage(eventId) {
         showError('找不到活動資料: ' + eventId);
         return;
     }
+    if (currentPageId && currentPageId !== eventId) {
+        var dur = spotEnterTime ? Math.round((Date.now() - spotEnterTime) / 1000) : 0;
+        logEvent('spot_leave', currentPageId, dur);
+    }
+    currentPageId = eventId;
+    spotEnterTime = Date.now();
+    logEvent('spot_view', eventId);
     currentData = data;
     
     document.getElementById('beacon-banner').style.display = 'none';
@@ -617,6 +654,13 @@ function renderSpotPage(spotKey) {
         data = spotsData['spot1']; 
         spotKey = 'spot1'; 
     }
+    if (currentPageId && currentPageId !== spotKey) {
+        var dur = spotEnterTime ? Math.round((Date.now() - spotEnterTime) / 1000) : 0;
+        logEvent('spot_leave', currentPageId, dur);
+    }
+    currentPageId = spotKey;
+    spotEnterTime = Date.now();
+    logEvent('spot_view', spotKey);
     currentData = data; 
     currentData.spotKey = spotKey;
     
@@ -799,6 +843,7 @@ function toggleEventIntro() {
         detail.classList.add('show');
         btn.innerText = '▲ 收起故事';
         eventIntroExpanded = true;
+        logEvent('story_expand', (currentData && (currentData.spotKey || currentData.id)) ? (currentData.spotKey || currentData.id) : '');
     }
 }
 
@@ -807,12 +852,14 @@ function collectAction(taskName) {
     if (c.indexOf(taskName) === -1) { 
         c.push(taskName); 
         localStorage.setItem('xizhi_stamps', JSON.stringify(c)); 
+        logEvent('stamp_collect', taskName, c.length);
         setTimeout(initTaskProgress, 500); 
     } 
 }
 
 function handleClickWithTrack(taskName) { 
-    collectAction(taskName); 
+    collectAction(taskName);
+    if (taskName === 'map') logEvent('navigation_click', (currentData && (currentData.spotKey || currentData.id)) ? (currentData.spotKey || currentData.id) : '');
 }
 
 function isTaskDone(taskName) { 
@@ -881,6 +928,7 @@ function addEventToCalendar() {
 }
 
 function handleShareWithStamp() { 
+    logEvent('share_click', '');
     document.getElementById('share-modal').style.display = 'flex'; 
 }
 
