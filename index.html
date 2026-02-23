@@ -834,6 +834,7 @@ function toggleStory() {
         detail.classList.add('show');
         btn.innerText = '▲ 收起故事';
         storyExpanded = true;
+        logEvent('story_expand', currentPageId || '');
         return;
     }
     var story = currentData.story;
@@ -846,6 +847,7 @@ function toggleStory() {
     detail.classList.add('show');
     btn.innerText = '▲ 收起故事';
     storyExpanded = true;
+    logEvent('story_expand', currentPageId || '');
 }
 
 function toggleEventIntro() {
