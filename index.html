@@ -255,6 +255,16 @@ var USE_STATIC_JSON = true;
 var DATA_JSON_URL = 'https://cdn.jsdelivr.net/gh/caroldaunn/xizhi-tour@main/data.json';
 // var DATA_JSON_URL = 'https://raw.githubusercontent.com/caroldaunn/xizhi-tour/main/data.json';
 
+// 圖檔／靜態資源改從 Cloudflare Pages 抓（比 GitHub 快）
+var ASSETS_BASE = 'https://xizhi-tour.pages.dev';
+function toAssetUrl(url) {
+    if (!url || typeof url !== 'string') return url;
+    var u = url.trim();
+    u = u.replace(/^https:\/\/raw\.githubusercontent\.com\/caroldaunn\/xizhi-tour\/[^/]+/, ASSETS_BASE);
+    u = u.replace(/^https:\/\/caroldaunn\.github\.io\/xizhi-tour\/?/, ASSETS_BASE + '/');
+    return u;
+}
+
 // 快取用 key / 版本 / 過期時間（先定義，供 loadDataFromStaticJSON、loadDataFromGoogleSheet 使用）
 var DATA_CACHE_KEY = 'xizhi_liff_data_v2';
 var DATA_VERSION_KEY = 'xizhi_data_version';
@@ -280,7 +290,7 @@ var MEMORIAL_FRAME = {
     // 'stretch' = 強制拉伸滿版（無黑邊，會變形）
     // 'cover' = 等比放大貼齊邊緣，多餘裁切（不變形，推薦）
     photoFillMode: 'cover',
-    frameImageUrl: 'https://raw.githubusercontent.com/caroldaunn/xizhi-tour/main/frame.png'
+    frameImageUrl: ASSETS_BASE + '/frame.png'
 };
 
 var routesInfo = {};
@@ -545,7 +555,7 @@ function renderEventPage(eventId) {
     document.getElementById('gallery-section').style.display = 'block';
     document.getElementById('notice-box').style.display = 'block';
     
-    document.getElementById('spot-img').src = data.img;
+    document.getElementById('spot-img').src = toAssetUrl(data.img);
     document.getElementById('route-tag').innerHTML = '🎪 限定活動';
     document.getElementById('route-tag').style.background = '#ff6b6b';
     var dateStr = formatDate(data.date);
@@ -581,7 +591,7 @@ function renderEventPage(eventId) {
     
     var galleryHtml = ''; 
     for (var j = 0; j < data.gallery.length; j++) { 
-        galleryHtml += '<div class="gallery-item"><img src="' + data.gallery[j].img + '" class="gallery-img"><div class="gallery-caption">' + data.gallery[j].caption + '</div></div>'; 
+        galleryHtml += '<div class="gallery-item"><img src="' + toAssetUrl(data.gallery[j].img) + '" class="gallery-img"><div class="gallery-caption">' + data.gallery[j].caption + '</div></div>'; 
     }
     document.getElementById('gallery-content').innerHTML = galleryHtml;
     
@@ -622,7 +632,7 @@ function renderSpotPage(spotKey) {
     document.getElementById('notice-box').style.display = 'none';
     document.getElementById('event-intro-section').style.display = 'none';
     
-    document.getElementById('spot-img').src = data.img;
+    document.getElementById('spot-img').src = toAssetUrl(data.img);
     document.getElementById('spot-title').innerText = data.title;
     document.getElementById('spot-desc').innerText = data.desc;
     
@@ -685,7 +695,7 @@ function renderFoodSection(spotKey) {
     for (var i = 0; i < foods.length; i++) {
         var f = foods[i];
         html += '<div class="food-card" onclick="openFoodMap(\'' + f.query + '\')">';
-        html += '<img src="' + f.img + '" class="food-img" onerror="this.src=\'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=300\'">';
+        html += '<img src="' + toAssetUrl(f.img) + '" class="food-img" onerror="this.src=\'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=300\'">';
         html += '<div class="food-info">';
         html += '<div class="food-type">' + f.type + '</div>';
         html += '<div class="food-name">' + f.name + '</div>';
@@ -740,7 +750,7 @@ function buildStoryHtml(story) {
         var text = escapeHtml(sec.text || '');
         html += '<div class="story-section"><div class="story-title">' + title + '</div><p class="story-text">' + text + '</p>';
         if (sec.img) {
-            var imgUrl = getStoryImgUrl(sec.img);
+            var imgUrl = toAssetUrl(getStoryImgUrl(sec.img));
             if (imgUrl) html += '<img src="' + escapeHtml(imgUrl) + '" class="story-img" alt=""><p class="story-caption">' + escapeHtml(sec.caption || '') + '</p>';
         }
         html += '</div>';
