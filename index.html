@@ -302,6 +302,8 @@ var currentPageId = '';
 var spotEnterTime = 0;
 var behaviorUserId = '';
 var behaviorSessionId = '';
+// 行為日誌環境：測試階段用 'test'，正式上線改為 'production'（分析時可篩選）
+var BEHAVIOR_LOG_ENV = 'test';
 
 // ========================================
 // 📊 行為事件日誌（簡化版，不配對問卷）
@@ -315,7 +317,8 @@ function logEvent(eventAction, eventValue, durationSec) {
         'timestamp=' + encodeURIComponent(new Date().toISOString()),
         'event_action=' + encodeURIComponent(eventAction || ''),
         'event_value=' + encodeURIComponent(eventValue || ''),
-        'duration_sec=' + (durationSec !== undefined && durationSec !== '' ? encodeURIComponent(String(durationSec)) : '')
+        'duration_sec=' + (durationSec !== undefined && durationSec !== '' ? encodeURIComponent(String(durationSec)) : ''),
+        'env=' + encodeURIComponent(BEHAVIOR_LOG_ENV || 'test')
     ].join('&');
     var img = new Image();
     img.src = base + '?' + q;
