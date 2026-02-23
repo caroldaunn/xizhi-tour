@@ -300,6 +300,7 @@ var eventsData = {};
 var currentData = null, isEventPage = false, storyExpanded = false, eventIntroExpanded = false;
 var currentPageId = '';
 var spotEnterTime = 0;
+var spotLeaveSentOnUnload = false;
 var behaviorUserId = '';
 var behaviorSessionId = '';
 // 行為日誌環境：測試階段用 'test'，正式上線改為 'production'（分析時可篩選）
@@ -324,6 +325,13 @@ function logEvent(eventAction, eventValue, durationSec) {
     img.src = base + '?' + q;
 }
 
+function flushSpotLeaveOnLeave() {
+    if (spotLeaveSentOnUnload || !currentPageId) return;
+    spotLeaveSentOnUnload = true;
+    var dur = spotEnterTime ? Math.round((Date.now() - spotEnterTime) / 1000) : 0;
+    logEvent('spot_leave', currentPageId, dur);
+}
+
 // ========================================
 // 🚀 初始化
 // ========================================
@@ -342,9 +350,15 @@ window.onload = function() {
             sessionStorage.setItem('xizhi_sid', behaviorSessionId);
         }
         if (typeof liff.getContext === 'function') {
-            liff.getContext().then(function(ctx) { behaviorUserId = (ctx && ctx.userId) ? ctx.userId : ''; }).catch(function() {});
+            return liff.getContext().then(function(ctx) { behaviorUserId = (ctx && ctx.userId) ? ctx.userId : ''; }).catch(function() {});
         }
+    }).then(function() {
         renderContent();
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden') flushSpotLeaveOnLeave();
+            else if (document.visibilityState === 'visible') spotLeaveSentOnUnload = false;
+        });
+        window.addEventListener('pagehide', flushSpotLeaveOnLeave);
     }).catch(function(err) {
         console.error('初始化錯誤:', err);
         if (Object.keys(spotsData).length > 0) {
@@ -855,7 +869,7 @@ function collectAction(taskName) {
     if (c.indexOf(taskName) === -1) { 
         c.push(taskName); 
         localStorage.setItem('xizhi_stamps', JSON.stringify(c)); 
-        logEvent('stamp_collect', taskName, c.length);
+        logEvent('stamp_collect', taskName);
         setTimeout(initTaskProgress, 500); 
     } 
 }
