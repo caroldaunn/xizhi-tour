@@ -205,7 +205,7 @@
                 <img id="final-img" src="" alt="" onclick="openLightbox()">
                 <div id="download-msg" class="download-hint">點擊圖片可放大</div>
             </div>
-            <div id="version-trigger" class="version-trigger">v6.0</div>
+            <div id="version-trigger" class="version-trigger">v6.1</div>
         </div>
     </div>
     <div class="sticky-footer">
@@ -245,18 +245,13 @@
     </div>
 <script>
 // ========================================
-// 🔧 設定區 - 資料來源（二擇一或並用）
+// 🔧 設定區
 // ========================================
-const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbzNtCPdBPw5LEEnsqmAAo4RclWvgg1TwdJ8g0td9BZf_UQEqPU-RiZSgJh8pS3VWSyPKg/exec';
-
-// 改為 true 時優先從靜態 JSON 載入（較快），失敗則自動改從 Google Sheet API 載入
+var GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbzNtCPdBPw5LEEnsqmAAo4RclWvgg1TwdJ8g0td9BZf_UQEqPU-RiZSgJh8pS3VWSyPKg/exec';
 var USE_STATIC_JSON = true;
-// 使用 jsDelivr CDN（較穩、較快）；若改回 GitHub raw 可換成下一行
 var DATA_JSON_URL = 'https://cdn.jsdelivr.net/gh/caroldaunn/xizhi-tour@main/data.json';
-// var DATA_JSON_URL = 'https://raw.githubusercontent.com/caroldaunn/xizhi-tour/main/data.json';
-
-// 圖檔／靜態資源改從 Cloudflare Pages 抓（比 GitHub 快）
 var ASSETS_BASE = 'https://xizhi-tour.pages.dev';
+
 function toAssetUrl(url) {
     if (!url || typeof url !== 'string') return url;
     var u = url.trim();
@@ -265,12 +260,11 @@ function toAssetUrl(url) {
     return u;
 }
 
-// 快取用 key / 版本 / 過期時間（先定義，供 loadDataFromStaticJSON、loadDataFromGoogleSheet 使用）
 var DATA_CACHE_KEY = 'xizhi_liff_data_v2';
 var DATA_VERSION_KEY = 'xizhi_data_version';
 var DATA_TIME_KEY = 'xizhi_data_time';
-var DATA_CACHE_DURATION = 30 * 60 * 1000;   // 30 分鐘
-var CURRENT_DATA_VERSION = '1.0';            // 資料結構大改時改此版本號，強制所有人重抓
+var DATA_CACHE_DURATION = 30 * 60 * 1000;
+var CURRENT_DATA_VERSION = '1.0';
 
 // ========================================
 // 📦 全域變數
@@ -278,7 +272,6 @@ var CURRENT_DATA_VERSION = '1.0';            // 資料結構大改時改此版�
 var MY_LIFF_ID = "2008941841-8KQq29wn";
 var TASKS = ['map','quiz','wish','beacon','share'];
 
-// 完賽紀念照相框設定
 var MEMORIAL_FRAME = {
     canvasSize: 800,
     bgColor: 'transparent',
@@ -287,8 +280,6 @@ var MEMORIAL_FRAME = {
     photoWidth: 760,
     photoHeight: 760,
     showText: false,
-    // 'stretch' = 強制拉伸滿版（無黑邊，會變形）
-    // 'cover' = 等比放大貼齊邊緣，多餘裁切（不變形，推薦）
     photoFillMode: 'cover',
     frameImageUrl: ASSETS_BASE + '/frame.png'
 };
@@ -298,87 +289,167 @@ var foodsData = {};
 var spotsData = {};
 var eventsData = {};
 var currentData = null, isEventPage = false, storyExpanded = false, eventIntroExpanded = false;
-var currentPageId = '';
-var spotEnterTime = 0;
-var spotLeaveSentOnUnload = false;
-var behaviorUserId = '';
-var behaviorSessionId = '';
-// 行為日誌環境：測試階段用 'test'，正式上線改為 'production'（分析時可篩選）
-var BEHAVIOR_LOG_ENV = 'test';
 
 // ========================================
-// 📊 行為事件日誌（簡化版，不配對問卷）
+// 📊 行為追蹤變數（修正版）
+// ========================================
+var currentPageId = '';
+var spotEnterTime = 0;
+var behaviorUserId = '';
+var behaviorSessionId = '';
+var BEHAVIOR_LOG_ENV = 'test';  // 正式上線改為 'production'
+
+// 🆕 使用 sendBeacon 確保頁面關閉時也能送出
+var useBeacon = typeof navigator.sendBeacon === 'function';
+
+// ========================================
+// 📊 行為事件日誌（修正版：使用 sendBeacon）
 // ========================================
 function logEvent(eventAction, eventValue, durationSec) {
     var base = (GOOGLE_SHEET_API_URL || '').split('?')[0];
-    var q = [
-        'type=log',
-        'user_id=' + encodeURIComponent(behaviorUserId || ''),
-        'session_id=' + encodeURIComponent(behaviorSessionId || ''),
-        'timestamp=' + encodeURIComponent(new Date().toISOString()),
-        'event_action=' + encodeURIComponent(eventAction || ''),
-        'event_value=' + encodeURIComponent(eventValue || ''),
-        'duration_sec=' + (durationSec !== undefined && durationSec !== '' ? encodeURIComponent(String(durationSec)) : ''),
-        'env=' + encodeURIComponent(BEHAVIOR_LOG_ENV || 'test')
-    ].join('&');
+    var params = {
+        type: 'log',
+        user_id: behaviorUserId || '',
+        session_id: behaviorSessionId || '',
+        timestamp: new Date().toISOString(),
+        event_action: eventAction || '',
+        event_value: eventValue || '',
+        duration_sec: (durationSec !== undefined && durationSec !== '' && durationSec !== 0) ? String(durationSec) : '',
+        env: BEHAVIOR_LOG_ENV || 'test'
+    };
+    
+    var queryString = Object.keys(params).map(function(key) {
+        return encodeURIComponent(key) + '=' + encodeURIComponent(params[key]);
+    }).join('&');
+    
+    var url = base + '?' + queryString;
+    
+    // 優先使用 sendBeacon（頁面關閉時也能送出）
+    if (useBeacon && (eventAction === 'spot_leave')) {
+        try {
+            navigator.sendBeacon(url);
+            console.log('📤 sendBeacon:', eventAction, eventValue, durationSec);
+            return;
+        } catch (e) {
+            console.warn('sendBeacon 失敗，改用 Image:', e);
+        }
+    }
+    
+    // 一般情況使用 Image GET
     var img = new Image();
-    img.src = base + '?' + q;
+    img.src = url;
+    console.log('📤 logEvent:', eventAction, eventValue, durationSec);
 }
 
-function flushSpotLeaveOnLeave() {
-    if (spotLeaveSentOnUnload || !currentPageId) return;
-    spotLeaveSentOnUnload = true;
-    var dur = spotEnterTime ? Math.round((Date.now() - spotEnterTime) / 1000) : 0;
-    logEvent('spot_leave', currentPageId, dur);
+// 🆕 記錄離開事件（修正版：確保只記錄一次且正確計算時間）
+function logSpotLeave() {
+    if (!currentPageId || !spotEnterTime) {
+        console.log('⏭️ 跳過 spot_leave：無 currentPageId 或 spotEnterTime');
+        return;
+    }
+    
+    var duration = Math.round((Date.now() - spotEnterTime) / 1000);
+    
+    // 過濾異常數據：停留時間 < 1 秒或 > 1 小時視為異常
+    if (duration < 1 || duration > 3600) {
+        console.log('⏭️ 跳過 spot_leave：異常停留時間', duration);
+        return;
+    }
+    
+    console.log('📤 spot_leave:', currentPageId, duration + '秒');
+    logEvent('spot_leave', currentPageId, duration);
+    
+    // 重置（避免重複記錄）
+    spotEnterTime = 0;
 }
 
 // ========================================
-// 🚀 初始化
+// 🚀 初始化（修正版）
 // ========================================
 window.onload = function() {
-    // 並行：同時載入資料與初始化 LIFF，兩者都完成後再渲染
     var loadPromise = USE_STATIC_JSON
         ? loadDataFromStaticJSON().catch(function() { return loadDataFromGoogleSheet(); })
         : loadDataFromGoogleSheet();
+    
     Promise.all([
         loadPromise,
-        liff.init({ liffId: MY_LIFF_ID }).catch(function() { return true; })
+        liff.init({ liffId: MY_LIFF_ID }).catch(function(err) { 
+            console.warn('LIFF init 失敗:', err);
+            return true; 
+        })
     ]).then(function() {
+        // 🆕 修正：正確取得 session_id
         behaviorSessionId = sessionStorage.getItem('xizhi_sid');
         if (!behaviorSessionId) {
             behaviorSessionId = Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
             sessionStorage.setItem('xizhi_sid', behaviorSessionId);
         }
-        if (typeof liff.getContext === 'function') {
-            return liff.getContext().then(function(ctx) { behaviorUserId = (ctx && ctx.userId) ? ctx.userId : ''; }).catch(function() {});
+        
+        // 🆕 修正：正確取得 user_id（liff.getContext 是同步函數）
+        try {
+            if (liff.isLoggedIn && liff.isLoggedIn()) {
+                var context = liff.getContext();
+                if (context && context.userId) {
+                    behaviorUserId = context.userId;
+                    console.log('✅ 取得 userId:', behaviorUserId);
+                }
+            } else {
+                console.log('⚠️ 使用者未登入 LIFF，無法取得 userId');
+            }
+        } catch (e) {
+            console.warn('取得 userId 失敗:', e);
         }
-    }).then(function() {
+        
+        // 渲染頁面
         renderContent();
-        document.addEventListener('visibilitychange', function() {
-            if (document.visibilityState === 'hidden') flushSpotLeaveOnLeave();
-            else if (document.visibilityState === 'visible') spotLeaveSentOnUnload = false;
-        });
-        window.addEventListener('pagehide', flushSpotLeaveOnLeave);
+        
+        // 🆕 修正：註冊頁面離開事件
+        registerLeaveEvents();
+        
     }).catch(function(err) {
         console.error('初始化錯誤:', err);
         if (Object.keys(spotsData).length > 0) {
             renderContent();
+            registerLeaveEvents();
         } else {
             showError('無法載入資料，請檢查網路或稍後再試。' + (err.message ? ' ' + err.message : ''));
         }
     });
 };
 
+// 🆕 註冊頁面離開事件（獨立函數，確保正確執行）
+function registerLeaveEvents() {
+    // visibilitychange：切換 App、切換分頁
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden') {
+            console.log('👁️ visibilitychange: hidden');
+            logSpotLeave();
+        }
+    });
+    
+    // pagehide：關閉 LIFF、返回 LINE
+    window.addEventListener('pagehide', function() {
+        console.log('👋 pagehide 觸發');
+        logSpotLeave();
+    });
+    
+    // beforeunload：桌面瀏覽器關閉分頁（備用）
+    window.addEventListener('beforeunload', function() {
+        console.log('🚪 beforeunload 觸發');
+        logSpotLeave();
+    });
+    
+    console.log('✅ 離開事件已註冊');
+}
+
 // ========================================
-// 📡 從靜態 JSON 載入（最快速，適合已部署 data.json 時使用）
+// 📡 資料載入函數（與原版相同）
 // ========================================
 function loadDataFromStaticJSON() {
     updateLoadingText('正在載入資料...');
     return fetch((DATA_JSON_URL || '').replace(/\/$/, '') + '?t=' + Date.now())
         .then(function(response) {
-            if (!response.ok) {
-                throw new Error('無法載入資料檔案: ' + response.status);
-            }
+            if (!response.ok) throw new Error('無法載入資料檔案: ' + response.status);
             return response.json();
         })
         .then(function(data) {
@@ -394,9 +465,6 @@ function loadDataFromStaticJSON() {
         });
 }
 
-// ========================================
-// 📡 優化版資料載入（完整快取 + 背景更新 + 降級策略）
-// ========================================
 function loadDataFromGoogleSheet() {
     var cached = null;
     var cacheValid = false;
@@ -413,12 +481,10 @@ function loadDataFromGoogleSheet() {
                 if (obj.routes && obj.spots && obj.foods && obj.events && Object.keys(obj.spots).length > 0) {
                     cached = obj;
                     cacheValid = true;
-                    console.log('✅ 使用 localStorage 快取 (剩餘 ' + Math.round((DATA_CACHE_DURATION - timeDiff) / 1000 / 60) + ' 分鐘)');
                 }
             }
         }
     } catch (e) {
-        console.warn('快取讀取失敗，清除並重新載入:', e);
         clearDataCache();
     }
     
@@ -445,51 +511,29 @@ function fetchAndCacheData() {
             if (!data.routes || !data.spots || Object.keys(data.spots).length === 0) {
                 throw new Error('資料不完整');
             }
-            
             applyData(data);
-            
             try {
                 localStorage.setItem(DATA_CACHE_KEY, JSON.stringify(data));
                 localStorage.setItem(DATA_VERSION_KEY, CURRENT_DATA_VERSION);
                 localStorage.setItem(DATA_TIME_KEY, String(Date.now()));
-                console.log('💾 資料已快取到 localStorage');
-            } catch (e) {
-                if (e.name === 'QuotaExceededError') {
-                    console.warn('儲存空間不足，清除舊快取後重試');
-                    clearDataCache();
-                    try {
-                        localStorage.setItem(DATA_CACHE_KEY, JSON.stringify(data));
-                        localStorage.setItem(DATA_VERSION_KEY, CURRENT_DATA_VERSION);
-                        localStorage.setItem(DATA_TIME_KEY, String(Date.now()));
-                    } catch (e2) {
-                        console.warn('快取儲存失敗（不影響使用）:', e2);
-                    }
-                } else {
-                    console.warn('快取儲存失敗:', e);
-                }
-            }
-            
+            } catch (e) {}
             updateLoadingText('資料載入完成!');
             return true;
         })
         .catch(function(error) {
-            console.error('❌ 網路載入失敗:', error);
+            console.error('網路載入失敗:', error);
             try {
                 var emergencyCache = localStorage.getItem(DATA_CACHE_KEY);
                 if (emergencyCache) {
                     var data = JSON.parse(emergencyCache);
                     if (data.spots && Object.keys(data.spots).length > 0) {
-                        console.log('⚠️ 使用降級快取（可能較舊）');
                         applyData(data);
                         updateLoadingText('已載入本地資料（可能較舊）');
                         return Promise.resolve(true);
                     }
                 }
-            } catch (e) {
-                console.error('降級快取也無法使用:', e);
-            }
-            
-            showError('無法載入資料: ' + error.message + '<br><br>請確認:<br>1. 網路連線正常<br>2. Google Apps Script 已部署<br>3. 稍後再試');
+            } catch (e) {}
+            showError('無法載入資料: ' + error.message);
             throw error;
         });
 }
@@ -503,10 +547,7 @@ function backgroundUpdateData() {
                     localStorage.setItem(DATA_CACHE_KEY, JSON.stringify(data));
                     localStorage.setItem(DATA_VERSION_KEY, CURRENT_DATA_VERSION);
                     localStorage.setItem(DATA_TIME_KEY, String(Date.now()));
-                    console.log('✅ 背景更新完成');
-                } catch (e) {
-                    console.warn('背景更新儲存失敗:', e);
-                }
+                } catch (e) {}
             }
         })
         .catch(function() {});
@@ -517,13 +558,9 @@ function clearDataCache() {
         localStorage.removeItem(DATA_CACHE_KEY);
         localStorage.removeItem(DATA_VERSION_KEY);
         localStorage.removeItem(DATA_TIME_KEY);
-        console.log('🗑️ 快取已清除');
-    } catch (e) {
-        console.warn('清除快取失敗:', e);
-    }
+    } catch (e) {}
 }
 
-// 強制重新載入：清除快取後重整。Console 可執行 forceReloadData() 或 clearDataCache()
 function forceReloadData() {
     clearDataCache();
     try { sessionStorage.removeItem(DATA_CACHE_KEY); } catch (e) {}
@@ -533,25 +570,16 @@ function forceReloadData() {
 window.clearDataCache = clearDataCache;
 window.forceReloadData = forceReloadData;
 
-
 function applyData(data) {
     routesInfo = data.routes || {};
     spotsData = data.spots || {};
     foodsData = data.foods || {};
     eventsData = data.events || {};
-    console.log('✅ 資料載入成功:', {
-        routes: Object.keys(routesInfo).length,
-        spots: Object.keys(spotsData).length,
-        foods: Object.keys(foodsData).length,
-        events: Object.keys(eventsData).length
-    });
 }
 
 function updateLoadingText(text) {
     var loadingText = document.querySelector('.loading-text');
-    if (loadingText) {
-        loadingText.innerHTML = '⏳ ' + text;
-    }
+    if (loadingText) loadingText.innerHTML = '⏳ ' + text;
 }
 
 function showError(message) {
@@ -561,7 +589,7 @@ function showError(message) {
 }
 
 // ========================================
-// 📄 頁面渲染函數
+// 📄 頁面渲染函數（修正版：正確記錄進入/離開）
 // ========================================
 function renderContent() {
     try {
@@ -586,15 +614,20 @@ function renderEventPage(eventId) {
         showError('找不到活動資料: ' + eventId);
         return;
     }
+    
+    // 🆕 修正：先記錄上一頁的離開事件
     if (currentPageId && currentPageId !== eventId) {
-        var dur = spotEnterTime ? Math.round((Date.now() - spotEnterTime) / 1000) : 0;
-        logEvent('spot_leave', currentPageId, dur);
+        logSpotLeave();
     }
+    
+    // 🆕 設定新頁面的追蹤資訊
     currentPageId = eventId;
     spotEnterTime = Date.now();
     logEvent('spot_view', eventId);
+    
     currentData = data;
     
+    // ... 以下為原有的 UI 渲染程式碼 ...
     document.getElementById('beacon-banner').style.display = 'none';
     document.getElementById('game-section').style.display = 'none';
     document.getElementById('food-section').style.display = 'none';
@@ -614,6 +647,7 @@ function renderEventPage(eventId) {
     document.getElementById('route-tag').style.background = '#ff6b6b';
     var dateStr = formatDate(data.date);
     document.getElementById('route-desc').innerHTML = '<div class="event-date-row"><div class="event-date-location">' + dateStr + ' | ' + data.location + '</div><div class="event-calendar-btn-large" onclick="addEventToCalendar()"><span class="icon">📅</span>加入行事曆</div></div>';
+    
     var introSection = document.getElementById('event-intro-section');
     var introDetail = document.getElementById('event-intro-detail');
     var introBtn = document.getElementById('event-intro-btn');
@@ -623,7 +657,6 @@ function renderEventPage(eventId) {
     } else if (data.intro && typeof data.intro === 'object') {
         introHtml = buildStoryHtml(data.intro);
     }
-    console.log('活動更多故事 debug:', { hasIntro: !!data.intro, introType: typeof data.intro, introHtmlLength: introHtml ? introHtml.length : 0 });
     if (introHtml) {
         introSection.style.display = 'block';
         introDetail.innerHTML = introHtml;
@@ -633,6 +666,7 @@ function renderEventPage(eventId) {
     } else {
         introSection.style.display = 'none';
     }
+    
     document.getElementById('spot-number').style.display = 'none';
     document.getElementById('spot-title').innerText = data.title;
     document.getElementById('spot-desc').innerText = data.desc;
@@ -671,16 +705,21 @@ function renderSpotPage(spotKey) {
         data = spotsData['spot1']; 
         spotKey = 'spot1'; 
     }
+    
+    // 🆕 修正：先記錄上一頁的離開事件
     if (currentPageId && currentPageId !== spotKey) {
-        var dur = spotEnterTime ? Math.round((Date.now() - spotEnterTime) / 1000) : 0;
-        logEvent('spot_leave', currentPageId, dur);
+        logSpotLeave();
     }
+    
+    // 🆕 設定新頁面的追蹤資訊
     currentPageId = spotKey;
     spotEnterTime = Date.now();
     logEvent('spot_view', spotKey);
+    
     currentData = data; 
     currentData.spotKey = spotKey;
     
+    // ... 以下為原有的 UI 渲染程式碼 ...
     document.getElementById('game-section').style.display = 'block';
     document.getElementById('food-section').style.display = 'block';
     document.getElementById('bus-schedule-link').style.display = 'block';
@@ -862,7 +901,7 @@ function toggleEventIntro() {
         detail.classList.add('show');
         btn.innerText = '▲ 收起故事';
         eventIntroExpanded = true;
-        logEvent('story_expand', (currentData && (currentData.spotKey || currentData.id)) ? (currentData.spotKey || currentData.id) : '');
+        logEvent('story_expand', currentPageId || '');
     }
 }
 
@@ -878,7 +917,7 @@ function collectAction(taskName) {
 
 function handleClickWithTrack(taskName) { 
     collectAction(taskName);
-    if (taskName === 'map') logEvent('navigation_click', (currentData && (currentData.spotKey || currentData.id)) ? (currentData.spotKey || currentData.id) : '');
+    if (taskName === 'map') logEvent('navigation_click', currentPageId || '');
 }
 
 function isTaskDone(taskName) { 
@@ -947,7 +986,7 @@ function addEventToCalendar() {
 }
 
 function handleShareWithStamp() { 
-    logEvent('share_click', '');
+    logEvent('share_click', currentPageId || '');
     document.getElementById('share-modal').style.display = 'flex'; 
 }
 
@@ -1019,13 +1058,11 @@ function initVersionTrigger() {
 }
 
 // ========================================
-// 🖼️ 加強版相框上傳函數 - 包含詳細除錯訊息
+// 🖼️ 相框上傳函數
 // ========================================
 function handleImageUpload(e) { 
     var file = e.target.files[0]; 
-    if (!file) {
-    }
-    
+    if (!file) return;
     
     var finalImgEl = document.getElementById('final-img');
     var downloadMsgEl = document.getElementById('download-msg');
@@ -1044,19 +1081,15 @@ function handleImageUpload(e) {
             canvas.width = S; 
             canvas.height = S;
             
-            // 1️⃣ 透明背景（不繪製漸層）
             ctx.clearRect(0, 0, S, S);
             
-            // 2️⃣ 繪製使用者照片：'stretch' 拉伸滿版 | 'cover' 等比放到邊緣裁切
             var photoW = cfg.photoWidth;
             var photoH = cfg.photoHeight;
             var px = cfg.photoX, py = cfg.photoY;
             var fillMode = cfg.photoFillMode || 'cover';
             if (fillMode === 'stretch') {
-                // 強制拉伸：填滿相框，無黑邊，會變形
                 ctx.drawImage(img, 0, 0, img.width, img.height, px, py, photoW, photoH);
             } else {
-                // 等比放到邊緣：放大到貼齊邊緣，多出部分裁切，不變形
                 var scale = Math.max(photoW / img.width, photoH / img.height);
                 var w = img.width * scale, h = img.height * scale;
                 var x = px + (photoW - w) / 2, y = py + (photoH - h) / 2;
@@ -1068,9 +1101,6 @@ function handleImageUpload(e) {
                 ctx.restore();
             }
             
-            
-            
-            // 5️⃣ 備份無相框版本
             var backupCanvas = document.createElement('canvas');
             backupCanvas.width = S; 
             backupCanvas.height = S;
@@ -1084,13 +1114,10 @@ function handleImageUpload(e) {
                 done = true;
                 if (frameTimeoutId) clearTimeout(frameTimeoutId);
                 
-                
-                
                 var dataUrl;
                 try {
                     dataUrl = canvas.toDataURL("image/jpeg", 0.9);
                 } catch (err) {
-                    
                     dataUrl = backupCanvas.toDataURL("image/jpeg", 0.9);
                 }
                 
@@ -1102,23 +1129,19 @@ function handleImageUpload(e) {
                 finalEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
             
-            // 6️⃣ 載入相框
             if (!cfg.frameImageUrl) {
                 finishMemorial();
                 return;
             }
             
             frameTimeoutId = setTimeout(function() {
-                if (!done) {
-                    finishMemorial();
-                }
+                if (!done) finishMemorial();
             }, 6000);
             
             var frameImg = new Image();
-            frameImg.crossOrigin = 'anonymous'; // 啟用 CORS，避免 Canvas 污染
+            frameImg.crossOrigin = 'anonymous';
             
             frameImg.onload = function() {
-                
                 try {
                     ctx.drawImage(frameImg, 0, 0, S, S);
                     finishMemorial();
@@ -1127,25 +1150,15 @@ function handleImageUpload(e) {
                 }
             };
             
-            frameImg.onerror = function(err) { 
+            frameImg.onerror = function() { 
                 finishMemorial();
             };
-            
-            // 直接從 GitHub 載入相框（跳過 GAS 代理）
             
             frameImg.src = cfg.frameImageUrl + '?t=' + Date.now();
         }; 
         
-        img.onerror = function() {
-            
-        };
-        
         img.src = event.target.result; 
     }; 
-    
-    reader.onerror = function() {
-        
-    };
     
     reader.readAsDataURL(file); 
 }
