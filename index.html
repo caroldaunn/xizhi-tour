@@ -79,6 +79,8 @@
         .stamp-label { font-size: 10px; color: #888; margin-top: 5px; }
         #survey-box, #memorial-box { display: none; margin-top: 25px; }
         .survey-btn { display: block; background: linear-gradient(135deg, #667eea, #764ba2); color: white; text-align: center; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; }
+        .session-id-box { margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 8px; font-size: 12px; color: #666; }
+        .session-id-box code { background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
         #memorial-box { text-align: center; background: #fafafa; padding: 20px; border-radius: 12px; }
         .upload-btn-wrapper { position: relative; overflow: hidden; display: inline-block; }
         .btn-upload { border: 2px dashed #007bff; color: #007bff; background: white; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
@@ -196,7 +198,13 @@
                     <div class="stamp-box"><div class="stamp" id="stamp-share">📤</div><div class="stamp-label">分享</div></div>
                 </div>
             </div>
-            <div id="survey-box"><a href="#" class="survey-btn">任務達成,填寫問卷並參加抽獎!</a></div>
+            <div id="survey-box">
+                <a id="survey-link" href="#" target="_blank" class="survey-btn">任務達成,填寫問卷並參加抽獎!</a>
+                <div id="session-id-display" class="session-id-box" style="display:none;">
+                    您的參與編號：<code id="session-id-text"></code><br>
+                    <small>（問卷將自動帶入此編號）</small>
+                </div>
+            </div>
             <div id="memorial-box">
                 <div style="font-size:16px;font-weight:800;margin-bottom:5px;">完賽紀念照</div>
                 <p style="font-size:13px;color:#666;margin-bottom:15px;">上傳自拍照,合成汐止達人相框!</p>
@@ -205,7 +213,7 @@
                 <img id="final-img" src="" alt="" onclick="openLightbox()">
                 <div id="download-msg" class="download-hint">點擊圖片可放大</div>
             </div>
-            <div id="version-trigger" class="version-trigger">v6.1</div>
+            <div id="version-trigger" class="version-trigger">v6.2</div>
         </div>
     </div>
     <div class="sticky-footer">
@@ -245,7 +253,7 @@
     </div>
 <script>
 // ========================================
-// 🔧 設定區
+// 🔧 設定區 - 資料來源
 // ========================================
 var GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbzNtCPdBPw5LEEnsqmAAo4RclWvgg1TwdJ8g0td9BZf_UQEqPU-RiZSgJh8pS3VWSyPKg/exec';
 var USE_STATIC_JSON = true;
@@ -267,104 +275,80 @@ var DATA_CACHE_DURATION = 30 * 60 * 1000;
 var CURRENT_DATA_VERSION = '1.0';
 
 // ========================================
+// 📝 問卷設定（重要！請修改這裡）
+// ========================================
+var SURVEY_BASE_URL = 'https://www.surveycake.com/s/wpBAR';
+var SURVEY_ENTRY_ID = '1234567890';
+var SURVEY_PARAM_NAME = 'ref';
+var SHOW_SESSION_ID = true;
+
+// ========================================
 // 📦 全域變數
 // ========================================
 var MY_LIFF_ID = "2008941841-8KQq29wn";
 var TASKS = ['map','quiz','wish','beacon','share'];
-
 var MEMORIAL_FRAME = {
-    canvasSize: 800,
-    bgColor: 'transparent',
-    photoX: 10,
-    photoY: 10,
-    photoWidth: 760,
-    photoHeight: 760,
-    showText: false,
-    photoFillMode: 'cover',
+    canvasSize: 800, bgColor: 'transparent', photoX: 10, photoY: 10,
+    photoWidth: 760, photoHeight: 760, showText: false, photoFillMode: 'cover',
     frameImageUrl: ASSETS_BASE + '/frame.png'
 };
 
-var routesInfo = {};
-var foodsData = {};
-var spotsData = {};
-var eventsData = {};
+var routesInfo = {}, foodsData = {}, spotsData = {}, eventsData = {};
 var currentData = null, isEventPage = false, storyExpanded = false, eventIntroExpanded = false;
-
-// ========================================
-// 📊 行為追蹤變數（修正版）
-// ========================================
-var currentPageId = '';
-var spotEnterTime = 0;
-var behaviorUserId = '';
-var behaviorSessionId = '';
-var BEHAVIOR_LOG_ENV = 'test';  // 正式上線改為 'production'
-
-// 🆕 使用 sendBeacon 確保頁面關閉時也能送出
-var useBeacon = typeof navigator.sendBeacon === 'function';
+var currentPageId = '', spotEnterTime = 0, spotLeaveSentOnUnload = false;
+var behaviorUserId = '', behaviorSessionId = '';
+var BEHAVIOR_LOG_ENV = 'test';
 
 // ========================================
 // 📊 行為事件日誌（修正版：使用 sendBeacon）
 // ========================================
 function logEvent(eventAction, eventValue, durationSec) {
     var base = (GOOGLE_SHEET_API_URL || '').split('?')[0];
-    var params = {
-        type: 'log',
-        user_id: behaviorUserId || '',
-        session_id: behaviorSessionId || '',
-        timestamp: new Date().toISOString(),
-        event_action: eventAction || '',
-        event_value: eventValue || '',
-        duration_sec: (durationSec !== undefined && durationSec !== '' && durationSec !== 0) ? String(durationSec) : '',
-        env: BEHAVIOR_LOG_ENV || 'test'
-    };
-    
-    var queryString = Object.keys(params).map(function(key) {
-        return encodeURIComponent(key) + '=' + encodeURIComponent(params[key]);
-    }).join('&');
-    
-    var url = base + '?' + queryString;
-    
-    // 優先使用 sendBeacon（頁面關閉時也能送出）
-    if (useBeacon && (eventAction === 'spot_leave')) {
-        try {
-            navigator.sendBeacon(url);
-            console.log('📤 sendBeacon:', eventAction, eventValue, durationSec);
-            return;
-        } catch (e) {
-            console.warn('sendBeacon 失敗，改用 Image:', e);
-        }
-    }
-    
-    // 一般情況使用 Image GET
+    var q = [
+        'type=log',
+        'user_id=' + encodeURIComponent(behaviorUserId || ''),
+        'session_id=' + encodeURIComponent(behaviorSessionId || ''),
+        'timestamp=' + encodeURIComponent(new Date().toISOString()),
+        'event_action=' + encodeURIComponent(eventAction || ''),
+        'event_value=' + encodeURIComponent(eventValue || ''),
+        'duration_sec=' + (durationSec !== undefined && durationSec !== '' ? encodeURIComponent(String(durationSec)) : ''),
+        'env=' + encodeURIComponent(BEHAVIOR_LOG_ENV || 'test')
+    ].join('&');
     var img = new Image();
-    img.src = url;
-    console.log('📤 logEvent:', eventAction, eventValue, durationSec);
+    img.src = base + '?' + q;
 }
 
-// 🆕 記錄離開事件（修正版：確保只記錄一次且正確計算時間）
-function logSpotLeave() {
-    if (!currentPageId || !spotEnterTime) {
-        console.log('⏭️ 跳過 spot_leave：無 currentPageId 或 spotEnterTime');
-        return;
+// 🆕 修正版：使用 sendBeacon 確保頁面關閉時也能送出
+function flushSpotLeaveOnLeave() {
+    if (spotLeaveSentOnUnload || !currentPageId) return;
+    spotLeaveSentOnUnload = true;
+    var dur = spotEnterTime ? Math.round((Date.now() - spotEnterTime) / 1000) : 0;
+    // 只過濾負值或過大值（超過 1 小時），短暫停留也會記錄
+    if (dur < 0 || dur > 3600) return;
+    
+    var base = (GOOGLE_SHEET_API_URL || '').split('?')[0];
+    var q = [
+        'type=log',
+        'user_id=' + encodeURIComponent(behaviorUserId || ''),
+        'session_id=' + encodeURIComponent(behaviorSessionId || ''),
+        'timestamp=' + encodeURIComponent(new Date().toISOString()),
+        'event_action=spot_leave',
+        'event_value=' + encodeURIComponent(currentPageId || ''),
+        'duration_sec=' + encodeURIComponent(String(dur)),
+        'env=' + encodeURIComponent(BEHAVIOR_LOG_ENV || 'test')
+    ].join('&');
+    var url = base + '?' + q;
+    
+    // 優先使用 sendBeacon（頁面關閉時也能送出）
+    if (typeof navigator.sendBeacon === 'function') {
+        navigator.sendBeacon(url);
+    } else {
+        new Image().src = url;
     }
-    
-    var duration = Math.round((Date.now() - spotEnterTime) / 1000);
-    
-    // 過濾異常數據：停留時間 < 1 秒或 > 1 小時視為異常
-    if (duration < 1 || duration > 3600) {
-        console.log('⏭️ 跳過 spot_leave：異常停留時間', duration);
-        return;
-    }
-    
-    console.log('📤 spot_leave:', currentPageId, duration + '秒');
-    logEvent('spot_leave', currentPageId, duration);
-    
-    // 重置（避免重複記錄）
-    spotEnterTime = 0;
 }
 
 // ========================================
-// 🚀 初始化（修正版）
+// 🚀 初始化（修正版：liff.getContext 同步呼叫）
 // ========================================
 window.onload = function() {
     var loadPromise = USE_STATIC_JSON
@@ -373,77 +357,41 @@ window.onload = function() {
     
     Promise.all([
         loadPromise,
-        liff.init({ liffId: MY_LIFF_ID }).catch(function(err) { 
-            console.warn('LIFF init 失敗:', err);
-            return true; 
-        })
+        liff.init({ liffId: MY_LIFF_ID }).catch(function() { return true; })
     ]).then(function() {
-        // 🆕 修正：正確取得 session_id
+        // 取得或建立 session_id
         behaviorSessionId = sessionStorage.getItem('xizhi_sid');
         if (!behaviorSessionId) {
             behaviorSessionId = Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
             sessionStorage.setItem('xizhi_sid', behaviorSessionId);
         }
-        
-        // 🆕 修正：正確取得 user_id（liff.getContext 是同步函數）
-        try {
-            if (liff.isLoggedIn && liff.isLoggedIn()) {
-                var context = liff.getContext();
-                if (context && context.userId) {
-                    behaviorUserId = context.userId;
-                    console.log('✅ 取得 userId:', behaviorUserId);
-                }
-            } else {
-                console.log('⚠️ 使用者未登入 LIFF，無法取得 userId');
-            }
-        } catch (e) {
-            console.warn('取得 userId 失敗:', e);
+        // LIFF 2.x 的 getContext() 為非同步，先取得 userId 再渲染，確保事件日誌有 user_id
+        if (typeof liff.getContext === 'function') {
+            return liff.getContext().then(function(ctx) {
+                behaviorUserId = (ctx && ctx.userId) ? ctx.userId : '';
+            }).catch(function() {});
         }
-        
-        // 渲染頁面
+    }).then(function() {
         renderContent();
-        
-        // 🆕 修正：註冊頁面離開事件
-        registerLeaveEvents();
-        
+        // 註冊離開事件
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden') flushSpotLeaveOnLeave();
+            else if (document.visibilityState === 'visible') spotLeaveSentOnUnload = false;
+        });
+        window.addEventListener('pagehide', flushSpotLeaveOnLeave);
+        window.addEventListener('beforeunload', flushSpotLeaveOnLeave);
     }).catch(function(err) {
         console.error('初始化錯誤:', err);
         if (Object.keys(spotsData).length > 0) {
             renderContent();
-            registerLeaveEvents();
         } else {
             showError('無法載入資料，請檢查網路或稍後再試。' + (err.message ? ' ' + err.message : ''));
         }
     });
 };
 
-// 🆕 註冊頁面離開事件（獨立函數，確保正確執行）
-function registerLeaveEvents() {
-    // visibilitychange：切換 App、切換分頁
-    document.addEventListener('visibilitychange', function() {
-        if (document.visibilityState === 'hidden') {
-            console.log('👁️ visibilitychange: hidden');
-            logSpotLeave();
-        }
-    });
-    
-    // pagehide：關閉 LIFF、返回 LINE
-    window.addEventListener('pagehide', function() {
-        console.log('👋 pagehide 觸發');
-        logSpotLeave();
-    });
-    
-    // beforeunload：桌面瀏覽器關閉分頁（備用）
-    window.addEventListener('beforeunload', function() {
-        console.log('🚪 beforeunload 觸發');
-        logSpotLeave();
-    });
-    
-    console.log('✅ 離開事件已註冊');
-}
-
 // ========================================
-// 📡 資料載入函數（與原版相同）
+// 📡 資料載入函數
 // ========================================
 function loadDataFromStaticJSON() {
     updateLoadingText('正在載入資料...');
@@ -456,37 +404,28 @@ function loadDataFromStaticJSON() {
             if (data.error) throw new Error(data.error);
             applyData(data);
             if (Object.keys(spotsData).length === 0) throw new Error('景點資料為空');
-            try {
-                sessionStorage.setItem(DATA_CACHE_KEY, JSON.stringify({ data: data, at: Date.now() }));
-            } catch (e) {}
+            try { sessionStorage.setItem(DATA_CACHE_KEY, JSON.stringify({ data: data, at: Date.now() })); } catch (e) {}
             updateLoadingText('資料載入完成!');
-            console.log('✅ 資料載入成功（靜態 JSON）');
             return true;
         });
 }
 
 function loadDataFromGoogleSheet() {
-    var cached = null;
-    var cacheValid = false;
-    
+    var cached = null, cacheValid = false;
     try {
         var cachedData = localStorage.getItem(DATA_CACHE_KEY);
         var cachedVersion = localStorage.getItem(DATA_VERSION_KEY);
         var cacheTime = localStorage.getItem(DATA_TIME_KEY);
-        
         if (cachedData && cachedVersion === CURRENT_DATA_VERSION && cacheTime) {
             var timeDiff = Date.now() - parseInt(cacheTime, 10);
             if (timeDiff < DATA_CACHE_DURATION) {
                 var obj = JSON.parse(cachedData);
                 if (obj.routes && obj.spots && obj.foods && obj.events && Object.keys(obj.spots).length > 0) {
-                    cached = obj;
-                    cacheValid = true;
+                    cached = obj; cacheValid = true;
                 }
             }
         }
-    } catch (e) {
-        clearDataCache();
-    }
+    } catch (e) { clearDataCache(); }
     
     if (cacheValid && cached) {
         updateLoadingText('從快取載入資料...');
@@ -508,9 +447,7 @@ function fetchAndCacheData() {
         })
         .then(function(data) {
             if (data.error) throw new Error(data.error);
-            if (!data.routes || !data.spots || Object.keys(data.spots).length === 0) {
-                throw new Error('資料不完整');
-            }
+            if (!data.routes || !data.spots || Object.keys(data.spots).length === 0) throw new Error('資料不完整');
             applyData(data);
             try {
                 localStorage.setItem(DATA_CACHE_KEY, JSON.stringify(data));
@@ -521,7 +458,6 @@ function fetchAndCacheData() {
             return true;
         })
         .catch(function(error) {
-            console.error('網路載入失敗:', error);
             try {
                 var emergencyCache = localStorage.getItem(DATA_CACHE_KEY);
                 if (emergencyCache) {
@@ -549,8 +485,7 @@ function backgroundUpdateData() {
                     localStorage.setItem(DATA_TIME_KEY, String(Date.now()));
                 } catch (e) {}
             }
-        })
-        .catch(function() {});
+        }).catch(function() {});
 }
 
 function clearDataCache() {
@@ -561,12 +496,7 @@ function clearDataCache() {
     } catch (e) {}
 }
 
-function forceReloadData() {
-    clearDataCache();
-    try { sessionStorage.removeItem(DATA_CACHE_KEY); } catch (e) {}
-    location.reload();
-}
-
+function forceReloadData() { clearDataCache(); try { sessionStorage.removeItem(DATA_CACHE_KEY); } catch (e) {} location.reload(); }
 window.clearDataCache = clearDataCache;
 window.forceReloadData = forceReloadData;
 
@@ -589,45 +519,29 @@ function showError(message) {
 }
 
 // ========================================
-// 📄 頁面渲染函數（修正版：正確記錄進入/離開）
+// 📄 頁面渲染函數
 // ========================================
 function renderContent() {
     try {
         var urlParams = new URLSearchParams(window.location.search);
         var pageId = urlParams.get('id') || 'spot1';
-        if (pageId.indexOf('E') === 0 && eventsData[pageId]) { 
-            isEventPage = true; 
-            renderEventPage(pageId); 
-        } else { 
-            isEventPage = false; 
-            renderSpotPage(pageId); 
-        }
+        if (pageId.indexOf('E') === 0 && eventsData[pageId]) { isEventPage = true; renderEventPage(pageId); }
+        else { isEventPage = false; renderSpotPage(pageId); }
         initVersionTrigger();
-    } catch (e) { 
-        showError('頁面渲染失敗: ' + e.message);
-    }
+    } catch (e) { showError('頁面渲染失敗: ' + e.message); }
 }
 
 function renderEventPage(eventId) {
-    var data = eventsData[eventId]; 
-    if (!data) {
-        showError('找不到活動資料: ' + eventId);
-        return;
-    }
-    
-    // 🆕 修正：先記錄上一頁的離開事件
+    var data = eventsData[eventId];
+    if (!data) { showError('找不到活動資料: ' + eventId); return; }
     if (currentPageId && currentPageId !== eventId) {
-        logSpotLeave();
+        var dur = spotEnterTime ? Math.round((Date.now() - spotEnterTime) / 1000) : 0;
+        logEvent('spot_leave', currentPageId, dur);
     }
-    
-    // 🆕 設定新頁面的追蹤資訊
-    currentPageId = eventId;
-    spotEnterTime = Date.now();
+    currentPageId = eventId; spotEnterTime = Date.now();
     logEvent('spot_view', eventId);
-    
     currentData = data;
     
-    // ... 以下為原有的 UI 渲染程式碼 ...
     document.getElementById('beacon-banner').style.display = 'none';
     document.getElementById('game-section').style.display = 'none';
     document.getElementById('food-section').style.display = 'none';
@@ -652,41 +566,30 @@ function renderEventPage(eventId) {
     var introDetail = document.getElementById('event-intro-detail');
     var introBtn = document.getElementById('event-intro-btn');
     var introHtml = '';
-    if (data.intro && typeof data.intro === 'string') {
-        introHtml = '<p class="story-text">' + escapeHtml(data.intro) + '</p>';
-    } else if (data.intro && typeof data.intro === 'object') {
-        introHtml = buildStoryHtml(data.intro);
-    }
+    if (data.intro && typeof data.intro === 'string') introHtml = '<p class="story-text">' + escapeHtml(data.intro) + '</p>';
+    else if (data.intro && typeof data.intro === 'object') introHtml = buildStoryHtml(data.intro);
     if (introHtml) {
         introSection.style.display = 'block';
         introDetail.innerHTML = introHtml;
         introDetail.classList.remove('show');
         introBtn.innerText = '▼ 了解更多故事';
         eventIntroExpanded = false;
-    } else {
-        introSection.style.display = 'none';
-    }
+    } else { introSection.style.display = 'none'; }
     
     document.getElementById('spot-number').style.display = 'none';
     document.getElementById('spot-title').innerText = data.title;
     document.getElementById('spot-desc').innerText = data.desc;
     
-    var tagsHtml = ''; 
-    for (var i = 0; i < data.tags.length; i++) { 
-        tagsHtml += '<span class="tag">' + data.tags[i] + '</span>'; 
-    }
+    var tagsHtml = '';
+    for (var i = 0; i < data.tags.length; i++) tagsHtml += '<span class="tag">' + data.tags[i] + '</span>';
     document.getElementById('tags-container').innerHTML = tagsHtml;
     
-    var galleryHtml = ''; 
-    for (var j = 0; j < data.gallery.length; j++) { 
-        galleryHtml += '<div class="gallery-item"><img src="' + toAssetUrl(data.gallery[j].img) + '" class="gallery-img"><div class="gallery-caption">' + data.gallery[j].caption + '</div></div>'; 
-    }
+    var galleryHtml = '';
+    for (var j = 0; j < data.gallery.length; j++) galleryHtml += '<div class="gallery-item"><img src="' + toAssetUrl(data.gallery[j].img) + '" class="gallery-img"><div class="gallery-caption">' + data.gallery[j].caption + '</div></div>';
     document.getElementById('gallery-content').innerHTML = galleryHtml;
     
-    var noticeHtml = ''; 
-    for (var k = 0; k < data.notices.length; k++) { 
-        noticeHtml += '<li>' + data.notices[k] + '</li>'; 
-    }
+    var noticeHtml = '';
+    for (var k = 0; k < data.notices.length; k++) noticeHtml += '<li>' + data.notices[k] + '</li>';
     document.getElementById('notice-list').innerHTML = noticeHtml;
     
     var mapQuery = encodeURIComponent(data.query);
@@ -700,26 +603,16 @@ function renderEventPage(eventId) {
 }
 
 function renderSpotPage(spotKey) {
-    var data = spotsData[spotKey]; 
-    if (!data) { 
-        data = spotsData['spot1']; 
-        spotKey = 'spot1'; 
-    }
-    
-    // 🆕 修正：先記錄上一頁的離開事件
+    var data = spotsData[spotKey];
+    if (!data) { data = spotsData['spot1']; spotKey = 'spot1'; }
     if (currentPageId && currentPageId !== spotKey) {
-        logSpotLeave();
+        var dur = spotEnterTime ? Math.round((Date.now() - spotEnterTime) / 1000) : 0;
+        logEvent('spot_leave', currentPageId, dur);
     }
-    
-    // 🆕 設定新頁面的追蹤資訊
-    currentPageId = spotKey;
-    spotEnterTime = Date.now();
+    currentPageId = spotKey; spotEnterTime = Date.now();
     logEvent('spot_view', spotKey);
+    currentData = data; currentData.spotKey = spotKey;
     
-    currentData = data; 
-    currentData.spotKey = spotKey;
-    
-    // ... 以下為原有的 UI 渲染程式碼 ...
     document.getElementById('game-section').style.display = 'block';
     document.getElementById('food-section').style.display = 'block';
     document.getElementById('bus-schedule-link').style.display = 'block';
@@ -736,23 +629,21 @@ function renderSpotPage(spotKey) {
     document.getElementById('spot-title').innerText = data.title;
     document.getElementById('spot-desc').innerText = data.desc;
     
-    var routeKey = data.route || "R1"; 
+    var routeKey = data.route || "R1";
     var rInfo = routesInfo[routeKey];
     if (rInfo) {
         document.getElementById('route-tag').innerText = rInfo.title;
         document.getElementById('route-desc').innerText = rInfo.desc;
         var spotIndex = rInfo.spots.indexOf(spotKey);
-        if (spotIndex >= 0) { 
-            document.getElementById('spot-number').innerText = "第 " + (spotIndex + 1) + " 站,共 " + rInfo.spots.length + " 站"; 
-        }
+        if (spotIndex >= 0) document.getElementById('spot-number').innerText = "第 " + (spotIndex + 1) + " 站,共 " + rInfo.spots.length + " 站";
     }
     
     if (data.quizQ) {
         document.getElementById('quiz-question').innerText = data.quizQ;
-        if (data.quizOpts && data.quizOpts.length >= 3) { 
-            document.getElementById('quiz-opt-1').innerText = data.quizOpts[0]; 
-            document.getElementById('quiz-opt-2').innerText = data.quizOpts[1]; 
-            document.getElementById('quiz-opt-3').innerText = data.quizOpts[2]; 
+        if (data.quizOpts && data.quizOpts.length >= 3) {
+            document.getElementById('quiz-opt-1').innerText = data.quizOpts[0];
+            document.getElementById('quiz-opt-2').innerText = data.quizOpts[1];
+            document.getElementById('quiz-opt-3').innerText = data.quizOpts[2];
         }
     }
     
@@ -762,25 +653,23 @@ function renderSpotPage(spotKey) {
     document.getElementById('more-food-link').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+美食';
     
     if (rInfo && rInfo.spots) {
-        var currentIdx = rInfo.spots.indexOf(spotKey); 
-        var nextIdx = (currentIdx + 1) % rInfo.spots.length; 
-        var nextSpotKey = rInfo.spots[nextIdx]; 
+        var currentIdx = rInfo.spots.indexOf(spotKey);
+        var nextIdx = (currentIdx + 1) % rInfo.spots.length;
+        var nextSpotKey = rInfo.spots[nextIdx];
         var nextData = spotsData[nextSpotKey];
-        if (nextData) { 
-            document.getElementById('bus-btn').href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(nextData.query) + '&travelmode=transit'; 
-            document.getElementById('bus-label').innerText = '去' + nextData.title; 
+        if (nextData) {
+            document.getElementById('bus-btn').href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(nextData.query) + '&travelmode=transit';
+            document.getElementById('bus-label').innerText = '去' + nextData.title;
         }
     }
     
     renderFoodSection(spotKey);
     
-    if (data.hasBeacon) { 
-        setTimeout(function() { 
-            document.getElementById('beacon-banner').classList.add('show'); 
-            setTimeout(function() { 
-                document.getElementById('beacon-banner').classList.remove('show'); 
-            }, 8000); 
-        }, 3000); 
+    if (data.hasBeacon) {
+        setTimeout(function() {
+            document.getElementById('beacon-banner').classList.add('show');
+            setTimeout(function() { document.getElementById('beacon-banner').classList.remove('show'); }, 8000);
+        }, 3000);
     }
     
     initTaskProgress();
@@ -796,18 +685,12 @@ function renderFoodSection(spotKey) {
         var f = foods[i];
         html += '<div class="food-card" onclick="openFoodMap(\'' + f.query + '\')">';
         html += '<img src="' + toAssetUrl(f.img) + '" class="food-img" onerror="this.src=\'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=300\'">';
-        html += '<div class="food-info">';
-        html += '<div class="food-type">' + f.type + '</div>';
-        html += '<div class="food-name">' + f.name + '</div>';
-        html += '<div class="food-desc">' + f.desc + '</div>';
-        html += '</div></div>';
+        html += '<div class="food-info"><div class="food-type">' + f.type + '</div><div class="food-name">' + f.name + '</div><div class="food-desc">' + f.desc + '</div></div></div>';
     }
     document.getElementById('food-scroll').innerHTML = html;
 }
 
-function openFoodMap(query) { 
-    window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query), '_blank'); 
-}
+function openFoodMap(query) { window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query), '_blank'); }
 
 function escapeHtml(str) {
     if (!str) return '';
@@ -819,18 +702,11 @@ function escapeHtml(str) {
 function formatDate(dateStr) {
     if (!dateStr) return '';
     var date;
-    if (typeof dateStr === 'string' && dateStr.indexOf('T') >= 0) {
-        date = new Date(dateStr);
-    } else if (dateStr instanceof Date) {
-        date = dateStr;
-    } else {
-        return dateStr;
-    }
+    if (typeof dateStr === 'string' && dateStr.indexOf('T') >= 0) date = new Date(dateStr);
+    else if (dateStr instanceof Date) date = dateStr;
+    else return dateStr;
     if (isNaN(date.getTime())) return dateStr;
-    var year = date.getFullYear();
-    var month = String(date.getMonth() + 1).padStart(2, '0');
-    var day = String(date.getDate()).padStart(2, '0');
-    return year + '/' + month + '/' + day;
+    return date.getFullYear() + '/' + String(date.getMonth() + 1).padStart(2, '0') + '/' + String(date.getDate()).padStart(2, '0');
 }
 
 function getStoryImgUrl(val) {
@@ -846,9 +722,7 @@ function buildStoryHtml(story) {
     var html = '';
     for (var i = 0; i < story.sections.length; i++) {
         var sec = story.sections[i];
-        var title = escapeHtml(sec.title || '');
-        var text = escapeHtml(sec.text || '');
-        html += '<div class="story-section"><div class="story-title">' + title + '</div><p class="story-text">' + text + '</p>';
+        html += '<div class="story-section"><div class="story-title">' + escapeHtml(sec.title || '') + '</div><p class="story-text">' + escapeHtml(sec.text || '') + '</p>';
         if (sec.img) {
             var imgUrl = toAssetUrl(getStoryImgUrl(sec.img));
             if (imgUrl) html += '<img src="' + escapeHtml(imgUrl) + '" class="story-img" alt=""><p class="story-caption">' + escapeHtml(sec.caption || '') + '</p>';
@@ -862,30 +736,11 @@ function buildStoryHtml(story) {
 function toggleStory() {
     var detail = document.getElementById('story-detail');
     var btn = document.getElementById('read-more-btn');
-    if (storyExpanded) {
-        detail.classList.remove('show');
-        btn.innerText = '▼ 了解更多故事';
-        storyExpanded = false;
-        return;
-    }
-    if (!currentData) {
-        detail.innerHTML = '<p class="story-text">無法取得景點資料。</p>';
-        detail.classList.add('show');
-        btn.innerText = '▲ 收起故事';
-        storyExpanded = true;
-        logEvent('story_expand', currentPageId || '');
-        return;
-    }
-    var story = currentData.story;
-    var html = buildStoryHtml(story);
-    if (html) {
-        detail.innerHTML = html;
-    } else {
-        detail.innerHTML = '<p class="story-text">此景點暫無故事內容。</p>';
-    }
-    detail.classList.add('show');
-    btn.innerText = '▲ 收起故事';
-    storyExpanded = true;
+    if (storyExpanded) { detail.classList.remove('show'); btn.innerText = '▼ 了解更多故事'; storyExpanded = false; return; }
+    if (!currentData) { detail.innerHTML = '<p class="story-text">無法取得景點資料。</p>'; detail.classList.add('show'); btn.innerText = '▲ 收起故事'; storyExpanded = true; logEvent('story_expand', currentPageId || ''); return; }
+    var html = buildStoryHtml(currentData.story);
+    detail.innerHTML = html ? html : '<p class="story-text">此景點暫無故事內容。</p>';
+    detail.classList.add('show'); btn.innerText = '▲ 收起故事'; storyExpanded = true;
     logEvent('story_expand', currentPageId || '');
 }
 
@@ -893,161 +748,90 @@ function toggleEventIntro() {
     var detail = document.getElementById('event-intro-detail');
     var btn = document.getElementById('event-intro-btn');
     if (!detail || !btn) return;
-    if (eventIntroExpanded) {
-        detail.classList.remove('show');
-        btn.innerText = '▼ 了解更多故事';
-        eventIntroExpanded = false;
-    } else {
-        detail.classList.add('show');
-        btn.innerText = '▲ 收起故事';
-        eventIntroExpanded = true;
-        logEvent('story_expand', currentPageId || '');
-    }
+    if (eventIntroExpanded) { detail.classList.remove('show'); btn.innerText = '▼ 了解更多故事'; eventIntroExpanded = false; }
+    else { detail.classList.add('show'); btn.innerText = '▲ 收起故事'; eventIntroExpanded = true; logEvent('story_expand', (currentData && (currentData.spotKey || currentData.id)) ? (currentData.spotKey || currentData.id) : ''); }
 }
 
-function collectAction(taskName) { 
-    var c = JSON.parse(localStorage.getItem('xizhi_stamps')) || []; 
-    if (c.indexOf(taskName) === -1) { 
-        c.push(taskName); 
-        localStorage.setItem('xizhi_stamps', JSON.stringify(c)); 
-        logEvent('stamp_collect', taskName);
-        setTimeout(initTaskProgress, 500); 
-    } 
+function collectAction(taskName) {
+    var c = JSON.parse(localStorage.getItem('xizhi_stamps')) || [];
+    if (c.indexOf(taskName) === -1) { c.push(taskName); localStorage.setItem('xizhi_stamps', JSON.stringify(c)); logEvent('stamp_collect', taskName); setTimeout(initTaskProgress, 500); }
 }
 
-function handleClickWithTrack(taskName) { 
+function handleClickWithTrack(taskName) {
     collectAction(taskName);
-    if (taskName === 'map') logEvent('navigation_click', currentPageId || '');
+    if (taskName === 'map') logEvent('navigation_click', (currentData && (currentData.spotKey || currentData.id)) ? (currentData.spotKey || currentData.id) : '');
 }
 
-function isTaskDone(taskName) { 
-    var c = JSON.parse(localStorage.getItem('xizhi_stamps')) || []; 
-    return c.indexOf(taskName) !== -1; 
-}
+function isTaskDone(taskName) { var c = JSON.parse(localStorage.getItem('xizhi_stamps')) || []; return c.indexOf(taskName) !== -1; }
 
 function initTaskProgress() {
-    var c = JSON.parse(localStorage.getItem('xizhi_stamps')) || []; 
+    var c = JSON.parse(localStorage.getItem('xizhi_stamps')) || [];
     var icons = { 'map': '🗺️', 'quiz': '❓', 'wish': '📅', 'beacon': '📡', 'share': '📤' };
-    for (var i = 0; i < TASKS.length; i++) { 
-        var t = TASKS[i]; 
-        var el = document.getElementById('stamp-' + t); 
-        if (el) { 
-            if (c.indexOf(t) !== -1) { 
-                el.classList.add('active'); 
-                el.innerText = '✓'; 
-            } else { 
-                el.classList.remove('active'); 
-                el.innerText = icons[t]; 
-            } 
-        } 
+    for (var i = 0; i < TASKS.length; i++) {
+        var t = TASKS[i]; var el = document.getElementById('stamp-' + t);
+        if (el) { if (c.indexOf(t) !== -1) { el.classList.add('active'); el.innerText = '✓'; } else { el.classList.remove('active'); el.innerText = icons[t]; } }
     }
-    var wishBtn = document.getElementById('wish-btn');
-    if (wishBtn) wishBtn.style.display = 'none';
-    document.getElementById('progress-text').innerText = c.length + '/5'; 
+    var wishBtn = document.getElementById('wish-btn'); if (wishBtn) wishBtn.style.display = 'none';
+    document.getElementById('progress-text').innerText = c.length + '/5';
     document.getElementById('progress-bar').style.width = (c.length / 5) * 100 + '%';
-    if (c.length >= 5) { 
-        document.getElementById('survey-box').style.display = 'block'; 
-        document.getElementById('memorial-box').style.display = 'block'; 
+    
+    if (c.length >= 5) {
+        document.getElementById('survey-box').style.display = 'block';
+        document.getElementById('memorial-box').style.display = 'block';
+        
+        // 動態設定問卷連結，帶入 session_id
+        var surveyLink = SURVEY_PARAM_NAME
+            ? SURVEY_BASE_URL + '?' + SURVEY_PARAM_NAME + '=' + encodeURIComponent(behaviorSessionId || '')
+            : SURVEY_BASE_URL + '?entry.' + SURVEY_ENTRY_ID + '=' + encodeURIComponent(behaviorSessionId || '');
+        var surveyBtn = document.getElementById('survey-link');
+        if (surveyBtn) { surveyBtn.href = surveyLink; surveyBtn.target = '_blank'; }
+        
+        // 顯示 session_id
+        if (SHOW_SESSION_ID && behaviorSessionId) {
+            var sessionIdDisplay = document.getElementById('session-id-display');
+            var sessionIdText = document.getElementById('session-id-text');
+            if (sessionIdDisplay && sessionIdText) { sessionIdText.innerText = behaviorSessionId; sessionIdDisplay.style.display = 'block'; }
+        }
     }
 }
 
-function handleBeaconClick() { 
-    document.getElementById('beacon-banner').classList.remove('show'); 
-    alert("🎉 獲得【尋寶印章】"); 
-    collectAction('beacon'); 
-}
+function handleBeaconClick() { document.getElementById('beacon-banner').classList.remove('show'); alert("🎉 獲得【尋寶印章】"); collectAction('beacon'); }
 
-function openQuizModal() { 
-    if (isTaskDone('quiz')) { 
-        alert("已完成!"); 
-        return; 
-    } 
-    document.getElementById('quiz-modal').style.display = 'flex'; 
-}
+function openQuizModal() { if (isTaskDone('quiz')) { alert("已完成!"); return; } document.getElementById('quiz-modal').style.display = 'flex'; }
 
-function checkQuiz(answerIdx) { 
-    var correct = currentData ? currentData.quizA : 2; 
-    if (answerIdx === correct) { 
-        document.getElementById('quiz-modal').style.display = 'none'; 
-        alert("⭕ 答對了!獲得【問答印章】"); 
-        collectAction('quiz'); 
-    } else { 
-        alert("❌ 答錯了,再試試!"); 
-    } 
+function checkQuiz(answerIdx) {
+    var correct = currentData ? currentData.quizA : 2;
+    if (answerIdx === correct) { document.getElementById('quiz-modal').style.display = 'none'; alert("⭕ 答對了!獲得【問答印章】"); collectAction('quiz'); }
+    else { alert("❌ 答錯了,再試試!"); }
 }
 
 function addEventToCalendar() {
     if (!confirm('將此活動加入行事曆？')) return;
-    if (!isTaskDone('wish')) {
-        collectAction('wish');
-        setTimeout(initTaskProgress, 300);
-    }
+    if (!isTaskDone('wish')) { collectAction('wish'); setTimeout(initTaskProgress, 300); }
     alert('已加入行事曆！');
 }
 
-function handleShareWithStamp() { 
-    logEvent('share_click', currentPageId || '');
-    document.getElementById('share-modal').style.display = 'flex'; 
-}
+function handleShareWithStamp() { logEvent('share_click', ''); document.getElementById('share-modal').style.display = 'flex'; }
 
-function closeModal(id, e) { 
-    if (e.target.id === id || e.target.classList.contains('close-modal')) { 
-        document.getElementById(id).style.display = 'none'; 
-    } 
-}
+function closeModal(id, e) { if (e.target.id === id || e.target.classList.contains('close-modal')) document.getElementById(id).style.display = 'none'; }
 
-function shareTo(platform) { 
-    var url = window.location.href; 
-    var title = document.getElementById('spot-title').innerText; 
-    var text = '📸 我正在汐止打卡：' + title + '!快來一起探索～'; 
-    if (!isTaskDone('share')) { 
-        setTimeout(function() { 
-            alert("分享成功!獲得【分享印章】"); 
-            collectAction('share'); 
-        }, 500); 
-    }
-    if (platform === 'line') { 
-        window.location.href = 'https://line.me/R/msg/text/?' + encodeURIComponent(text + ' ' + url); 
-    } else if (platform === 'fb') { 
-        window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&quote=' + encodeURIComponent(text)); 
-    } else if (platform === 'ig') { 
-        if (navigator.clipboard) { 
-            navigator.clipboard.writeText(text + ' ' + url).then(function() { 
-                alert("已複製文字!請打開 Instagram 貼上分享"); 
-            }); 
-        } 
-    } else if (platform === 'copy') { 
-        if (navigator.clipboard) { 
-            navigator.clipboard.writeText(url).then(function() { 
-                alert("連結已複製!"); 
-            }); 
-        } 
-    } 
-    document.getElementById('share-modal').style.display = 'none'; 
+function shareTo(platform) {
+    var url = window.location.href;
+    var title = document.getElementById('spot-title').innerText;
+    var text = '📸 我正在汐止打卡：' + title + '!快來一起探索～';
+    if (!isTaskDone('share')) { setTimeout(function() { alert("分享成功!獲得【分享印章】"); collectAction('share'); }, 500); }
+    if (platform === 'line') window.location.href = 'https://line.me/R/msg/text/?' + encodeURIComponent(text + ' ' + url);
+    else if (platform === 'fb') window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&quote=' + encodeURIComponent(text));
+    else if (platform === 'ig') { if (navigator.clipboard) navigator.clipboard.writeText(text + ' ' + url).then(function() { alert("已複製文字!請打開 Instagram 貼上分享"); }); }
+    else if (platform === 'copy') { if (navigator.clipboard) navigator.clipboard.writeText(url).then(function() { alert("連結已複製!"); }); }
+    document.getElementById('share-modal').style.display = 'none';
 }
 
 var longPressTimer = null;
 function initVersionTrigger() {
-    var trigger = document.getElementById('version-trigger');
-    if (!trigger) return;
-    
-    function startPress() {
-        longPressTimer = setTimeout(function() {
-            if (navigator.vibrate) navigator.vibrate(100);
-            if (confirm("確定要重置所有進度嗎?")) { 
-                localStorage.removeItem('xizhi_stamps'); 
-                location.reload(); 
-            }
-        }, 3000);
-    }
-    
-    function cancelPress() {
-        if (longPressTimer) { 
-            clearTimeout(longPressTimer); 
-            longPressTimer = null; 
-        }
-    }
-    
+    var trigger = document.getElementById('version-trigger'); if (!trigger) return;
+    function startPress() { longPressTimer = setTimeout(function() { if (navigator.vibrate) navigator.vibrate(100); if (confirm("確定要重置所有進度嗎?")) { localStorage.removeItem('xizhi_stamps'); location.reload(); } }, 3000); }
+    function cancelPress() { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } }
     trigger.addEventListener('touchstart', startPress, {passive: true});
     trigger.addEventListener('touchend', cancelPress, {passive: true});
     trigger.addEventListener('touchcancel', cancelPress, {passive: true});
@@ -1060,137 +844,80 @@ function initVersionTrigger() {
 // ========================================
 // 🖼️ 相框上傳函數
 // ========================================
-function handleImageUpload(e) { 
-    var file = e.target.files[0]; 
-    if (!file) return;
-    
+function handleImageUpload(e) {
+    var file = e.target.files[0]; if (!file) return;
     var finalImgEl = document.getElementById('final-img');
     var downloadMsgEl = document.getElementById('download-msg');
-    finalImgEl.style.display = 'none';
-    finalImgEl.src = '';
-    downloadMsgEl.style.display = 'none';
+    finalImgEl.style.display = 'none'; finalImgEl.src = ''; downloadMsgEl.style.display = 'none';
     
-    var reader = new FileReader(); 
-    reader.onload = function(event) { 
-        var img = new Image(); 
-        img.onload = function() { 
+    var reader = new FileReader();
+    reader.onload = function(event) {
+        var img = new Image();
+        img.onload = function() {
             var cfg = MEMORIAL_FRAME;
             var S = cfg.canvasSize;
-            var canvas = document.getElementById('result-canvas'); 
-            var ctx = canvas.getContext('2d'); 
-            canvas.width = S; 
-            canvas.height = S;
-            
+            var canvas = document.getElementById('result-canvas');
+            var ctx = canvas.getContext('2d');
+            canvas.width = S; canvas.height = S;
             ctx.clearRect(0, 0, S, S);
             
-            var photoW = cfg.photoWidth;
-            var photoH = cfg.photoHeight;
-            var px = cfg.photoX, py = cfg.photoY;
+            var photoW = cfg.photoWidth, photoH = cfg.photoHeight, px = cfg.photoX, py = cfg.photoY;
             var fillMode = cfg.photoFillMode || 'cover';
-            if (fillMode === 'stretch') {
-                ctx.drawImage(img, 0, 0, img.width, img.height, px, py, photoW, photoH);
-            } else {
+            if (fillMode === 'stretch') ctx.drawImage(img, 0, 0, img.width, img.height, px, py, photoW, photoH);
+            else {
                 var scale = Math.max(photoW / img.width, photoH / img.height);
                 var w = img.width * scale, h = img.height * scale;
                 var x = px + (photoW - w) / 2, y = py + (photoH - h) / 2;
-                ctx.save();
-                ctx.beginPath();
-                ctx.rect(px, py, photoW, photoH);
-                ctx.clip();
-                ctx.drawImage(img, x, y, w, h);
-                ctx.restore();
+                ctx.save(); ctx.beginPath(); ctx.rect(px, py, photoW, photoH); ctx.clip();
+                ctx.drawImage(img, x, y, w, h); ctx.restore();
             }
             
             var backupCanvas = document.createElement('canvas');
-            backupCanvas.width = S; 
-            backupCanvas.height = S;
+            backupCanvas.width = S; backupCanvas.height = S;
             backupCanvas.getContext('2d').drawImage(canvas, 0, 0);
             
-            var done = false;
-            var frameTimeoutId = null;
-            
+            var done = false, frameTimeoutId = null;
             function finishMemorial() {
-                if (done) return;
-                done = true;
-                if (frameTimeoutId) clearTimeout(frameTimeoutId);
-                
+                if (done) return; done = true; if (frameTimeoutId) clearTimeout(frameTimeoutId);
                 var dataUrl;
-                try {
-                    dataUrl = canvas.toDataURL("image/jpeg", 0.9);
-                } catch (err) {
-                    dataUrl = backupCanvas.toDataURL("image/jpeg", 0.9);
-                }
-                
+                try { dataUrl = canvas.toDataURL("image/jpeg", 0.9); } catch (err) { dataUrl = backupCanvas.toDataURL("image/jpeg", 0.9); }
                 window._lastMemorialDataUrl = dataUrl;
                 var finalEl = document.getElementById('final-img');
-                finalEl.src = dataUrl;
-                finalEl.style.display = "block";
+                finalEl.src = dataUrl; finalEl.style.display = "block";
                 document.getElementById('download-msg').style.display = "block";
                 finalEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
             
-            if (!cfg.frameImageUrl) {
-                finishMemorial();
-                return;
-            }
-            
-            frameTimeoutId = setTimeout(function() {
-                if (!done) finishMemorial();
-            }, 6000);
+            if (!cfg.frameImageUrl) { finishMemorial(); return; }
+            frameTimeoutId = setTimeout(function() { if (!done) finishMemorial(); }, 6000);
             
             var frameImg = new Image();
             frameImg.crossOrigin = 'anonymous';
-            
-            frameImg.onload = function() {
-                try {
-                    ctx.drawImage(frameImg, 0, 0, S, S);
-                    finishMemorial();
-                } catch (err) {
-                    finishMemorial();
-                }
-            };
-            
-            frameImg.onerror = function() { 
-                finishMemorial();
-            };
-            
+            frameImg.onload = function() { try { ctx.drawImage(frameImg, 0, 0, S, S); finishMemorial(); } catch (err) { finishMemorial(); } };
+            frameImg.onerror = function() { finishMemorial(); };
             frameImg.src = cfg.frameImageUrl + '?t=' + Date.now();
-        }; 
-        
-        img.src = event.target.result; 
-    }; 
-    
-    reader.readAsDataURL(file); 
+        };
+        img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
 }
 
 function downloadImage() {
     var canvas = document.getElementById('result-canvas');
     var dataUrl;
-    try {
-        dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-    } catch (e) {
-        dataUrl = window._lastMemorialDataUrl || '';
-    }
+    try { dataUrl = canvas.toDataURL('image/jpeg', 0.9); } catch (e) { dataUrl = window._lastMemorialDataUrl || ''; }
     if (!dataUrl) return;
     var link = document.createElement('a');
     link.download = '汐止達人紀念照_' + new Date().getTime() + '.jpg';
-    link.href = dataUrl;
-    link.click();
+    link.href = dataUrl; link.click();
 }
 
 function openLightbox() {
     var src = document.getElementById('final-img').src;
-    if (src && src !== '') {
-        document.getElementById('lightbox-img').src = src;
-        document.getElementById('lightbox').style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    }
+    if (src && src !== '') { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox').style.display = 'flex'; document.body.style.overflow = 'hidden'; }
 }
 
-function closeLightbox() { 
-    document.getElementById('lightbox').style.display = 'none'; 
-    document.body.style.overflow = '';
-}
+function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; document.body.style.overflow = ''; }
 </script>
 </body>
 </html>
