@@ -208,7 +208,7 @@
                 <img id="final-img" src="" alt="" onclick="openLightbox()">
                 <div id="download-msg" class="download-hint">點擊圖片可放大</div>
             </div>
-            <div id="version-trigger" class="version-trigger">v6.4</div>
+            <div id="version-trigger" class="version-trigger">v6.5</div>
         </div>
     </div>
     <div class="sticky-footer">
@@ -368,16 +368,26 @@ window.onload = function() {
         loadPromise,
         liff.init({ liffId: MY_LIFF_ID }).catch(function() { return true; })
     ]).then(function() {
+        // session_id：瀏覽器層級，與 LIFF 無關，必定有值
         behaviorSessionId = sessionStorage.getItem('xizhi_sid');
         if (!behaviorSessionId) {
             behaviorSessionId = Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
             sessionStorage.setItem('xizhi_sid', behaviorSessionId);
         }
-        if (typeof liff.getContext === 'function') {
-            return liff.getContext().then(function(ctx) {
-                behaviorUserId = (ctx && ctx.userId) ? ctx.userId : '';
-            }).catch(function() {});
+
+        // 🆕 v6.5：liff.getContext() 在 LINE 內是同步函數，不可用 .then()
+        // 正確做法：直接呼叫，結果若含 userId 則取用
+        try {
+            var ctx = liff.getContext();
+            if (ctx && ctx.userId) {
+                behaviorUserId = ctx.userId;
+                console.log('✅ userId (sync):', behaviorUserId);
+            }
+        } catch (e) {
+            // liff 未登入或非 LINE 環境，userId 維持空字串
+            console.warn('getContext 失敗（非 LINE 環境或未登入）:', e.message);
         }
+
     }).then(function() {
         renderContent();
         document.addEventListener('visibilitychange', function() {
