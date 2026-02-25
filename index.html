@@ -68,7 +68,7 @@
         .t-btn i { font-style: normal; font-size: 18px; }
         .bg-ubike { background: #FFC470; }
         .bg-bus { background: #779ae4; }
-        .bg-parking { background: #81C7D4;}
+        .bg-parking { background: #81C7D4; }
         .bus-label { font-size: 12px; }
         .game-section { background: #fff8e1; border: 2px dashed #ffc107; border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 15px; }
         .game-title { font-weight: bold; color: #d35400; margin-bottom: 15px; font-size: 16px; }
@@ -88,8 +88,6 @@
         #result-canvas { display: none; }
         #final-img { width: 100%; max-width: 100%; display: none; margin: 10px 0; border-radius: 8px; cursor: pointer; }
         .download-hint { display: none; color: #28a745; font-size: 14px; margin-top: 10px; background: #e8f5e9; padding: 10px; border-radius: 8px; }
-        .download-btn { display: none; margin-top: 10px; background: #28a745; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; font-size: 14px; }
-        .download-btn:active { transform: scale(0.95); }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 6000; display: none; align-items: flex-end; justify-content: center; }
         .share-sheet { width: 100%; max-width: 500px; background: white; border-radius: 20px 20px 0 0; padding: 25px; }
         .share-title { font-size: 16px; font-weight: bold; margin-bottom: 25px; text-align: center; }
@@ -104,7 +102,7 @@
         .close-modal { margin-top: 15px; color: #999; font-size: 12px; text-decoration: underline; cursor: pointer; }
         .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px 15px; display: flex; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
         .footer-btn { flex: 1; padding: 12px; border-radius: 10px; text-align: center; text-decoration: none; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; border: none; }
-        .btn-map { background: #F2E4E0; color:#4c506e; }
+        .btn-map { background: #F2E4E0; color: #4c506e; }
         .btn-share { background: #ece7c3; color: #4c506e; }
         #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; align-items: center; justify-content: center; z-index: 3000; flex-direction: column; }
         .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid #667eea; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
@@ -126,7 +124,6 @@
         .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9000; align-items: center; justify-content: center; flex-direction: column; }
         .lightbox img { max-width: 95%; max-height: 80%; object-fit: contain; }
         .lightbox-close { position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; cursor: pointer; }
-        .lightbox-hint { color: white; margin-top: 15px; font-size: 14px; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
@@ -135,14 +132,12 @@
         <div class="loading-spinner"></div>
         <div class="loading-text">⏳ 載入資料中...</div>
     </div>
-    
     <div id="error-container" style="display:none;">
         <div class="error-box">
             <div class="error-title">⚠️ 資料載入失敗</div>
             <div class="error-msg" id="error-msg"></div>
         </div>
     </div>
-    
     <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
     <div id="beacon-banner" class="beacon-banner" onclick="handleBeaconClick()">
         <div class="beacon-icon">📡</div>
@@ -199,7 +194,7 @@
                 </div>
             </div>
             <div id="survey-box">
-                <a id="survey-link" href="#" target="_blank" class="survey-btn">任務達成,填寫問卷並參加抽獎!</a>
+                <a id="survey-link" href="#" target="_blank" class="survey-btn" onclick="handleSurveyClick()">任務達成,填寫問卷並參加抽獎!</a>
                 <div id="session-id-display" class="session-id-box" style="display:none;">
                     您的參與編號：<code id="session-id-text"></code><br>
                     <small>（問卷將自動帶入此編號）</small>
@@ -213,7 +208,7 @@
                 <img id="final-img" src="" alt="" onclick="openLightbox()">
                 <div id="download-msg" class="download-hint">點擊圖片可放大</div>
             </div>
-            <div id="version-trigger" class="version-trigger">v6.2</div>
+            <div id="version-trigger" class="version-trigger">v6.3</div>
         </div>
     </div>
     <div class="sticky-footer">
@@ -253,7 +248,7 @@
     </div>
 <script>
 // ========================================
-// 🔧 設定區 - 資料來源
+// 🔧 設定區
 // ========================================
 var GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbzNtCPdBPw5LEEnsqmAAo4RclWvgg1TwdJ8g0td9BZf_UQEqPU-RiZSgJh8pS3VWSyPKg/exec';
 var USE_STATIC_JSON = true;
@@ -275,7 +270,7 @@ var DATA_CACHE_DURATION = 30 * 60 * 1000;
 var CURRENT_DATA_VERSION = '1.0';
 
 // ========================================
-// 📝 問卷設定（重要！請修改這裡）
+// 📝 問卷設定
 // ========================================
 var SURVEY_BASE_URL = 'https://www.surveycake.com/s/wpBAR';
 var SURVEY_ENTRY_ID = '1234567890';
@@ -300,7 +295,7 @@ var behaviorUserId = '', behaviorSessionId = '';
 var BEHAVIOR_LOG_ENV = 'test';
 
 // ========================================
-// 📊 行為事件日誌（修正版：使用 sendBeacon）
+// 📊 行為事件日誌
 // ========================================
 function logEvent(eventAction, eventValue, durationSec) {
     var base = (GOOGLE_SHEET_API_URL || '').split('?')[0];
@@ -318,14 +313,11 @@ function logEvent(eventAction, eventValue, durationSec) {
     img.src = base + '?' + q;
 }
 
-// 🆕 修正版：使用 sendBeacon 確保頁面關閉時也能送出
 function flushSpotLeaveOnLeave() {
     if (spotLeaveSentOnUnload || !currentPageId) return;
     spotLeaveSentOnUnload = true;
     var dur = spotEnterTime ? Math.round((Date.now() - spotEnterTime) / 1000) : 0;
-    // 只過濾負值或過大值（超過 1 小時），短暫停留也會記錄
     if (dur < 0 || dur > 3600) return;
-    
     var base = (GOOGLE_SHEET_API_URL || '').split('?')[0];
     var q = [
         'type=log',
@@ -338,8 +330,6 @@ function flushSpotLeaveOnLeave() {
         'env=' + encodeURIComponent(BEHAVIOR_LOG_ENV || 'test')
     ].join('&');
     var url = base + '?' + q;
-    
-    // 優先使用 sendBeacon（頁面關閉時也能送出）
     if (typeof navigator.sendBeacon === 'function') {
         navigator.sendBeacon(url);
     } else {
@@ -347,25 +337,42 @@ function flushSpotLeaveOnLeave() {
     }
 }
 
+// 🆕 v6.3：問卷點擊記錄
+function handleSurveyClick() {
+    var surveyBtn = document.getElementById('survey-link');
+    var surveyUrl = surveyBtn ? surveyBtn.href : '';
+    var base = (GOOGLE_SHEET_API_URL || '').split('?')[0];
+    var q = [
+        'type=log',
+        'event_action=survey_click',
+        'user_id=' + encodeURIComponent(behaviorUserId || ''),
+        'session_id=' + encodeURIComponent(behaviorSessionId || ''),
+        'timestamp=' + encodeURIComponent(new Date().toISOString()),
+        'spot_key=' + encodeURIComponent(currentPageId || ''),
+        'survey_url=' + encodeURIComponent(surveyUrl || ''),
+        'env=' + encodeURIComponent(BEHAVIOR_LOG_ENV || 'test')
+    ].join('&');
+    var img = new Image();
+    img.src = base + '?' + q;
+}
+
 // ========================================
-// 🚀 初始化（修正版：liff.getContext 同步呼叫）
+// 🚀 初始化
 // ========================================
 window.onload = function() {
     var loadPromise = USE_STATIC_JSON
         ? loadDataFromStaticJSON().catch(function() { return loadDataFromGoogleSheet(); })
         : loadDataFromGoogleSheet();
-    
+
     Promise.all([
         loadPromise,
         liff.init({ liffId: MY_LIFF_ID }).catch(function() { return true; })
     ]).then(function() {
-        // 取得或建立 session_id
         behaviorSessionId = sessionStorage.getItem('xizhi_sid');
         if (!behaviorSessionId) {
             behaviorSessionId = Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
             sessionStorage.setItem('xizhi_sid', behaviorSessionId);
         }
-        // LIFF 2.x 的 getContext() 為非同步，先取得 userId 再渲染，確保事件日誌有 user_id
         if (typeof liff.getContext === 'function') {
             return liff.getContext().then(function(ctx) {
                 behaviorUserId = (ctx && ctx.userId) ? ctx.userId : '';
@@ -373,7 +380,6 @@ window.onload = function() {
         }
     }).then(function() {
         renderContent();
-        // 註冊離開事件
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'hidden') flushSpotLeaveOnLeave();
             else if (document.visibilityState === 'visible') spotLeaveSentOnUnload = false;
@@ -381,7 +387,6 @@ window.onload = function() {
         window.addEventListener('pagehide', flushSpotLeaveOnLeave);
         window.addEventListener('beforeunload', flushSpotLeaveOnLeave);
     }).catch(function(err) {
-        console.error('初始化錯誤:', err);
         if (Object.keys(spotsData).length > 0) {
             renderContent();
         } else {
@@ -426,7 +431,7 @@ function loadDataFromGoogleSheet() {
             }
         }
     } catch (e) { clearDataCache(); }
-    
+
     if (cacheValid && cached) {
         updateLoadingText('從快取載入資料...');
         applyData(cached);
@@ -434,7 +439,6 @@ function loadDataFromGoogleSheet() {
         backgroundUpdateData();
         return Promise.resolve(true);
     }
-    
     updateLoadingText('正在從雲端載入資料...');
     return fetchAndCacheData();
 }
@@ -502,14 +506,14 @@ window.forceReloadData = forceReloadData;
 
 function applyData(data) {
     routesInfo = data.routes || {};
-    spotsData = data.spots || {};
-    foodsData = data.foods || {};
+    spotsData  = data.spots  || {};
+    foodsData  = data.foods  || {};
     eventsData = data.events || {};
 }
 
 function updateLoadingText(text) {
-    var loadingText = document.querySelector('.loading-text');
-    if (loadingText) loadingText.innerHTML = '⏳ ' + text;
+    var el = document.querySelector('.loading-text');
+    if (el) el.innerHTML = '⏳ ' + text;
 }
 
 function showError(message) {
@@ -541,7 +545,7 @@ function renderEventPage(eventId) {
     currentPageId = eventId; spotEnterTime = Date.now();
     logEvent('spot_view', eventId);
     currentData = data;
-    
+
     document.getElementById('beacon-banner').style.display = 'none';
     document.getElementById('game-section').style.display = 'none';
     document.getElementById('food-section').style.display = 'none';
@@ -551,21 +555,20 @@ function renderEventPage(eventId) {
     document.getElementById('desc-actions').style.display = 'none';
     document.getElementById('wish-btn').style.display = 'none';
     document.querySelector('.progress-container').style.display = 'none';
-    
     document.getElementById('tags-container').style.display = 'flex';
     document.getElementById('gallery-section').style.display = 'block';
     document.getElementById('notice-box').style.display = 'block';
-    
+
     document.getElementById('spot-img').src = toAssetUrl(data.img);
     document.getElementById('route-tag').innerHTML = '🎪 限定活動';
     document.getElementById('route-tag').style.background = '#ff6b6b';
     var dateStr = formatDate(data.date);
     document.getElementById('route-desc').innerHTML = '<div class="event-date-row"><div class="event-date-location">' + dateStr + ' | ' + data.location + '</div><div class="event-calendar-btn-large" onclick="addEventToCalendar()"><span class="icon">📅</span>加入行事曆</div></div>';
-    
+
     var introSection = document.getElementById('event-intro-section');
-    var introDetail = document.getElementById('event-intro-detail');
-    var introBtn = document.getElementById('event-intro-btn');
-    var introHtml = '';
+    var introDetail  = document.getElementById('event-intro-detail');
+    var introBtn     = document.getElementById('event-intro-btn');
+    var introHtml    = '';
     if (data.intro && typeof data.intro === 'string') introHtml = '<p class="story-text">' + escapeHtml(data.intro) + '</p>';
     else if (data.intro && typeof data.intro === 'object') introHtml = buildStoryHtml(data.intro);
     if (introHtml) {
@@ -575,29 +578,29 @@ function renderEventPage(eventId) {
         introBtn.innerText = '▼ 了解更多故事';
         eventIntroExpanded = false;
     } else { introSection.style.display = 'none'; }
-    
+
     document.getElementById('spot-number').style.display = 'none';
     document.getElementById('spot-title').innerText = data.title;
     document.getElementById('spot-desc').innerText = data.desc;
-    
+
     var tagsHtml = '';
     for (var i = 0; i < data.tags.length; i++) tagsHtml += '<span class="tag">' + data.tags[i] + '</span>';
     document.getElementById('tags-container').innerHTML = tagsHtml;
-    
+
     var galleryHtml = '';
     for (var j = 0; j < data.gallery.length; j++) galleryHtml += '<div class="gallery-item"><img src="' + toAssetUrl(data.gallery[j].img) + '" class="gallery-img"><div class="gallery-caption">' + data.gallery[j].caption + '</div></div>';
     document.getElementById('gallery-content').innerHTML = galleryHtml;
-    
+
     var noticeHtml = '';
     for (var k = 0; k < data.notices.length; k++) noticeHtml += '<li>' + data.notices[k] + '</li>';
     document.getElementById('notice-list').innerHTML = noticeHtml;
-    
+
     var mapQuery = encodeURIComponent(data.query);
     document.getElementById('bus-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
     document.getElementById('bus-label').innerText = '導航前往';
     document.getElementById('parking-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+停車場';
     document.getElementById('map-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
-    
+
     document.getElementById('loading').style.display = 'none';
     document.getElementById('main-content').style.display = 'block';
 }
@@ -612,23 +615,22 @@ function renderSpotPage(spotKey) {
     currentPageId = spotKey; spotEnterTime = Date.now();
     logEvent('spot_view', spotKey);
     currentData = data; currentData.spotKey = spotKey;
-    
+
     document.getElementById('game-section').style.display = 'block';
     document.getElementById('food-section').style.display = 'block';
     document.getElementById('bus-schedule-link').style.display = 'block';
     document.getElementById('desc-actions').style.display = 'flex';
     document.getElementById('wish-btn').style.display = 'none';
     document.querySelector('.progress-container').style.display = 'block';
-    
     document.getElementById('tags-container').style.display = 'none';
     document.getElementById('gallery-section').style.display = 'none';
     document.getElementById('notice-box').style.display = 'none';
     document.getElementById('event-intro-section').style.display = 'none';
-    
+
     document.getElementById('spot-img').src = toAssetUrl(data.img);
     document.getElementById('spot-title').innerText = data.title;
     document.getElementById('spot-desc').innerText = data.desc;
-    
+
     var routeKey = data.route || "R1";
     var rInfo = routesInfo[routeKey];
     if (rInfo) {
@@ -637,7 +639,7 @@ function renderSpotPage(spotKey) {
         var spotIndex = rInfo.spots.indexOf(spotKey);
         if (spotIndex >= 0) document.getElementById('spot-number').innerText = "第 " + (spotIndex + 1) + " 站,共 " + rInfo.spots.length + " 站";
     }
-    
+
     if (data.quizQ) {
         document.getElementById('quiz-question').innerText = data.quizQ;
         if (data.quizOpts && data.quizOpts.length >= 3) {
@@ -646,12 +648,12 @@ function renderSpotPage(spotKey) {
             document.getElementById('quiz-opt-3').innerText = data.quizOpts[2];
         }
     }
-    
+
     var mapQuery = encodeURIComponent(data.query);
     document.getElementById('map-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
     document.getElementById('parking-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+停車場';
     document.getElementById('more-food-link').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+美食';
-    
+
     if (rInfo && rInfo.spots) {
         var currentIdx = rInfo.spots.indexOf(spotKey);
         var nextIdx = (currentIdx + 1) % rInfo.spots.length;
@@ -662,18 +664,18 @@ function renderSpotPage(spotKey) {
             document.getElementById('bus-label').innerText = '去' + nextData.title;
         }
     }
-    
+
     renderFoodSection(spotKey);
-    
+
     if (data.hasBeacon) {
         setTimeout(function() {
             document.getElementById('beacon-banner').classList.add('show');
             setTimeout(function() { document.getElementById('beacon-banner').classList.remove('show'); }, 8000);
         }, 3000);
     }
-    
+
     initTaskProgress();
-    
+
     document.getElementById('loading').style.display = 'none';
     document.getElementById('main-content').style.display = 'block';
 }
@@ -749,7 +751,7 @@ function toggleEventIntro() {
     var btn = document.getElementById('event-intro-btn');
     if (!detail || !btn) return;
     if (eventIntroExpanded) { detail.classList.remove('show'); btn.innerText = '▼ 了解更多故事'; eventIntroExpanded = false; }
-    else { detail.classList.add('show'); btn.innerText = '▲ 收起故事'; eventIntroExpanded = true; logEvent('story_expand', (currentData && (currentData.spotKey || currentData.id)) ? (currentData.spotKey || currentData.id) : ''); }
+    else { detail.classList.add('show'); btn.innerText = '▲ 收起故事'; eventIntroExpanded = true; logEvent('story_expand', currentPageId || ''); }
 }
 
 function collectAction(taskName) {
@@ -759,7 +761,7 @@ function collectAction(taskName) {
 
 function handleClickWithTrack(taskName) {
     collectAction(taskName);
-    if (taskName === 'map') logEvent('navigation_click', (currentData && (currentData.spotKey || currentData.id)) ? (currentData.spotKey || currentData.id) : '');
+    if (taskName === 'map') logEvent('navigation_click', currentPageId || '');
 }
 
 function isTaskDone(taskName) { var c = JSON.parse(localStorage.getItem('xizhi_stamps')) || []; return c.indexOf(taskName) !== -1; }
@@ -774,47 +776,44 @@ function initTaskProgress() {
     var wishBtn = document.getElementById('wish-btn'); if (wishBtn) wishBtn.style.display = 'none';
     document.getElementById('progress-text').innerText = c.length + '/5';
     document.getElementById('progress-bar').style.width = (c.length / 5) * 100 + '%';
-    
+
     if (c.length >= 5) {
         document.getElementById('survey-box').style.display = 'block';
         document.getElementById('memorial-box').style.display = 'block';
-        
-        // 動態設定問卷連結，帶入 session_id
+
+        // 🆕 v6.3：動態設定問卷連結，帶入 session_id
         var surveyLink = SURVEY_PARAM_NAME
             ? SURVEY_BASE_URL + '?' + SURVEY_PARAM_NAME + '=' + encodeURIComponent(behaviorSessionId || '')
             : SURVEY_BASE_URL + '?entry.' + SURVEY_ENTRY_ID + '=' + encodeURIComponent(behaviorSessionId || '');
         var surveyBtn = document.getElementById('survey-link');
         if (surveyBtn) { surveyBtn.href = surveyLink; surveyBtn.target = '_blank'; }
-        
-        // 顯示 session_id
+
+        // 顯示 session_id 給使用者對照問卷
         if (SHOW_SESSION_ID && behaviorSessionId) {
             var sessionIdDisplay = document.getElementById('session-id-display');
-            var sessionIdText = document.getElementById('session-id-text');
-            if (sessionIdDisplay && sessionIdText) { sessionIdText.innerText = behaviorSessionId; sessionIdDisplay.style.display = 'block'; }
+            var sessionIdText    = document.getElementById('session-id-text');
+            if (sessionIdDisplay && sessionIdText) {
+                sessionIdText.innerText = behaviorSessionId;
+                sessionIdDisplay.style.display = 'block';
+            }
         }
     }
 }
 
 function handleBeaconClick() { document.getElementById('beacon-banner').classList.remove('show'); alert("🎉 獲得【尋寶印章】"); collectAction('beacon'); }
-
 function openQuizModal() { if (isTaskDone('quiz')) { alert("已完成!"); return; } document.getElementById('quiz-modal').style.display = 'flex'; }
-
 function checkQuiz(answerIdx) {
     var correct = currentData ? currentData.quizA : 2;
     if (answerIdx === correct) { document.getElementById('quiz-modal').style.display = 'none'; alert("⭕ 答對了!獲得【問答印章】"); collectAction('quiz'); }
     else { alert("❌ 答錯了,再試試!"); }
 }
-
 function addEventToCalendar() {
     if (!confirm('將此活動加入行事曆？')) return;
     if (!isTaskDone('wish')) { collectAction('wish'); setTimeout(initTaskProgress, 300); }
     alert('已加入行事曆！');
 }
-
-function handleShareWithStamp() { logEvent('share_click', ''); document.getElementById('share-modal').style.display = 'flex'; }
-
+function handleShareWithStamp() { logEvent('share_click', currentPageId || ''); document.getElementById('share-modal').style.display = 'flex'; }
 function closeModal(id, e) { if (e.target.id === id || e.target.classList.contains('close-modal')) document.getElementById(id).style.display = 'none'; }
-
 function shareTo(platform) {
     var url = window.location.href;
     var title = document.getElementById('spot-title').innerText;
@@ -849,7 +848,6 @@ function handleImageUpload(e) {
     var finalImgEl = document.getElementById('final-img');
     var downloadMsgEl = document.getElementById('download-msg');
     finalImgEl.style.display = 'none'; finalImgEl.src = ''; downloadMsgEl.style.display = 'none';
-    
     var reader = new FileReader();
     reader.onload = function(event) {
         var img = new Image();
@@ -860,7 +858,6 @@ function handleImageUpload(e) {
             var ctx = canvas.getContext('2d');
             canvas.width = S; canvas.height = S;
             ctx.clearRect(0, 0, S, S);
-            
             var photoW = cfg.photoWidth, photoH = cfg.photoHeight, px = cfg.photoX, py = cfg.photoY;
             var fillMode = cfg.photoFillMode || 'cover';
             if (fillMode === 'stretch') ctx.drawImage(img, 0, 0, img.width, img.height, px, py, photoW, photoH);
@@ -871,11 +868,9 @@ function handleImageUpload(e) {
                 ctx.save(); ctx.beginPath(); ctx.rect(px, py, photoW, photoH); ctx.clip();
                 ctx.drawImage(img, x, y, w, h); ctx.restore();
             }
-            
             var backupCanvas = document.createElement('canvas');
             backupCanvas.width = S; backupCanvas.height = S;
             backupCanvas.getContext('2d').drawImage(canvas, 0, 0);
-            
             var done = false, frameTimeoutId = null;
             function finishMemorial() {
                 if (done) return; done = true; if (frameTimeoutId) clearTimeout(frameTimeoutId);
@@ -887,10 +882,8 @@ function handleImageUpload(e) {
                 document.getElementById('download-msg').style.display = "block";
                 finalEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-            
             if (!cfg.frameImageUrl) { finishMemorial(); return; }
             frameTimeoutId = setTimeout(function() { if (!done) finishMemorial(); }, 6000);
-            
             var frameImg = new Image();
             frameImg.crossOrigin = 'anonymous';
             frameImg.onload = function() { try { ctx.drawImage(frameImg, 0, 0, S, S); finishMemorial(); } catch (err) { finishMemorial(); } };
@@ -902,21 +895,10 @@ function handleImageUpload(e) {
     reader.readAsDataURL(file);
 }
 
-function downloadImage() {
-    var canvas = document.getElementById('result-canvas');
-    var dataUrl;
-    try { dataUrl = canvas.toDataURL('image/jpeg', 0.9); } catch (e) { dataUrl = window._lastMemorialDataUrl || ''; }
-    if (!dataUrl) return;
-    var link = document.createElement('a');
-    link.download = '汐止達人紀念照_' + new Date().getTime() + '.jpg';
-    link.href = dataUrl; link.click();
-}
-
 function openLightbox() {
     var src = document.getElementById('final-img').src;
     if (src && src !== '') { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox').style.display = 'flex'; document.body.style.overflow = 'hidden'; }
 }
-
 function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; document.body.style.overflow = ''; }
 </script>
 </body>
