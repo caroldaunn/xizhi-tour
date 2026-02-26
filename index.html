@@ -264,10 +264,7 @@ function toAssetUrl(url) {
 }
 
 var DATA_CACHE_KEY = 'xizhi_liff_data_v2';
-var DATA_VERSION_KEY = 'xizhi_data_version';
-var DATA_TIME_KEY = 'xizhi_data_time';
-var DATA_CACHE_DURATION = 30 * 60 * 1000;
-var CURRENT_DATA_VERSION = '1.0';
+// v6.5: DATA_VERSION_KEY/TIME_KEY/DURATION/CURRENT_DATA_VERSION 在 static 模式下無用，已移除
 
 // ========================================
 // 📝 問卷設定
@@ -339,21 +336,8 @@ function flushSpotLeaveOnLeave() {
 
 // 🆕 v6.3：問卷點擊記錄
 function handleSurveyClick() {
-    var surveyBtn = document.getElementById('survey-link');
-    var surveyUrl = surveyBtn ? surveyBtn.href : '';
-    var base = (GOOGLE_SHEET_API_URL || '').split('?')[0];
-    var q = [
-        'type=log',
-        'event_action=survey_click',
-        'user_id=' + encodeURIComponent(behaviorUserId || ''),
-        'session_id=' + encodeURIComponent(behaviorSessionId || ''),
-        'timestamp=' + encodeURIComponent(new Date().toISOString()),
-        'spot_key=' + encodeURIComponent(currentPageId || ''),
-        'survey_url=' + encodeURIComponent(surveyUrl || ''),
-        'env=' + encodeURIComponent(BEHAVIOR_LOG_ENV || 'test')
-    ].join('&');
-    var img = new Image();
-    img.src = base + '?' + q;
+    // v6.5: 直接用 logEvent，GAS v4.3 已不需要 survey_url
+    logEvent('survey_click', currentPageId || '');
 }
 
 // ========================================
@@ -368,26 +352,16 @@ window.onload = function() {
         loadPromise,
         liff.init({ liffId: MY_LIFF_ID }).catch(function() { return true; })
     ]).then(function() {
-        // session_id：瀏覽器層級，與 LIFF 無關，必定有值
         behaviorSessionId = sessionStorage.getItem('xizhi_sid');
         if (!behaviorSessionId) {
             behaviorSessionId = Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
             sessionStorage.setItem('xizhi_sid', behaviorSessionId);
         }
-
-        // 🆕 v6.5：liff.getContext() 在 LINE 內是同步函數，不可用 .then()
-        // 正確做法：直接呼叫，結果若含 userId 則取用
+        // v6.5: liff.getContext() 在 LINE 內是同步函數，不可用 .then()
         try {
             var ctx = liff.getContext();
-            if (ctx && ctx.userId) {
-                behaviorUserId = ctx.userId;
-                console.log('✅ userId (sync):', behaviorUserId);
-            }
-        } catch (e) {
-            // liff 未登入或非 LINE 環境，userId 維持空字串
-            console.warn('getContext 失敗（非 LINE 環境或未登入）:', e.message);
-        }
-
+            if (ctx && ctx.userId) behaviorUserId = ctx.userId;
+        } catch(e) {}
     }).then(function() {
         renderContent();
         document.addEventListener('visibilitychange', function() {
@@ -419,12 +393,13 @@ function loadDataFromStaticJSON() {
             if (data.error) throw new Error(data.error);
             applyData(data);
             if (Object.keys(spotsData).length === 0) throw new Error('景點資料為空');
-            try { sessionStorage.setItem(DATA_CACHE_KEY, JSON.stringify({ data: data, at: Date.now() })); } catch (e) {}
+            // v6.5: 移除只寫不讀的 sessionStorage 快取
             updateLoadingText('資料載入完成!');
             return true;
         });
 }
 
+// v6.5: USE_STATIC_JSON=true 時不會執行（保留供需要時切換）
 function loadDataFromGoogleSheet() {
     var cached = null, cacheValid = false;
     try {
@@ -698,7 +673,7 @@ function renderFoodSection(spotKey) {
     var html = '';
     for (var i = 0; i < foods.length; i++) {
         var f = foods[i];
-        html += '<div class="food-card" onclick="openFoodMap(\'' + f.query + '\')">';
+        html += '<div class="food-card" data-query="' + (f.query||'').replace(/"/g,'&quot;') + '" onclick="openFoodMap(this.dataset.query)">';
         html += '<img src="' + toAssetUrl(f.img) + '" class="food-img" onerror="this.src=\'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=300\'">';
         html += '<div class="food-info"><div class="food-type">' + f.type + '</div><div class="food-name">' + f.name + '</div><div class="food-desc">' + f.desc + '</div></div></div>';
     }
@@ -767,9 +742,13 @@ function toggleEventIntro() {
     else { detail.classList.add('show'); btn.innerText = '▲ 收起故事'; eventIntroExpanded = true; logEvent('story_expand', currentPageId || ''); }
 }
 
+// v6.5: stamps 統一讀取，避免重複 JSON.parse
+function getStamps() { try { return JSON.parse(localStorage.getItem('xizhi_stamps')) || []; } catch(e) { return []; } }
+function saveStamps(arr) { try { localStorage.setItem('xizhi_stamps', JSON.stringify(arr)); } catch(e) {} }
+
 function collectAction(taskName) {
-    var c = JSON.parse(localStorage.getItem('xizhi_stamps')) || [];
-    if (c.indexOf(taskName) === -1) { c.push(taskName); localStorage.setItem('xizhi_stamps', JSON.stringify(c)); logEvent('stamp_collect', taskName); setTimeout(initTaskProgress, 500); }
+    var c = getStamps();
+    if (c.indexOf(taskName) === -1) { c.push(taskName); saveStamps(c); logEvent('stamp_collect', taskName); setTimeout(initTaskProgress, 500); }
 }
 
 function handleClickWithTrack(taskName) {
@@ -777,10 +756,10 @@ function handleClickWithTrack(taskName) {
     if (taskName === 'map') logEvent('navigation_click', currentPageId || '');
 }
 
-function isTaskDone(taskName) { var c = JSON.parse(localStorage.getItem('xizhi_stamps')) || []; return c.indexOf(taskName) !== -1; }
+function isTaskDone(taskName) { return getStamps().indexOf(taskName) !== -1; }
 
 function initTaskProgress() {
-    var c = JSON.parse(localStorage.getItem('xizhi_stamps')) || [];
+    var c = getStamps();
     var icons = { 'map': '🗺️', 'quiz': '❓', 'wish': '📅', 'beacon': '📡', 'share': '📤' };
     for (var i = 0; i < TASKS.length; i++) {
         var t = TASKS[i]; var el = document.getElementById('stamp-' + t);
