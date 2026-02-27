@@ -514,8 +514,9 @@ function renderContent() {
     try {
         var urlParams = new URLSearchParams(window.location.search);
         var pageId = urlParams.get('id') || 'spot1';
+        var urlRoute = urlParams.get('route') || ''; // v6.5：從 URL 取路線，解決共用景點站次問題
         if (pageId.indexOf('E') === 0 && eventsData[pageId]) { isEventPage = true; renderEventPage(pageId); }
-        else { isEventPage = false; renderSpotPage(pageId); }
+        else { isEventPage = false; renderSpotPage(pageId, urlRoute); }
         initVersionTrigger();
     } catch (e) { showError('頁面渲染失敗: ' + e.message); }
 }
@@ -593,7 +594,7 @@ function renderEventPage(eventId) {
     document.getElementById('main-content').style.display = 'block';
 }
 
-function renderSpotPage(spotKey) {
+function renderSpotPage(spotKey, urlRoute) {
     var data = spotsData[spotKey];
     if (!data) { data = spotsData['spot1']; spotKey = 'spot1'; }
     if (currentPageId && currentPageId !== spotKey) {
@@ -619,7 +620,8 @@ function renderSpotPage(spotKey) {
     document.getElementById('spot-title').innerText = data.title;
     document.getElementById('spot-desc').innerText = data.desc;
 
-    var routeKey = data.route || "R1";
+    // v6.5：優先用 URL route 參數，解決 spot1/spot23/spot4 同時在多條路線的站次錯誤
+    var routeKey = (urlRoute && routesInfo[urlRoute]) ? urlRoute : (data.route || "R1");
     var rInfo = routesInfo[routeKey];
     if (rInfo) {
         document.getElementById('route-tag').innerText = rInfo.title;
