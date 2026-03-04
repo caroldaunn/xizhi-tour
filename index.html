@@ -872,12 +872,20 @@ function handleShareWithStamp() { logEvent('share_click', currentPageId || ''); 
 function closeModal(id, e) {
     var el = document.getElementById(id);
     if (!el) return;
-    if (!e || e.target.id === id || (e.target.classList && e.target.classList.contains('close-modal')))
+    if (!e || e.target.id === id || (e.target.classList && e.target.classList.contains('close-modal'))) {
         el.style.display = 'none';
+        if (id === 'stamp-modal' && stampModalAutoCloseTimer) { clearTimeout(stampModalAutoCloseTimer); stampModalAutoCloseTimer = null; }
+    }
 }
+var stampModalAutoCloseTimer = null;
 function showStampModal(message) {
     var el = document.getElementById('stamp-modal'); var msg = document.getElementById('stamp-modal-msg');
+    if (stampModalAutoCloseTimer) { clearTimeout(stampModalAutoCloseTimer); stampModalAutoCloseTimer = null; }
     if (msg) msg.innerText = message; if (el) el.style.display = 'flex';
+    stampModalAutoCloseTimer = setTimeout(function() {
+        if (el) el.style.display = 'none';
+        stampModalAutoCloseTimer = null;
+    }, 2000);
 }
 function shareTo(platform) {
     var url = window.location.href;
