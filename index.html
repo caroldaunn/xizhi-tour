@@ -756,7 +756,9 @@ function toggleStory() {
     detail.innerHTML = html ? html : '<p class="story-text">此景點暫無故事內容。</p>';
     detail.classList.add('show'); btn.innerText = '▲ 收起故事'; storyExpanded = true;
     logEvent('story_expand', currentPageId || '');
-    if (html && !isTaskDone('story')) { collectAction('story'); showStampModal("🎉 獲得【故事印章】"); setTimeout(initTaskProgress, 300); }
+    if (html && !isTaskDone('story')) {
+        setTimeout(function() { collectAction('story'); showStampModal("🎉 獲得【故事印章】"); setTimeout(initTaskProgress, 300); }, 2000);
+    }
 }
 
 function toggleEventIntro() {
