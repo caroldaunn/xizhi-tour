@@ -100,8 +100,8 @@
         .quiz-options { display: flex; flex-direction: column; gap: 10px; }
         .quiz-btn { padding: 12px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 8px; font-size: 14px; cursor: pointer; }
         .close-modal { margin-top: 15px; color: #999; font-size: 12px; text-decoration: underline; cursor: pointer; }
-        .stamp-modal-box { background: white; width: 85%; max-width: 320px; padding: 24px; border-radius: 16px; text-align: center; align-self: center; }
-        .stamp-modal-msg { font-size: 16px; font-weight: bold; line-height: 1.5; margin-bottom: 15px; }
+        .stamp-modal-box { background: white; width: 85%; max-width: 280px; padding: 20px 24px; border-radius: 16px; text-align: center; align-self: center; }
+        .stamp-modal-msg { font-size: 16px; font-weight: bold; line-height: 1.5; margin-bottom: 0; }
         .beacon-msg-modal-box { background: white; width: 90%; max-width: 340px; padding: 24px; border-radius: 16px; text-align: center; align-self: center; }
         .beacon-msg-title { font-size: 18px; font-weight: bold; line-height: 1.5; margin-bottom: 12px; color: #333; }
         .beacon-msg-sub { font-size: 14px; line-height: 1.6; color: #666; margin-bottom: 20px; white-space: pre-wrap; }
@@ -824,21 +824,17 @@ function initTaskProgress() {
 function handleBeaconClick() {
     var banner = document.getElementById('beacon-banner');
     if (banner) banner.classList.remove('show');
-    var title = (currentData && currentData.beaconTitle && currentData.beaconTitle.trim()) ? currentData.beaconTitle.trim() : '';
-    var sub = (currentData && currentData.beaconSub && currentData.beaconSub.trim()) ? currentData.beaconSub.trim() : '';
-    if (title || sub) {
-        showBeaconMessageModal(title, sub);
-    } else {
-        showStampModal("🎉 獲得【尋寶印章】");
-        collectAction('beacon');
-    }
+    var title = (currentData && currentData.beaconTitle && String(currentData.beaconTitle).trim()) ? String(currentData.beaconTitle).trim() : '';
+    var sub = (currentData && currentData.beaconSub && String(currentData.beaconSub).trim()) ? String(currentData.beaconSub).trim() : '';
+    if (!title && currentData && currentData.title) title = (currentData.title + ' 隱藏訊息') || '';
+    showBeaconMessageModal(title, sub);
 }
 function showBeaconMessageModal(title, sub) {
     var el = document.getElementById('beacon-msg-modal');
     var titleEl = document.getElementById('beacon-msg-title');
     var subEl = document.getElementById('beacon-msg-sub');
-    if (titleEl) { titleEl.innerText = title || ''; titleEl.style.display = (title && title.trim()) ? 'block' : 'none'; }
-    if (subEl) { subEl.innerText = sub || ''; subEl.style.display = (sub && sub.trim()) ? 'block' : 'none'; }
+    if (titleEl) { titleEl.innerText = title || ''; titleEl.style.display = 'block'; }
+    if (subEl) { subEl.innerText = sub || ''; subEl.style.display = 'block'; }
     if (el) el.style.display = 'flex';
 }
 function confirmBeaconMessage() {
