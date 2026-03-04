@@ -1,899 +1,1013 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>汐止在地導覽</title>
-    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <style>
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; padding-bottom: 100px; }
-        .progress-container { position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: #e0e0e0; z-index: 2000; }
-        .progress-bar { height: 100%; background: linear-gradient(90deg, #ff8a00, #e52e71); width: 0%; transition: width 0.5s ease; }
-        .beacon-banner { position: fixed; top: -120px; left: 5%; width: 90%; background: rgba(34,34,34,0.95); color: white; padding: 12px 15px; border-radius: 50px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); z-index: 5000; display: flex; align-items: center; gap: 12px; transition: top 0.6s cubic-bezier(0.175,0.885,0.32,1.275); cursor: pointer; }
-        .beacon-banner.show { top: 20px; }
-        .beacon-icon { width: 36px; height: 36px; background: #06C755; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-        .beacon-text { flex: 1; font-size: 13px; }
-        .beacon-title { font-weight: bold; font-size: 14px; }
-        .beacon-sub { color: #ccc; font-size: 11px; }
-        .hero-container { position: relative; width: 100%; height: 35vh; overflow: hidden; }
-        .hero-img { width: 100%; height: 100%; object-fit: cover; }
-        .content-card { position: relative; background: white; border-radius: 24px 24px 0 0; margin-top: -25px; padding: 25px; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); min-height: 60vh; }
-        .title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        h1 { margin: 0; font-size: 24px; font-weight: 800; color: #2c3e50; }
-        .wish-btn { font-size: 22px; color: #ccc; cursor: pointer; padding: 5px; transition: all 0.2s; }
-        .wish-btn.active { color: #ff4757; transform: scale(1.1); }
-        .sub-tag { display: inline-block; font-size: 12px; color: #fff; background: #2c3e50; padding: 4px 10px; border-radius: 4px; margin-bottom: 10px; font-weight: bold; }
-        .route-info { font-size: 13px; color: #666; margin-bottom: 15px; border-left: 3px solid #ff8a00; padding-left: 8px; }
-        .event-date-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-        .event-date-location { flex: 1; min-width: 0; }
-        .event-calendar-btn-large { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; color: #667eea; font-size: 15px; font-weight: bold; cursor: pointer; white-space: nowrap; }
-        .event-calendar-btn-large:active { opacity: 0.8; }
-        .event-calendar-btn-large .icon { font-size: 22px; }
-        #event-intro-btn { font-size: 14px; }
-        #event-intro-detail.story-detail { padding: 20px; }
-        #event-intro-detail .story-text { font-size: 14px; line-height: 1.8; color: #555; text-align: justify; }
-        .spot-number { font-size: 12px; color: #888; margin-bottom: 5px; }
-        .desc-box { margin-bottom: 20px; }
-        .desc-text { font-size: 15px; line-height: 1.8; color: #555; }
-        .desc-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-        .read-more-btn { color: #007bff; font-weight: bold; font-size: 14px; cursor: pointer; text-decoration: underline; }
-        .quiz-trigger-btn { background: #ff9f43; color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; }
-        .story-detail { display: none; margin-top: 20px; padding: 20px; background: #fafafa; border-radius: 16px; }
-        .story-detail.show { display: block; animation: fadeIn 0.3s; }
-        .story-section { margin-bottom: 20px; }
-        .story-title { font-size: 16px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-        .story-title::before { content: ""; width: 4px; height: 16px; background: linear-gradient(180deg, #ff8a00, #e52e71); border-radius: 2px; }
-        .story-text { font-size: 14px; line-height: 1.8; color: #555; text-align: justify; }
-        .story-img { width: 100%; border-radius: 12px; margin: 15px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .story-caption { font-size: 12px; color: #888; text-align: center; margin-top: -10px; margin-bottom: 15px; }
-        .story-quote { background: #fff; border-left: 4px solid #ff8a00; padding: 15px; margin: 15px 0; font-style: italic; color: #666; border-radius: 0 8px 8px 0; }
-        .food-section { margin: 25px 0; }
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .section-title { font-size: 16px; font-weight: 800; color: #2c3e50; display: flex; align-items: center; gap: 8px; margin: 0; }
-        .section-title::before { content: ""; width: 4px; height: 18px; background: linear-gradient(180deg, #ff6b6b, #ffa502); border-radius: 2px; }
-        .more-link { font-size: 13px; color: #007bff; text-decoration: none; }
-        .food-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
-        .food-scroll::-webkit-scrollbar { display: none; }
-        .food-card { min-width: 140px; max-width: 140px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; scroll-snap-align: start; cursor: pointer; transition: transform 0.2s; flex-shrink: 0; }
-        .food-card:active { transform: scale(0.97); }
-        .food-img { width: 100%; height: 90px; object-fit: cover; background: #f0f0f0; }
-        .food-info { padding: 10px; }
-        .food-name { font-size: 14px; font-weight: bold; color: #333; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .food-type { font-size: 11px; color: #ff6b6b; background: #fff0f0; padding: 2px 8px; border-radius: 10px; display: inline-block; margin-bottom: 4px; }
-        .food-desc { font-size: 11px; color: #888; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .transport-grid { display: flex; gap: 10px; margin-bottom: 20px; }
-        .t-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 10px; border-radius: 12px; text-decoration: none; color: white; font-weight: bold; font-size: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
-        .t-btn:active { transform: scale(0.96); }
-        .t-btn i { font-style: normal; font-size: 18px; }
-        .bg-ubike { background: #FFC470; }
-        .bg-bus { background: #779ae4; }
-        .bg-parking { background: #81C7D4; }
-        .bus-label { font-size: 12px; }
-        .game-section { background: #fff8e1; border: 2px dashed #ffc107; border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 15px; }
-        .game-title { font-weight: bold; color: #d35400; margin-bottom: 15px; font-size: 16px; }
-        .task-grid { display: flex; justify-content: center; gap: 10px; }
-        .stamp-box { display: flex; flex-direction: column; align-items: center; width: 55px; }
-        .stamp { width: 40px; height: 40px; border-radius: 50%; background: #e0e0e0; color: #777; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 2px solid #ddd; }
-        .stamp.active { background: #ff512f; color: white; border-color: #ff512f; }
-        .stamp-label { font-size: 10px; color: #888; margin-top: 5px; }
-        #survey-box, #memorial-box { display: none; margin-top: 25px; }
-        .survey-btn { display: block; background: linear-gradient(135deg, #667eea, #764ba2); color: white; text-align: center; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; }
-        .session-id-box { margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 8px; font-size: 12px; color: #666; }
-        .session-id-box code { background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
-        #memorial-box { text-align: center; background: #fafafa; padding: 20px; border-radius: 12px; }
-        .upload-btn-wrapper { position: relative; overflow: hidden; display: inline-block; }
-        .btn-upload { border: 2px dashed #007bff; color: #007bff; background: white; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .upload-btn-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; }
-        #result-canvas { display: none; }
-        #final-img { width: 100%; max-width: 100%; display: none; margin: 10px 0; border-radius: 8px; cursor: pointer; }
-        .download-hint { display: none; color: #28a745; font-size: 14px; margin-top: 10px; background: #e8f5e9; padding: 10px; border-radius: 8px; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 6000; display: none; align-items: flex-end; justify-content: center; }
-        .share-sheet { width: 100%; max-width: 500px; background: white; border-radius: 20px 20px 0 0; padding: 25px; }
-        .share-title { font-size: 16px; font-weight: bold; margin-bottom: 25px; text-align: center; }
-        .share-grid { display: flex; justify-content: space-around; }
-        .share-item { display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; font-size: 12px; }
-        .share-icon-box { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; }
-        .share-icon-box svg { width: 30px; height: 30px; fill: currentColor; }
-        .quiz-box { background: white; width: 85%; max-width: 320px; padding: 20px; border-radius: 16px; text-align: center; align-self: center; }
-        .quiz-question { font-size: 16px; font-weight: bold; margin-bottom: 20px; line-height: 1.5; }
-        .quiz-options { display: flex; flex-direction: column; gap: 10px; }
-        .quiz-btn { padding: 12px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 8px; font-size: 14px; cursor: pointer; }
-        .close-modal { margin-top: 15px; color: #999; font-size: 12px; text-decoration: underline; cursor: pointer; }
-        .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 10px 15px; display: flex; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
-        .footer-btn { flex: 1; padding: 12px; border-radius: 10px; text-align: center; text-decoration: none; font-weight: bold; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; border: none; }
-        .btn-map { background: #F2E4E0; color: #4c506e; }
-        .btn-share { background: #ece7c3; color: #4c506e; }
-        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; align-items: center; justify-content: center; z-index: 3000; flex-direction: column; }
-        .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid #667eea; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
-        .loading-text { color: #888; font-size: 14px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .error-box { padding: 20px; margin: 20px; background: #ffe6e6; border-left: 4px solid #ff4444; border-radius: 8px; }
-        .error-title { color: #ff4444; font-weight: bold; margin-bottom: 10px; }
-        .error-msg { color: #666; font-size: 14px; line-height: 1.6; }
-        .tags-container { display: none; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
-        .tag { background: #fff0f0; color: #ff6b6b; padding: 6px 14px; border-radius: 20px; font-size: 13px; }
-        #gallery-section, #notice-box { display: none; }
-        .gallery-item { margin-bottom: 20px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .gallery-img { width: 100%; height: 180px; object-fit: cover; }
-        .gallery-caption { padding: 12px; background: #fafafa; font-size: 14px; color: #666; }
-        .notice-box { background: #fff8e1; border-left: 4px solid #ffc107; padding: 15px; border-radius: 0 12px 12px 0; margin: 20px 0; }
-        .notice-box h4 { margin: 0 0 10px; color: #f57c00; font-size: 14px; }
-        .notice-box ul { margin: 0; padding-left: 20px; font-size: 13px; color: #666; line-height: 1.8; }
-        .version-trigger { text-align: center; padding: 25px 0; color: #ccc; font-size: 12px; user-select: none; -webkit-user-select: none; cursor: default; }
-        .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9000; align-items: center; justify-content: center; flex-direction: column; }
-        .lightbox img { max-width: 95%; max-height: 80%; object-fit: contain; }
-        .lightbox-close { position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; cursor: pointer; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    </style>
-</head>
-<body>
-    <div id="loading">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">⏳ 載入資料中...</div>
-    </div>
-    <div id="error-container" style="display:none;">
-        <div class="error-box">
-            <div class="error-title">⚠️ 資料載入失敗</div>
-            <div class="error-msg" id="error-msg"></div>
-        </div>
-    </div>
-    <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
-    <div id="beacon-banner" class="beacon-banner" onclick="handleBeaconClick()">
-        <div class="beacon-icon">📡</div>
-        <div class="beacon-text"><div class="beacon-title">偵測到 LINE Beacon 訊號</div><div class="beacon-sub">找到隱藏景點,點擊讀取訊息!</div></div>
-    </div>
-    <div id="main-content" style="display: none;">
-        <div class="hero-container"><img id="spot-img" class="hero-img" src="" alt="圖片"></div>
-        <div class="content-card">
-            <span id="route-tag" class="sub-tag">汐止導覽</span>
-            <div id="route-desc" class="route-info"></div>
-            <div id="spot-number" class="spot-number"></div>
-            <div class="title-row">
-                <h1 id="spot-title"></h1>
-                <div id="wish-btn" class="wish-btn" style="display:none;"></div>
-            </div>
-            <div class="desc-box">
-                <div id="spot-desc" class="desc-text"></div>
-                <div id="desc-actions" class="desc-actions">
-                    <div id="read-more-btn" class="read-more-btn" onclick="toggleStory()">▼ 了解更多故事</div>
-                    <div id="quiz-btn" class="quiz-trigger-btn" onclick="openQuizModal()">知識小學堂</div>
-                </div>
-            </div>
-            <div id="event-intro-section" style="display:none;">
-                <div id="event-intro-btn" class="read-more-btn" onclick="toggleEventIntro()">▼ 了解更多故事</div>
-                <div id="event-intro-detail" class="story-detail"></div>
-            </div>
-            <div id="story-detail" class="story-detail"></div>
-            <div id="food-section" class="food-section">
-                <div class="section-header">
-                    <div class="section-title">🍜 附近推薦美食</div>
-                    <a id="more-food-link" href="#" target="_blank" class="more-link">更多美食 →</a>
-                </div>
-                <div id="food-scroll" class="food-scroll"></div>
-            </div>
-            <div id="tags-container" class="tags-container"></div>
-            <div id="gallery-section"><div class="section-title">活動花絮</div><div id="gallery-content"></div></div>
-            <div id="notice-box" class="notice-box"><h4>參加須知</h4><ul id="notice-list"></ul></div>
-            <div class="transport-grid">
-                <a href="https://www.google.com/maps/search/YouBike/" target="_blank" class="t-btn bg-ubike"><i>🚲</i> YouBike</a>
-                <a id="bus-btn" href="#" target="_blank" class="t-btn bg-bus"><i>🚌</i> <span id="bus-label" class="bus-label">去下一站</span></a>
-                <a id="parking-btn" href="#" target="_blank" class="t-btn bg-parking"><i>🅿️</i> 找停車場</a>
-            </div>
-            <div id="bus-schedule-link" style="text-align: center; margin-bottom: 20px;">
-                <a href="https://www.xizhi.ntpc.gov.tw/home.jsp?id=1ee324bfb5e44418" target="_blank" style="font-size: 14px; color: #3498db; text-decoration: none;">汐止社區巴士時刻表 查看 →</a>
-            </div>
-            <div id="game-section" class="game-section">
-                <div class="game-title">汐止達人挑戰 (進度: <span id="progress-text">0/5</span>)</div>
-                <div class="task-grid">
-                    <div class="stamp-box"><div class="stamp" id="stamp-map">🗺️</div><div class="stamp-label">找路</div></div>
-                    <div class="stamp-box"><div class="stamp" id="stamp-quiz">❓</div><div class="stamp-label">問答</div></div>
-                    <div class="stamp-box"><div class="stamp" id="stamp-wish">📅</div><div class="stamp-label">活動</div></div>
-                    <div class="stamp-box"><div class="stamp" id="stamp-beacon">📡</div><div class="stamp-label">尋寶</div></div>
-                    <div class="stamp-box"><div class="stamp" id="stamp-share">📤</div><div class="stamp-label">分享</div></div>
-                </div>
-            </div>
-            <div id="survey-box">
-                <a id="survey-link" href="#" target="_blank" class="survey-btn" onclick="handleSurveyClick()">任務達成,填寫問卷並參加抽獎!</a>
-                <div id="session-id-display" class="session-id-box" style="display:none;">
-                    您的參與編號：<code id="session-id-text"></code><br>
-                    <small>（問卷將自動帶入此編號）</small>
-                </div>
-            </div>
-            <div id="memorial-box">
-                <div style="font-size:16px;font-weight:800;margin-bottom:5px;">完賽紀念照</div>
-                <p style="font-size:13px;color:#666;margin-bottom:15px;">上傳自拍照,合成汐止達人相框!</p>
-                <div class="upload-btn-wrapper"><button class="btn-upload">選擇照片</button><input type="file" accept="image/*" onchange="handleImageUpload(event)"></div>
-                <canvas id="result-canvas"></canvas>
-                <img id="final-img" src="" alt="" onclick="openLightbox()">
-                <div id="download-msg" class="download-hint">點擊圖片可放大</div>
-            </div>
-            <div id="version-trigger" class="version-trigger">v6.5</div>
-        </div>
-    </div>
-    <div class="sticky-footer">
-        <a id="map-btn" href="#" class="footer-btn btn-map" target="_blank" onclick="handleClickWithTrack('map')">帶我來這裡</a>
-        <button class="footer-btn btn-share" onclick="handleShareWithStamp()">打卡或分享</button>
-    </div>
-    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
-        <span class="lightbox-close">✕</span>
-        <img id="lightbox-img" src="" alt="">
-    </div>
-    <div id="share-modal" class="modal-overlay" onclick="closeModal('share-modal',event)">
-        <div class="share-sheet">
-            <div class="share-title">打卡或分享</div>
-            <div class="share-grid">
-                <div class="share-item" onclick="shareTo('line')">
-                    <div class="share-icon-box" style="background:#06C755;">
-                        <svg viewBox="0 0 24 24" fill="white"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
-                    </div>
-                    <span>LINE</span>
-                </div>
-                <div class="share-item" onclick="shareTo('fb')"><div class="share-icon-box" style="background:#1877F2;"><svg viewBox="0 0 24 24"><path d="M22 12c0-5.5-4.5-10-10-10S2 6.5 2 12c0 5 3.7 9.1 8.4 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7C18.3 21.1 22 17 22 12z"/></svg></div><span>Facebook</span></div>
-                <div class="share-item" onclick="shareTo('ig')"><div class="share-icon-box" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.8.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1.1.4 2.2.1 1.3.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1.1.4-2.2.4-1.3.1-1.6.1-4.8.1s-3.6 0-4.8-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1.1-.4-2.2-.1-1.3-.1-1.6-.1-4.8s0-3.6.1-4.8c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1.1-.4 2.2-.4 1.2-.1 1.6-.1 4.8-.1M12 0C8.7 0 8.3 0 7.1.1 5.8.1 4.9.3 4.1.6c-.8.3-1.5.7-2.2 1.4C1.2 2.6.8 3.3.5 4.1c-.3.8-.5 1.7-.5 3 0 1.2 0 1.6 0 4.9s0 3.7.1 4.9c.1 1.3.3 2.1.6 2.9.3.8.7 1.5 1.4 2.2.7.7 1.4 1.1 2.2 1.4.8.3 1.6.5 2.9.6 1.2.1 1.6.1 4.9.1s3.7 0 4.9-.1c1.3-.1 2.1-.3 2.9-.6.8-.3 1.5-.7 2.2-1.4.7-.7 1.1-1.4 1.4-2.2.3-.8.5-1.6.6-2.9.1-1.2.1-1.6.1-4.9s0-3.7-.1-4.9c-.1-1.3-.3-2.1-.6-2.9-.3-.8-.7-1.5-1.4-2.2-.7-.7-1.4-1.1-2.2-1.4-.8-.3-1.6-.5-2.9-.6C15.7 0 15.3 0 12 0zm0 5.8c-3.4 0-6.2 2.8-6.2 6.2s2.8 6.2 6.2 6.2 6.2-2.8 6.2-6.2-2.8-6.2-6.2-6.2zm0 10.2c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4zm6.4-11.8c-.8 0-1.4.6-1.4 1.4 0 .8.6 1.4 1.4 1.4.8 0 1.4-.6 1.4-1.4 0-.8-.6-1.4-1.4-1.4z"/></svg></div><span>Instagram</span></div>
-                <div class="share-item" onclick="shareTo('copy')"><div class="share-icon-box" style="background:#555;"><svg viewBox="0 0 24 24"><path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z"/></svg></div><span>複製連結</span></div>
-            </div>
-        </div>
-    </div>
-    <div id="quiz-modal" class="modal-overlay">
-        <div class="quiz-box">
-            <div id="quiz-question" class="quiz-question">Q: 問題載入中...</div>
-            <div class="quiz-options">
-                <button class="quiz-btn" id="quiz-opt-1" onclick="checkQuiz(1)">A</button>
-                <button class="quiz-btn" id="quiz-opt-2" onclick="checkQuiz(2)">B</button>
-                <button class="quiz-btn" id="quiz-opt-3" onclick="checkQuiz(3)">C</button>
-            </div>
-            <div class="close-modal" onclick="closeModal('quiz-modal',event)">放棄挑戰</div>
-        </div>
-    </div>
-<script>
-// ========================================
-// 🔧 設定區
-// ========================================
-var GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbzNtCPdBPw5LEEnsqmAAo4RclWvgg1TwdJ8g0td9BZf_UQEqPU-RiZSgJh8pS3VWSyPKg/exec';
-var USE_STATIC_JSON = true;
-var DATA_JSON_URL = 'https://cdn.jsdelivr.net/gh/caroldaunn/xizhi-tour@main/data.json';
-var ASSETS_BASE = 'https://xizhi-tour.pages.dev';
+/**
+ * ========================================
+ * Google Apps Script - 汐止導覽 LINE Bot API
+ * 完整整合版 v4.6
+ * ========================================
+ *
+ * v4.6 更新內容：
+ * - 另存新版本，與 LIFF index_v6.6 對應（集章含故事任務、自訂印章彈窗）
+ * - 功能與 v4.5 相同
+ *
+ * v4.5 更新內容：
+ * - 🐛 generateRouteSpotsList：isPassThrough 改用 local passThroughKeys，不修改共用 spots 物件
+ *    修正 R4 污染 R1 忠順廟，導致站點編號顯示錯誤（第4站顯示為第2站）
+ *
+ * v4.4 更新內容：
+ * - ⚡ keepAlive 改傳 ss 共用，預熱讀 Sheet 次數 6~8 → 1 次
+ * - ⚡ handleRequest 統一在最上層 openById，switch 各分支不重複開啟
+ * - 🔄 case 別名（routesCarousel 等）改為相容注解保留，Make.com 可能仍使用舊 type 值
+ * - 🗑️ generateSpotCards 移除重複 toAssetUrl
+ * - 🗑️ R4 移除硬編碼景點列表，改讀試算表
+ * - 🛡️ getFoodsData 所有欄位補 || "" fallback
+ *
+ * v4.3 更新內容：
+ * - 🆕 R4 路線改用忠順廟(spot23)取代濟德宮(spot4)
+ * - 🆕 survey_click 改寫入事件日誌，移除問卷對照表
+ *
+ * v4.2 更新內容：
+ * - 🆕 timestamp 全面轉換為 UTC+8(+08:00)
+ * - 🆕 survey_click 寫入問卷對照表
+ * - 🆕 liff.getContext() 改為同步呼叫
+ *
+ * v4 更新內容：
+ * - 🆕 flex_routes 被呼叫時，記錄 carousel 送出時間到 Cache
+ * - 🆕 route_select log 時，自動從 Cache 計算 duration_sec
+ * - 🆕 Cache key 版本升級為 _v4，避免與舊快取衝突
+ *
+ * v3 更新內容：
+ * - 錯誤日誌記錄到試算表「錯誤日誌」工作表
+ * - 錯誤時回傳有效 JSON，避免 Make.com 解析失敗
+ * - R1 一茶一礦：汐止老街和濟德宮之間加入忠順廟(可經過)
+ * - R4 百年信仰：杜月笙墓園設為可經過，終點加上秀峰山慈航紀念堂
+ * - 可經過景點使用灰色 #E0E0E0
+ */
 
-function toAssetUrl(url) {
-    if (!url || typeof url !== 'string') return url;
-    var u = url.trim();
-    u = u.replace(/^https:\/\/raw\.githubusercontent\.com\/caroldaunn\/xizhi-tour\/[^/]+/, ASSETS_BASE);
-    u = u.replace(/^https:\/\/caroldaunn\.github\.io\/xizhi-tour\/?/, ASSETS_BASE + '/');
-    return u;
+// ========================================
+// ⚙️ 設定區
+// ========================================
+
+const SPREADSHEET_ID = '1Jzzn3fWp5ZPLZRFyzTuzk2wmNKxjWaKueSPf_dWvrKA';
+const CACHE_TTL_SECONDS = 300;  // 5 分鐘
+const CACHE_TTL_FLEX = 180;     // Flex 快取 3 分鐘
+const CACHE_KEY_ALL = 'liff_all_v1';
+const CACHE_KEY_PREFIX_FLEX = 'flex_';
+const HIDDEN_ROUTE_IDS = ['R2', 'R5'];
+const ASSETS_BASE = 'https://xizhi-tour.pages.dev';
+
+
+// ========================================
+// 🔄 保活與全快取預熱
+// ========================================
+
+function keepAlive() {
+  var cache = CacheService.getDocumentCache();
+  var now = new Date();
+  var today = now.toISOString().split('T')[0];
+
+  var keepAliveKey = 'keepalive_count_' + today;
+  var keepAliveCount = parseInt(cache.get(keepAliveKey) || '0', 10) + 1;
+  cache.put(keepAliveKey, String(keepAliveCount), 86400);
+  cache.put('last_keepalive', now.toISOString(), 600);
+
+  try {
+    // ⚡ v4.4：一次 openById，所有生成函數共用
+    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+
+    var allData = {
+      routes: getRoutesInfo(ss),
+      spots: getSpotsData(ss),
+      foods: getFoodsData(ss),
+      events: getEventsData(ss)
+    };
+    var json = JSON.stringify(allData);
+    if (json.length <= 100000) {
+      cache.put(CACHE_KEY_ALL, json, CACHE_TTL_SECONDS);
+    }
+
+    var routesCarousel = generateRoutesCarousel(ss);
+    putFlexToCache(cache, 'flex_routes', null, routesCarousel);
+
+    var routeIds = ['R1', 'R3', 'R4'];
+    for (var i = 0; i < routeIds.length; i++) {
+      var rid = routeIds[i];
+      var spotsList = generateRouteSpotsList(ss, rid);
+      putFlexToCache(cache, 'flex_route_spots', rid, spotsList);
+      var spotCards = generateSpotCards(ss, rid);
+      putFlexToCache(cache, 'flex_spot_cards', rid, spotCards);
+    }
+
+    var eventsCarousel = generateEventsCarousel(ss);
+    putFlexToCache(cache, 'flex_events', null, eventsCarousel);
+
+    var transportCarousel = generateTransportCarousel();
+    putFlexToCache(cache, 'flex_transport', null, transportCarousel);
+
+    Logger.log('✅ Keep-alive #' + keepAliveCount + ' 全快取預熱完成 (' + now.toISOString() + ')');
+
+  } catch (e) {
+    Logger.log('⚠️ Keep-alive #' + keepAliveCount + ' 預熱失敗: ' + e.message);
+  }
 }
 
-var DATA_CACHE_KEY = 'xizhi_liff_data_v2';
-// v6.5: DATA_VERSION_KEY/TIME_KEY/DURATION/CURRENT_DATA_VERSION 在 static 模式下無用，已移除
+function clearAllCache() {
+  var cache = CacheService.getDocumentCache();
 
-// ========================================
-// 📝 問卷設定
-// ========================================
-var SURVEY_BASE_URL = 'https://www.surveycake.com/s/wpBAR';
-var SURVEY_ENTRY_ID = '1234567890';
-var SURVEY_PARAM_NAME = 'ref';
-var SHOW_SESSION_ID = false;
+  cache.remove(CACHE_KEY_ALL);
 
-// ========================================
-// 📦 全域變數
-// ========================================
-var MY_LIFF_ID = "2008941841-8KQq29wn";
-var TASKS = ['map','quiz','wish','beacon','share'];
-var MEMORIAL_FRAME = {
-    canvasSize: 800, bgColor: 'transparent', photoX: 10, photoY: 10,
-    photoWidth: 760, photoHeight: 760, showText: false, photoFillMode: 'cover',
-    frameImageUrl: ASSETS_BASE + '/frame.png'
-};
+  var flexKeys = [
+    'flex_flex_routes_v4',
+    'flex_flex_route_spots_R1_v4',
+    'flex_flex_route_spots_R3_v4',
+    'flex_flex_route_spots_R4_v4',
+    'flex_flex_spot_cards_R1_v4',
+    'flex_flex_spot_cards_R3_v4',
+    'flex_flex_spot_cards_R4_v4',
+    'flex_flex_events_v4',
+    'flex_flex_transport_v4'
+  ];
 
-var routesInfo = {}, foodsData = {}, spotsData = {}, eventsData = {};
-var currentData = null, isEventPage = false, storyExpanded = false, eventIntroExpanded = false;
-var currentPageId = '', spotEnterTime = 0, spotLeaveSentOnUnload = false;
-var behaviorUserId = '', behaviorSessionId = '';
-var BEHAVIOR_LOG_ENV = 'test';
+  for (var i = 0; i < flexKeys.length; i++) {
+    cache.remove(flexKeys[i]);
+  }
+
+  Logger.log('✅ 所有快取已清除');
+  keepAlive();
+}
+
+function trackApiUsage(type) {
+  try {
+    var cache = CacheService.getDocumentCache();
+    var today = new Date().toISOString().split('T')[0];
+
+    var totalKey = 'api_total_' + today;
+    var total = parseInt(cache.get(totalKey) || '0', 10) + 1;
+    cache.put(totalKey, String(total), 86400);
+
+    if (type) {
+      var typeKey = 'api_' + type + '_' + today;
+      var typeCount = parseInt(cache.get(typeKey) || '0', 10) + 1;
+      cache.put(typeKey, String(typeCount), 86400);
+    }
+  } catch (e) {}
+}
+
+function getUsageStats() {
+  var cache = CacheService.getDocumentCache();
+  var today = new Date().toISOString().split('T')[0];
+  var total = parseInt(cache.get('api_total_' + today) || '0', 10);
+
+  return {
+    date: today,
+    total: total,
+    keepalive: parseInt(cache.get('keepalive_count_' + today) || '0', 10),
+    by_type: {
+      all: parseInt(cache.get('api_all_' + today) || '0', 10),
+      log: parseInt(cache.get('api_log_' + today) || '0', 10),
+      flex_routes: parseInt(cache.get('api_flex_routes_' + today) || '0', 10),
+      flex_route_spots: parseInt(cache.get('api_flex_route_spots_' + today) || '0', 10),
+      flex_spot_cards: parseInt(cache.get('api_flex_spot_cards_' + today) || '0', 10),
+      flex_events: parseInt(cache.get('api_flex_events_' + today) || '0', 10),
+      flex_transport: parseInt(cache.get('api_flex_transport_' + today) || '0', 10)
+    },
+    last_keepalive: cache.get('last_keepalive') || 'N/A',
+    free_quota: {
+      daily_limit: 20000,
+      used: total,
+      remaining: 20000 - total,
+      usage_percent: ((total / 20000) * 100).toFixed(2) + '%'
+    }
+  };
+}
+
+function dailyUsageReport() {
+  var stats = getUsageStats();
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName('用量統計');
+
+  if (!sheet) {
+    sheet = ss.insertSheet('用量統計');
+    sheet.appendRow([
+      '日期', '總呼叫數', '保活次數',
+      'all', 'log', 'flex_routes', 'flex_route_spots',
+      'flex_spot_cards', 'flex_events', 'flex_transport',
+      '額度使用率'
+    ]);
+    sheet.getRange(1, 1, 1, 11).setFontWeight('bold').setBackground('#E8F0FE');
+  }
+
+  sheet.appendRow([
+    stats.date, stats.total, stats.keepalive,
+    stats.by_type.all, stats.by_type.log, stats.by_type.flex_routes,
+    stats.by_type.flex_route_spots, stats.by_type.flex_spot_cards,
+    stats.by_type.flex_events, stats.by_type.flex_transport,
+    stats.free_quota.usage_percent
+  ]);
+
+  Logger.log('📝 已寫入每日用量報告: ' + stats.date);
+}
+
 
 // ========================================
 // 📊 行為事件日誌
 // ========================================
-function logEvent(eventAction, eventValue, durationSec) {
-    var base = (GOOGLE_SHEET_API_URL || '').split('?')[0];
-    var q = [
-        'type=log',
-        'user_id=' + encodeURIComponent(behaviorUserId || ''),
-        'session_id=' + encodeURIComponent(behaviorSessionId || ''),
-        'timestamp=' + encodeURIComponent(new Date().toISOString()),
-        'event_action=' + encodeURIComponent(eventAction || ''),
-        'event_value=' + encodeURIComponent(eventValue || ''),
-        'duration_sec=' + (durationSec !== undefined && durationSec !== '' ? encodeURIComponent(String(durationSec)) : ''),
-        'env=' + encodeURIComponent(BEHAVIOR_LOG_ENV || 'test')
-    ].join('&');
-    var img = new Image();
-    img.src = base + '?' + q;
-}
 
-function flushSpotLeaveOnLeave() {
-    if (spotLeaveSentOnUnload || !currentPageId) return;
-    spotLeaveSentOnUnload = true;
-    var dur = spotEnterTime ? Math.round((Date.now() - spotEnterTime) / 1000) : 0;
-    if (dur < 0 || dur > 3600) return;
-    var base = (GOOGLE_SHEET_API_URL || '').split('?')[0];
-    var q = [
-        'type=log',
-        'user_id=' + encodeURIComponent(behaviorUserId || ''),
-        'session_id=' + encodeURIComponent(behaviorSessionId || ''),
-        'timestamp=' + encodeURIComponent(new Date().toISOString()),
-        'event_action=spot_leave',
-        'event_value=' + encodeURIComponent(currentPageId || ''),
-        'duration_sec=' + encodeURIComponent(String(dur)),
-        'env=' + encodeURIComponent(BEHAVIOR_LOG_ENV || 'test')
-    ].join('&');
-    var url = base + '?' + q;
-    if (typeof navigator.sendBeacon === 'function') {
-        navigator.sendBeacon(url);
-    } else {
-        new Image().src = url;
+function appendEventLog(params) {
+  var userId = params.user_id || '';
+  var sessionId = params.session_id || '';
+  // 🆕 v4.1：timestamp 轉換為 UTC+8 台灣時間
+  var _offset = 8 * 60 * 60 * 1000;
+  var timestamp = params.timestamp
+    ? new Date(new Date(params.timestamp).getTime() + _offset).toISOString().replace('Z', '+08:00')
+    : new Date(new Date().getTime() + _offset).toISOString().replace('Z', '+08:00');
+  var eventAction = params.event_action || '';
+  var eventValue = params.event_value || '';
+  var durationSec = params.duration_sec !== undefined && params.duration_sec !== '' ? String(params.duration_sec) : '';
+  var env = (params.env || 'test').toLowerCase();
+  if (env !== 'production') env = 'test';
+  if (!eventAction) return;
+
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var sheet = ss.getSheetByName('事件日誌');
+
+  if (!sheet) {
+    sheet = ss.insertSheet('事件日誌');
+    sheet.appendRow(['user_id', 'session_id', 'timestamp', 'event_action', 'event_value', 'duration_sec', 'env']);
+    sheet.getRange(1, 1, 1, 7).setFontWeight('bold').setBackground('#E8F0FE');
+  } else {
+    var header = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    if (header.length < 7 || header[6] !== 'env') {
+      sheet.getRange(1, 7).setValue('env');
     }
+  }
+
+  sheet.appendRow([userId, sessionId, timestamp, eventAction, eventValue, durationSec, env]);
 }
 
-// 🆕 v6.3：問卷點擊記錄
-function handleSurveyClick() {
-    // v6.5: 直接用 logEvent，GAS v4.3 已不需要 survey_url
-    logEvent('survey_click', currentPageId || '');
+
+
+
+// ========================================
+// 🌐 HTTP 請求處理
+// ========================================
+
+function doGet(e) {
+  return handleRequest((e || {}).parameter || {});
 }
 
-// ========================================
-// 🚀 初始化
-// ========================================
-window.onload = function() {
-    var loadPromise = USE_STATIC_JSON
-        ? loadDataFromStaticJSON().catch(function() { return loadDataFromGoogleSheet(); })
-        : loadDataFromGoogleSheet();
+function doPost(e) {
+  return handleRequest((e || {}).parameter || {});
+}
 
-    Promise.all([
-        loadPromise,
-        liff.init({ liffId: MY_LIFF_ID }).catch(function() { return true; })
-    ]).then(function() {
-        behaviorSessionId = sessionStorage.getItem('xizhi_sid');
-        if (!behaviorSessionId) {
-            behaviorSessionId = Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
-            sessionStorage.setItem('xizhi_sid', behaviorSessionId);
+function handleRequest(params) {
+  var type = params.type || 'all';
+  var result = {};
+
+  trackApiUsage(type);
+
+  var cache = CacheService.getDocumentCache();
+
+  try {
+    // ----------------------------------------
+    // 行為事件日誌
+    // ----------------------------------------
+    if (type === 'log') {
+      try {
+        // 🆕 v4.3：survey_click 直接寫入事件日誌（event_value = spot_key）
+        if (params.event_action === 'survey_click') {
+          if (!params.event_value && params.spot_key) {
+            params.event_value = params.spot_key;
+          }
+          // 落入下方 appendEventLog 統一處理
         }
-        // v6.5: liff.getContext() 在 LINE 內是同步函數，不可用 .then()
-        try {
-            var ctx = liff.getContext();
-            if (ctx && ctx.userId) behaviorUserId = ctx.userId;
-        } catch(e) {}
-    }).then(function() {
-        renderContent();
-        document.addEventListener('visibilitychange', function() {
-            if (document.visibilityState === 'hidden') flushSpotLeaveOnLeave();
-            else if (document.visibilityState === 'visible') spotLeaveSentOnUnload = false;
-        });
-        window.addEventListener('pagehide', flushSpotLeaveOnLeave);
-        window.addEventListener('beforeunload', flushSpotLeaveOnLeave);
-    }).catch(function(err) {
-        if (Object.keys(spotsData).length > 0) {
-            renderContent();
-        } else {
-            showError('無法載入資料，請檢查網路或稍後再試。' + (err.message ? ' ' + err.message : ''));
-        }
-    });
-};
 
-// ========================================
-// 📡 資料載入函數
-// ========================================
-function loadDataFromStaticJSON() {
-    updateLoadingText('正在載入資料...');
-    return fetch((DATA_JSON_URL || '').replace(/\/$/, '') + '?t=' + Date.now())
-        .then(function(response) {
-            if (!response.ok) throw new Error('無法載入資料檔案: ' + response.status);
-            return response.json();
-        })
-        .then(function(data) {
-            if (data.error) throw new Error(data.error);
-            applyData(data);
-            if (Object.keys(spotsData).length === 0) throw new Error('景點資料為空');
-            // v6.5: 移除只寫不讀的 sessionStorage 快取
-            updateLoadingText('資料載入完成!');
-            return true;
-        });
-}
-
-// v6.5: USE_STATIC_JSON=true 時不會執行（保留供需要時切換）
-function loadDataFromGoogleSheet() {
-    var cached = null, cacheValid = false;
-    try {
-        var cachedData = localStorage.getItem(DATA_CACHE_KEY);
-        var cachedVersion = localStorage.getItem(DATA_VERSION_KEY);
-        var cacheTime = localStorage.getItem(DATA_TIME_KEY);
-        if (cachedData && cachedVersion === CURRENT_DATA_VERSION && cacheTime) {
-            var timeDiff = Date.now() - parseInt(cacheTime, 10);
-            if (timeDiff < DATA_CACHE_DURATION) {
-                var obj = JSON.parse(cachedData);
-                if (obj.routes && obj.spots && obj.foods && obj.events && Object.keys(obj.spots).length > 0) {
-                    cached = obj; cacheValid = true;
-                }
+        // 🆕 v4：route_select 自動計算 duration_sec
+        if (params.event_action === 'route_select') {
+          var rsUid = params.user_id || '';
+          if (rsUid) {
+            var sentTimeStr = cache.get('carousel_sent_' + rsUid);
+            if (sentTimeStr && (!params.duration_sec || params.duration_sec === '')) {
+              var diffSec = Math.round((new Date() - new Date(sentTimeStr)) / 1000);
+              if (diffSec >= 0 && diffSec <= 600) {
+                params.duration_sec = String(diffSec);
+              }
             }
+            // 用完即清，避免下次重複計算
+            cache.remove('carousel_sent_' + rsUid);
+          }
         }
-    } catch (e) { clearDataCache(); }
-
-    if (cacheValid && cached) {
-        updateLoadingText('從快取載入資料...');
-        applyData(cached);
-        updateLoadingText('資料載入完成!');
-        backgroundUpdateData();
-        return Promise.resolve(true);
-    }
-    updateLoadingText('正在從雲端載入資料...');
-    return fetchAndCacheData();
-}
-
-function fetchAndCacheData() {
-    return fetch(GOOGLE_SHEET_API_URL + '?type=all&t=' + Date.now())
-        .then(function(response) {
-            if (!response.ok) throw new Error('API 錯誤: ' + response.status);
-            return response.json();
-        })
-        .then(function(data) {
-            if (data.error) throw new Error(data.error);
-            if (!data.routes || !data.spots || Object.keys(data.spots).length === 0) throw new Error('資料不完整');
-            applyData(data);
-            try {
-                localStorage.setItem(DATA_CACHE_KEY, JSON.stringify(data));
-                localStorage.setItem(DATA_VERSION_KEY, CURRENT_DATA_VERSION);
-                localStorage.setItem(DATA_TIME_KEY, String(Date.now()));
-            } catch (e) {}
-            updateLoadingText('資料載入完成!');
-            return true;
-        })
-        .catch(function(error) {
-            try {
-                var emergencyCache = localStorage.getItem(DATA_CACHE_KEY);
-                if (emergencyCache) {
-                    var data = JSON.parse(emergencyCache);
-                    if (data.spots && Object.keys(data.spots).length > 0) {
-                        applyData(data);
-                        updateLoadingText('已載入本地資料（可能較舊）');
-                        return Promise.resolve(true);
-                    }
-                }
-            } catch (e) {}
-            showError('無法載入資料: ' + error.message);
-            throw error;
-        });
-}
-
-function backgroundUpdateData() {
-    fetch(GOOGLE_SHEET_API_URL + '?type=all&t=' + Date.now())
-        .then(function(r) { return r.ok ? r.json() : null; })
-        .then(function(data) {
-            if (data && !data.error && data.spots && Object.keys(data.spots).length > 0) {
-                try {
-                    localStorage.setItem(DATA_CACHE_KEY, JSON.stringify(data));
-                    localStorage.setItem(DATA_VERSION_KEY, CURRENT_DATA_VERSION);
-                    localStorage.setItem(DATA_TIME_KEY, String(Date.now()));
-                } catch (e) {}
-            }
-        }).catch(function() {});
-}
-
-function clearDataCache() {
-    try {
-        localStorage.removeItem(DATA_CACHE_KEY);
-        localStorage.removeItem(DATA_VERSION_KEY);
-        localStorage.removeItem(DATA_TIME_KEY);
-    } catch (e) {}
-}
-
-function forceReloadData() { clearDataCache(); try { sessionStorage.removeItem(DATA_CACHE_KEY); } catch (e) {} location.reload(); }
-window.clearDataCache = clearDataCache;
-window.forceReloadData = forceReloadData;
-
-function applyData(data) {
-    routesInfo = data.routes || {};
-    spotsData  = data.spots  || {};
-    foodsData  = data.foods  || {};
-    eventsData = data.events || {};
-}
-
-function updateLoadingText(text) {
-    var el = document.querySelector('.loading-text');
-    if (el) el.innerHTML = '⏳ ' + text;
-}
-
-function showError(message) {
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('error-msg').innerHTML = message;
-    document.getElementById('error-container').style.display = 'block';
-}
-
-// ========================================
-// 📄 頁面渲染函數
-// ========================================
-function renderContent() {
-    try {
-        var urlParams = new URLSearchParams(window.location.search);
-        var pageId = urlParams.get('id') || 'spot1';
-        var urlRoute = urlParams.get('route') || ''; // v6.5：從 URL 取路線，解決共用景點站次問題
-        if (pageId.indexOf('E') === 0 && eventsData[pageId]) { isEventPage = true; renderEventPage(pageId); }
-        else { isEventPage = false; renderSpotPage(pageId, urlRoute); }
-        initVersionTrigger();
-    } catch (e) { showError('頁面渲染失敗: ' + e.message); }
-}
-
-function renderEventPage(eventId) {
-    var data = eventsData[eventId];
-    if (!data) { showError('找不到活動資料: ' + eventId); return; }
-    if (currentPageId && currentPageId !== eventId) {
-        var dur = spotEnterTime ? Math.round((Date.now() - spotEnterTime) / 1000) : 0;
-        logEvent('spot_leave', currentPageId, dur);
-    }
-    currentPageId = eventId; spotEnterTime = Date.now();
-    logEvent('spot_view', eventId);
-    currentData = data;
-
-    document.getElementById('beacon-banner').style.display = 'none';
-    document.getElementById('food-section').style.display = 'none';
-    document.getElementById('bus-schedule-link').style.display = 'none';
-    document.getElementById('desc-actions').style.display = 'none';
-    document.getElementById('wish-btn').style.display = 'none';
-    document.getElementById('tags-container').style.display = 'flex';
-    document.getElementById('gallery-section').style.display = 'block';
-    document.getElementById('notice-box').style.display = 'block';
-    // 🆕 v6.4：活動頁顯示印章挑戰、進度條與問卷（與景點頁一致）
-    document.getElementById('game-section').style.display = 'block';
-    document.getElementById('memorial-box').style.display = 'none';
-    document.querySelector('.progress-container').style.display = 'block';
-
-    document.getElementById('spot-img').src = toAssetUrl(data.img);
-    document.getElementById('route-tag').innerHTML = '🎪 限定活動';
-    document.getElementById('route-tag').style.background = '#ff6b6b';
-    var dateStr = formatDate(data.date);
-    document.getElementById('route-desc').innerHTML = '<div class="event-date-row"><div class="event-date-location">' + dateStr + ' | ' + data.location + '</div><div class="event-calendar-btn-large" onclick="addEventToCalendar()"><span class="icon">📅</span>加入行事曆</div></div>';
-
-    var introSection = document.getElementById('event-intro-section');
-    var introDetail  = document.getElementById('event-intro-detail');
-    var introBtn     = document.getElementById('event-intro-btn');
-    var introHtml    = '';
-    if (data.intro && typeof data.intro === 'string') introHtml = '<p class="story-text">' + escapeHtml(data.intro) + '</p>';
-    else if (data.intro && typeof data.intro === 'object') introHtml = buildStoryHtml(data.intro);
-    if (introHtml) {
-        introSection.style.display = 'block';
-        introDetail.innerHTML = introHtml;
-        introDetail.classList.remove('show');
-        introBtn.innerText = '▼ 了解更多故事';
-        eventIntroExpanded = false;
-    } else { introSection.style.display = 'none'; }
-
-    document.getElementById('spot-number').style.display = 'none';
-    document.getElementById('spot-title').innerText = data.title;
-    document.getElementById('spot-desc').innerText = data.desc;
-
-    var tagsHtml = '';
-    for (var i = 0; i < data.tags.length; i++) tagsHtml += '<span class="tag">' + data.tags[i] + '</span>';
-    document.getElementById('tags-container').innerHTML = tagsHtml;
-
-    var galleryHtml = '';
-    for (var j = 0; j < data.gallery.length; j++) galleryHtml += '<div class="gallery-item"><img src="' + toAssetUrl(data.gallery[j].img) + '" class="gallery-img"><div class="gallery-caption">' + data.gallery[j].caption + '</div></div>';
-    document.getElementById('gallery-content').innerHTML = galleryHtml;
-
-    var noticeHtml = '';
-    for (var k = 0; k < data.notices.length; k++) noticeHtml += '<li>' + data.notices[k] + '</li>';
-    document.getElementById('notice-list').innerHTML = noticeHtml;
-
-    var mapQuery = encodeURIComponent(data.query);
-    document.getElementById('bus-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
-    document.getElementById('bus-label').innerText = '導航前往';
-    document.getElementById('parking-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+停車場';
-    document.getElementById('map-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
-
-    // 🆕 v6.4：初始化印章進度（同時控制 survey-box 顯示）
-    initTaskProgress();
-
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('main-content').style.display = 'block';
-}
-
-function renderSpotPage(spotKey, urlRoute) {
-    var data = spotsData[spotKey];
-    if (!data) { data = spotsData['spot1']; spotKey = 'spot1'; }
-    if (currentPageId && currentPageId !== spotKey) {
-        var dur = spotEnterTime ? Math.round((Date.now() - spotEnterTime) / 1000) : 0;
-        logEvent('spot_leave', currentPageId, dur);
-    }
-    currentPageId = spotKey; spotEnterTime = Date.now();
-    logEvent('spot_view', spotKey);
-    currentData = data; currentData.spotKey = spotKey;
-
-    document.getElementById('game-section').style.display = 'block';
-    document.getElementById('food-section').style.display = 'block';
-    document.getElementById('bus-schedule-link').style.display = 'block';
-    document.getElementById('desc-actions').style.display = 'flex';
-    document.getElementById('wish-btn').style.display = 'none';
-    document.querySelector('.progress-container').style.display = 'block';
-    document.getElementById('tags-container').style.display = 'none';
-    document.getElementById('gallery-section').style.display = 'none';
-    document.getElementById('notice-box').style.display = 'none';
-    document.getElementById('event-intro-section').style.display = 'none';
-
-    document.getElementById('spot-img').src = toAssetUrl(data.img);
-    document.getElementById('spot-title').innerText = data.title;
-    document.getElementById('spot-desc').innerText = data.desc;
-
-    // v6.5：優先用 URL route 參數，解決 spot1/spot23/spot4 同時在多條路線的站次錯誤
-    var routeKey = (urlRoute && routesInfo[urlRoute]) ? urlRoute : (data.route || "R1");
-    var rInfo = routesInfo[routeKey];
-    if (rInfo) {
-        document.getElementById('route-tag').innerText = rInfo.title;
-        document.getElementById('route-desc').innerText = rInfo.desc;
-        var spotIndex = rInfo.spots.indexOf(spotKey);
-        if (spotIndex >= 0) document.getElementById('spot-number').innerText = "第 " + (spotIndex + 1) + " 站,共 " + rInfo.spots.length + " 站";
+        appendEventLog(params);
+        return ContentService.createTextOutput('OK').setMimeType(ContentService.MimeType.TEXT);
+      } catch (e) {
+        logError('log', e, params);
+        return ContentService.createTextOutput('').setMimeType(ContentService.MimeType.TEXT);
+      }
     }
 
-    if (data.quizQ) {
-        document.getElementById('quiz-question').innerText = data.quizQ;
-        if (data.quizOpts && data.quizOpts.length >= 3) {
-            document.getElementById('quiz-opt-1').innerText = data.quizOpts[0];
-            document.getElementById('quiz-opt-2').innerText = data.quizOpts[1];
-            document.getElementById('quiz-opt-3').innerText = data.quizOpts[2];
+    // 用量統計
+    if (type === 'usage') {
+      return ContentService.createTextOutput(JSON.stringify(getUsageStats())).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 相框圖代理
+    if (type === 'frame') {
+      var frameUrl = params.url;
+      if (!frameUrl) {
+        return ContentService.createTextOutput(JSON.stringify({ error: 'missing url' })).setMimeType(ContentService.MimeType.JSON);
+      }
+      try {
+        var response = UrlFetchApp.fetch(frameUrl, { muteHttpExceptions: true, followRedirects: true });
+        var code = response.getResponseCode();
+        if (code < 200 || code >= 300) {
+          return ContentService.createTextOutput(JSON.stringify({ error: 'fetch failed ' + code })).setMimeType(ContentService.MimeType.JSON);
         }
-    }
-
-    var mapQuery = encodeURIComponent(data.query);
-    document.getElementById('map-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery;
-    document.getElementById('parking-btn').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+停車場';
-    document.getElementById('more-food-link').href = 'https://www.google.com/maps/search/?api=1&query=' + mapQuery + '+美食';
-
-    if (rInfo && rInfo.spots) {
-        var currentIdx = rInfo.spots.indexOf(spotKey);
-        var nextIdx = (currentIdx + 1) % rInfo.spots.length;
-        var nextSpotKey = rInfo.spots[nextIdx];
-        var nextData = spotsData[nextSpotKey];
-        if (nextData) {
-            document.getElementById('bus-btn').href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(nextData.query) + '&travelmode=transit';
-            document.getElementById('bus-label').innerText = '去' + nextData.title;
+        var blob = response.getBlob();
+        var contentType = (blob.getContentType() || '').toLowerCase();
+        if (contentType.indexOf('text/html') === 0 || contentType.indexOf('text/plain') === 0) {
+          return ContentService.createTextOutput(JSON.stringify({ error: 'not an image' })).setMimeType(ContentService.MimeType.JSON);
         }
+        var mime = contentType.indexOf('image/') === 0 ? contentType : 'image/png';
+        var b64 = Utilities.base64Encode(blob.getBytes());
+        return ContentService.createTextOutput(JSON.stringify({ image: 'data:' + mime + ';base64,' + b64 })).setMimeType(ContentService.MimeType.JSON);
+      } catch (e) {
+        logError('frame', e, params);
+        return ContentService.createTextOutput(JSON.stringify({ error: e.message })).setMimeType(ContentService.MimeType.JSON);
+      }
     }
 
-    renderFoodSection(spotKey);
-
-    if (data.hasBeacon) {
-        setTimeout(function() {
-            document.getElementById('beacon-banner').classList.add('show');
-            setTimeout(function() { document.getElementById('beacon-banner').classList.remove('show'); }, 8000);
-        }, 3000);
+    // type=all 先查快取
+    if (type === 'all') {
+      var cached = cache.get(CACHE_KEY_ALL);
+      if (cached) {
+        return ContentService.createTextOutput(cached).setMimeType(ContentService.MimeType.JSON);
+      }
     }
 
-    initTaskProgress();
+    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('main-content').style.display = 'block';
-}
+    switch (type) {
+      case 'routes':
+        result = getRoutesInfo(ss);
+        break;
 
-function renderFoodSection(spotKey) {
-    var foods = foodsData[spotKey] || foodsData['default'] || [];
-    var html = '';
-    for (var i = 0; i < foods.length; i++) {
-        var f = foods[i];
-        html += '<div class="food-card" data-query="' + (f.query||'').replace(/"/g,'&quot;') + '" onclick="openFoodMap(this.dataset.query)">';
-        html += '<img src="' + toAssetUrl(f.img) + '" class="food-img" onerror="this.src=\'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=300\'">';
-        html += '<div class="food-info"><div class="food-type">' + f.type + '</div><div class="food-name">' + f.name + '</div><div class="food-desc">' + f.desc + '</div></div></div>';
-    }
-    document.getElementById('food-scroll').innerHTML = html;
-}
+      case 'spots':
+        result = getSpotsData(ss);
+        break;
 
-function openFoodMap(query) { window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query), '_blank'); }
+      case 'foods':
+        result = getFoodsData(ss);
+        break;
 
-function escapeHtml(str) {
-    if (!str) return '';
-    var div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-}
+      case 'events':
+        result = getEventsData(ss);
+        break;
 
-function formatDate(dateStr) {
-    if (!dateStr) return '';
-    var date;
-    if (typeof dateStr === 'string' && dateStr.indexOf('T') >= 0) date = new Date(dateStr);
-    else if (dateStr instanceof Date) date = dateStr;
-    else return dateStr;
-    if (isNaN(date.getTime())) return dateStr;
-    return date.getFullYear() + '/' + String(date.getMonth() + 1).padStart(2, '0') + '/' + String(date.getDate()).padStart(2, '0');
-}
-
-function getStoryImgUrl(val) {
-    if (!val || typeof val !== 'string') return '';
-    var s = val.trim();
-    var m = s.match(/\]\s*\(\s*(https?:\/\/[^)\s]+)\s*\)/);
-    if (m) return m[1];
-    return s;
-}
-
-function buildStoryHtml(story) {
-    if (!story || !story.sections || !Array.isArray(story.sections) || story.sections.length === 0) return '';
-    var html = '';
-    for (var i = 0; i < story.sections.length; i++) {
-        var sec = story.sections[i];
-        html += '<div class="story-section"><div class="story-title">' + escapeHtml(sec.title || '') + '</div><p class="story-text">' + escapeHtml(sec.text || '') + '</p>';
-        if (sec.img) {
-            var imgUrl = toAssetUrl(getStoryImgUrl(sec.img));
-            if (imgUrl) html += '<img src="' + escapeHtml(imgUrl) + '" class="story-img" alt=""><p class="story-caption">' + escapeHtml(sec.caption || '') + '</p>';
+      case 'flex_routes':
+      case 'routesCarousel': // 相容舊版 Make.com 設定
+        // 🆕 v4：記錄 Carousel 送出時間，供計算 route_select duration 用
+        var carouselUid = params.user_id || '';
+        if (carouselUid) {
+          cache.put('carousel_sent_' + carouselUid, new Date().toISOString(), 600);
         }
-        html += '</div>';
-    }
-    if (story.quote) html += '<div class="story-quote">' + escapeHtml(story.quote) + '</div>';
-    return html;
-}
-
-function toggleStory() {
-    var detail = document.getElementById('story-detail');
-    var btn = document.getElementById('read-more-btn');
-    if (storyExpanded) { detail.classList.remove('show'); btn.innerText = '▼ 了解更多故事'; storyExpanded = false; return; }
-    if (!currentData) { detail.innerHTML = '<p class="story-text">無法取得景點資料。</p>'; detail.classList.add('show'); btn.innerText = '▲ 收起故事'; storyExpanded = true; logEvent('story_expand', currentPageId || ''); return; }
-    var html = buildStoryHtml(currentData.story);
-    detail.innerHTML = html ? html : '<p class="story-text">此景點暫無故事內容。</p>';
-    detail.classList.add('show'); btn.innerText = '▲ 收起故事'; storyExpanded = true;
-    logEvent('story_expand', currentPageId || '');
-}
-
-function toggleEventIntro() {
-    var detail = document.getElementById('event-intro-detail');
-    var btn = document.getElementById('event-intro-btn');
-    if (!detail || !btn) return;
-    if (eventIntroExpanded) { detail.classList.remove('show'); btn.innerText = '▼ 了解更多故事'; eventIntroExpanded = false; }
-    else { detail.classList.add('show'); btn.innerText = '▲ 收起故事'; eventIntroExpanded = true; logEvent('story_expand', currentPageId || ''); }
-}
-
-// v6.5: stamps 統一讀取，避免重複 JSON.parse
-function getStamps() { try { return JSON.parse(localStorage.getItem('xizhi_stamps')) || []; } catch(e) { return []; } }
-function saveStamps(arr) { try { localStorage.setItem('xizhi_stamps', JSON.stringify(arr)); } catch(e) {} }
-
-function collectAction(taskName) {
-    var c = getStamps();
-    if (c.indexOf(taskName) === -1) { c.push(taskName); saveStamps(c); logEvent('stamp_collect', taskName); setTimeout(initTaskProgress, 500); }
-}
-
-function handleClickWithTrack(taskName) {
-    collectAction(taskName);
-    if (taskName === 'map') logEvent('navigation_click', currentPageId || '');
-}
-
-function isTaskDone(taskName) { return getStamps().indexOf(taskName) !== -1; }
-
-function initTaskProgress() {
-    var c = getStamps();
-    var icons = { 'map': '🗺️', 'quiz': '❓', 'wish': '📅', 'beacon': '📡', 'share': '📤' };
-    for (var i = 0; i < TASKS.length; i++) {
-        var t = TASKS[i]; var el = document.getElementById('stamp-' + t);
-        if (el) { if (c.indexOf(t) !== -1) { el.classList.add('active'); el.innerText = '✓'; } else { el.classList.remove('active'); el.innerText = icons[t]; } }
-    }
-    var wishBtn = document.getElementById('wish-btn'); if (wishBtn) wishBtn.style.display = 'none';
-    document.getElementById('progress-text').innerText = c.length + '/5';
-    document.getElementById('progress-bar').style.width = (c.length / 5) * 100 + '%';
-
-    if (c.length >= 5) {
-        document.getElementById('survey-box').style.display = 'block';
-        document.getElementById('memorial-box').style.display = 'block';
-
-        // 🆕 v6.3：動態設定問卷連結，帶入 session_id
-        var surveyLink = SURVEY_PARAM_NAME
-            ? SURVEY_BASE_URL + '?' + SURVEY_PARAM_NAME + '=' + encodeURIComponent(behaviorSessionId || '')
-            : SURVEY_BASE_URL + '?entry.' + SURVEY_ENTRY_ID + '=' + encodeURIComponent(behaviorSessionId || '');
-        var surveyBtn = document.getElementById('survey-link');
-        if (surveyBtn) { surveyBtn.href = surveyLink; surveyBtn.target = '_blank'; }
-
-        // 顯示 session_id 給使用者對照問卷
-        if (SHOW_SESSION_ID && behaviorSessionId) {
-            var sessionIdDisplay = document.getElementById('session-id-display');
-            var sessionIdText    = document.getElementById('session-id-text');
-            if (sessionIdDisplay && sessionIdText) {
-                sessionIdText.innerText = behaviorSessionId;
-                sessionIdDisplay.style.display = 'block';
-            }
+        result = getFlexFromCache(cache, 'flex_routes', null);
+        if (!result) {
+          result = generateRoutesCarousel(ss);
+          putFlexToCache(cache, 'flex_routes', null, result);
         }
-    }
-}
+        break;
 
-function handleBeaconClick() { document.getElementById('beacon-banner').classList.remove('show'); alert("🎉 獲得【尋寶印章】"); collectAction('beacon'); }
-function openQuizModal() { if (isTaskDone('quiz')) { alert("已完成!"); return; } document.getElementById('quiz-modal').style.display = 'flex'; }
-function checkQuiz(answerIdx) {
-    var correct = currentData ? currentData.quizA : 2;
-    if (answerIdx === correct) { document.getElementById('quiz-modal').style.display = 'none'; alert("⭕ 答對了!獲得【問答印章】"); collectAction('quiz'); }
-    else { alert("❌ 答錯了,再試試!"); }
-}
-function addEventToCalendar() {
-    if (!confirm('將此活動加入行事曆？')) return;
-    if (!isTaskDone('wish')) { collectAction('wish'); setTimeout(initTaskProgress, 300); }
-    alert('已加入行事曆！');
-}
-function handleShareWithStamp() { logEvent('share_click', currentPageId || ''); document.getElementById('share-modal').style.display = 'flex'; }
-function closeModal(id, e) { if (e.target.id === id || e.target.classList.contains('close-modal')) document.getElementById(id).style.display = 'none'; }
-function shareTo(platform) {
-    var url = window.location.href;
-    var title = document.getElementById('spot-title').innerText;
-    var text = '📸 我正在汐止打卡：' + title + '!快來一起探索～';
-    if (!isTaskDone('share')) { setTimeout(function() { alert("分享成功!獲得【分享印章】"); collectAction('share'); }, 500); }
-    if (platform === 'line') window.location.href = 'https://line.me/R/msg/text/?' + encodeURIComponent(text + ' ' + url);
-    else if (platform === 'fb') window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&quote=' + encodeURIComponent(text));
-    else if (platform === 'ig') { if (navigator.clipboard) navigator.clipboard.writeText(text + ' ' + url).then(function() { alert("已複製文字!請打開 Instagram 貼上分享"); }); }
-    else if (platform === 'copy') { if (navigator.clipboard) navigator.clipboard.writeText(url).then(function() { alert("連結已複製!"); }); }
-    document.getElementById('share-modal').style.display = 'none';
-}
+      case 'flex_route_spots':
+      case 'spotsList': // 相容舊版 Make.com 設定
+        var routeId = params.route || 'R1';
+        if (params.log_event === 'true' && params.user_id) {
+          appendEventLog({ user_id: params.user_id, event_action: 'route_view', event_value: routeId, env: params.env || 'test' });
+        }
+        result = getFlexFromCache(cache, 'flex_route_spots', routeId);
+        if (!result) {
+          result = generateRouteSpotsList(ss, routeId);
+          putFlexToCache(cache, 'flex_route_spots', routeId, result);
+        }
+        break;
 
-var longPressTimer = null;
-function initVersionTrigger() {
-    var trigger = document.getElementById('version-trigger'); if (!trigger) return;
-    function startPress() { longPressTimer = setTimeout(function() { if (navigator.vibrate) navigator.vibrate(100); if (confirm("確定要重置所有進度嗎?")) { localStorage.removeItem('xizhi_stamps'); location.reload(); } }, 3000); }
-    function cancelPress() { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } }
-    trigger.addEventListener('touchstart', startPress, {passive: true});
-    trigger.addEventListener('touchend', cancelPress, {passive: true});
-    trigger.addEventListener('touchcancel', cancelPress, {passive: true});
-    trigger.addEventListener('touchmove', cancelPress, {passive: true});
-    trigger.addEventListener('mousedown', startPress);
-    trigger.addEventListener('mouseup', cancelPress);
-    trigger.addEventListener('mouseleave', cancelPress);
-}
+      case 'flex_spot_cards':
+      case 'spotCards': // 相容舊版 Make.com 設定
+        var route = params.route || 'R1';
+        if (params.log_event === 'true' && params.user_id) {
+          appendEventLog({ user_id: params.user_id, event_action: 'route_start', event_value: route, env: params.env || 'test' });
+        }
+        result = getFlexFromCache(cache, 'flex_spot_cards', route);
+        if (!result) {
+          result = generateSpotCards(ss, route);
+          putFlexToCache(cache, 'flex_spot_cards', route, result);
+        }
+        break;
 
-// ========================================
-// 🖼️ 相框上傳函數
-// ========================================
-function handleImageUpload(e) {
-    var file = e.target.files[0]; if (!file) return;
-    var finalImgEl = document.getElementById('final-img');
-    var downloadMsgEl = document.getElementById('download-msg');
-    finalImgEl.style.display = 'none'; finalImgEl.src = ''; downloadMsgEl.style.display = 'none';
-    var reader = new FileReader();
-    reader.onload = function(event) {
-        var img = new Image();
-        img.onload = function() {
-            var cfg = MEMORIAL_FRAME;
-            var S = cfg.canvasSize;
-            var canvas = document.getElementById('result-canvas');
-            var ctx = canvas.getContext('2d');
-            canvas.width = S; canvas.height = S;
-            ctx.clearRect(0, 0, S, S);
-            var photoW = cfg.photoWidth, photoH = cfg.photoHeight, px = cfg.photoX, py = cfg.photoY;
-            var fillMode = cfg.photoFillMode || 'cover';
-            if (fillMode === 'stretch') ctx.drawImage(img, 0, 0, img.width, img.height, px, py, photoW, photoH);
-            else {
-                var scale = Math.max(photoW / img.width, photoH / img.height);
-                var w = img.width * scale, h = img.height * scale;
-                var x = px + (photoW - w) / 2, y = py + (photoH - h) / 2;
-                ctx.save(); ctx.beginPath(); ctx.rect(px, py, photoW, photoH); ctx.clip();
-                ctx.drawImage(img, x, y, w, h); ctx.restore();
-            }
-            var backupCanvas = document.createElement('canvas');
-            backupCanvas.width = S; backupCanvas.height = S;
-            backupCanvas.getContext('2d').drawImage(canvas, 0, 0);
-            var done = false, frameTimeoutId = null;
-            function finishMemorial() {
-                if (done) return; done = true; if (frameTimeoutId) clearTimeout(frameTimeoutId);
-                var dataUrl;
-                try { dataUrl = canvas.toDataURL("image/jpeg", 0.9); } catch (err) { dataUrl = backupCanvas.toDataURL("image/jpeg", 0.9); }
-                window._lastMemorialDataUrl = dataUrl;
-                var finalEl = document.getElementById('final-img');
-                finalEl.src = dataUrl; finalEl.style.display = "block";
-                document.getElementById('download-msg').style.display = "block";
-                finalEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-            if (!cfg.frameImageUrl) { finishMemorial(); return; }
-            frameTimeoutId = setTimeout(function() { if (!done) finishMemorial(); }, 6000);
-            var frameImg = new Image();
-            frameImg.crossOrigin = 'anonymous';
-            frameImg.onload = function() { try { ctx.drawImage(frameImg, 0, 0, S, S); finishMemorial(); } catch (err) { finishMemorial(); } };
-            frameImg.onerror = function() { finishMemorial(); };
-            frameImg.src = cfg.frameImageUrl + '?t=' + Date.now();
+      case 'flex_events':
+      case 'eventsCarousel': // 相容舊版 Make.com 設定
+        result = getFlexFromCache(cache, 'flex_events', null);
+        if (!result) {
+          result = generateEventsCarousel(ss);
+          putFlexToCache(cache, 'flex_events', null, result);
+        }
+        break;
+
+      case 'flex_transport':
+      case 'transportCarousel': // 相容舊版 Make.com 設定
+        result = getFlexFromCache(cache, 'flex_transport', null);
+        if (!result) {
+          result = generateTransportCarousel();
+          putFlexToCache(cache, 'flex_transport', null, result);
+        }
+        break;
+
+      case 'all':
+      default:
+        result = {
+          routes: getRoutesInfo(ss),
+          spots: getSpotsData(ss),
+          foods: getFoodsData(ss),
+          events: getEventsData(ss)
         };
-        img.src = event.target.result;
-    };
-    reader.readAsDataURL(file);
+        try {
+          var jsonAll = JSON.stringify(result);
+          if (jsonAll.length <= 100000) cache.put(CACHE_KEY_ALL, jsonAll, CACHE_TTL_SECONDS);
+        } catch (e) {}
+        break;
+    }
+
+    return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+
+  } catch (error) {
+    logError(type, error, params);
+    return ContentService.createTextOutput(JSON.stringify({
+      error: true,
+      message: error.message || 'Unknown error',
+      type: type,
+      timestamp: new Date().toISOString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
-function openLightbox() {
-    var src = document.getElementById('final-img').src;
-    if (src && src !== '') { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox').style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+
+// ========================================
+// 🆕 錯誤日誌
+// ========================================
+
+function logError(type, error, params) {
+  try {
+    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var sheet = ss.getSheetByName('錯誤日誌');
+
+    if (!sheet) {
+      sheet = ss.insertSheet('錯誤日誌');
+      sheet.appendRow(['timestamp', 'type', 'error', 'params', 'stack']);
+      sheet.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#FFCCCC');
+      sheet.setColumnWidth(3, 300);
+      sheet.setColumnWidth(4, 200);
+      sheet.setColumnWidth(5, 300);
+    }
+
+    var paramsStr = '';
+    try {
+      paramsStr = JSON.stringify(params || {});
+      if (paramsStr.length > 500) paramsStr = paramsStr.substring(0, 500) + '...';
+    } catch (e) {
+      paramsStr = '(無法序列化)';
+    }
+
+    sheet.appendRow([
+      new Date().toISOString(),
+      type || 'unknown',
+      error.message || String(error),
+      paramsStr,
+      error.stack || ''
+    ]);
+
+    var lastRow = sheet.getLastRow();
+    if (lastRow > 501) {
+      sheet.deleteRows(2, lastRow - 501);
+    }
+
+  } catch (e) {
+    Logger.log('錯誤日誌寫入失敗: ' + e.message);
+  }
 }
-function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; document.body.style.overflow = ''; }
-</script>
-</body>
-</html>
+
+function clearErrorLog() {
+  try {
+    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var sheet = ss.getSheetByName('錯誤日誌');
+    if (sheet && sheet.getLastRow() > 1) {
+      sheet.deleteRows(2, sheet.getLastRow() - 1);
+      Logger.log('✅ 錯誤日誌已清除');
+    }
+  } catch (e) {
+    Logger.log('清除錯誤日誌失敗: ' + e.message);
+  }
+}
+
+function getRecentErrors() {
+  try {
+    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var sheet = ss.getSheetByName('錯誤日誌');
+    if (!sheet || sheet.getLastRow() <= 1) {
+      return { count: 0, recent: [] };
+    }
+
+    var lastRow = sheet.getLastRow();
+    var startRow = Math.max(2, lastRow - 9);
+    var data = sheet.getRange(startRow, 1, lastRow - startRow + 1, 4).getValues();
+
+    var recent = data.map(function (row) {
+      return { timestamp: row[0], type: row[1], error: row[2], params: row[3] };
+    }).reverse();
+
+    return { count: lastRow - 1, recent: recent };
+  } catch (e) {
+    return { count: 0, recent: [], error: e.message };
+  }
+}
+
+
+// ========================================
+// 🔧 工具函數
+// ========================================
+
+function toAssetUrl(url) {
+  if (!url || typeof url !== 'string') return url;
+  var u = String(url).trim();
+  if (u.indexOf('https://raw.githubusercontent.com/caroldaunn/xizhi-tour/') === 0) {
+    return u.replace(/^https:\/\/raw\.githubusercontent\.com\/caroldaunn\/xizhi-tour\/[^/]+/, ASSETS_BASE);
+  }
+  if (u.indexOf('https://caroldaunn.github.io/xizhi-tour') === 0) {
+    return u.replace(/^https:\/\/caroldaunn\.github\.io\/xizhi-tour\/?/, ASSETS_BASE + '/');
+  }
+  return u;
+}
+
+function getFlexFromCache(cache, typeKey, routeId) {
+  if (!cache || !typeKey) return null;
+  var key = CACHE_KEY_PREFIX_FLEX + typeKey + (routeId ? '_' + String(routeId) : '') + '_v4';
+  var raw = cache.get(key);
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch (e) { return null; }
+}
+
+function putFlexToCache(cache, typeKey, routeId, result) {
+  if (!cache || !typeKey || result == null) return;
+  var key = CACHE_KEY_PREFIX_FLEX + typeKey + (routeId ? '_' + String(routeId) : '') + '_v4';
+  try {
+    var json = JSON.stringify(result);
+    if (json.length <= 100000) cache.put(key, json, CACHE_TTL_FLEX);
+  } catch (e) {}
+}
+
+function parseStory(jsonStr) {
+  if (!jsonStr || jsonStr.trim() === '') return null;
+  try { return JSON.parse(jsonStr); } catch (e) { return null; }
+}
+
+function parseGallery(jsonStr) {
+  if (!jsonStr || jsonStr.trim() === '') return [];
+  try { return JSON.parse(jsonStr); } catch (e) { return []; }
+}
+
+function getRouteIdByName(routeName) {
+  var nameToId = {
+    '一茶一礦．老街散策': 'R1', '一茶一礦': 'R1',
+    '雲霧山行．美拍勝境': 'R3', '雲霧山行': 'R3',
+    '百年信仰．秀峰三境': 'R4', '百年信仰': 'R4'
+  };
+  if (routeName && routeName.match(/^R\d+$/)) return routeName;
+  return nameToId[routeName] || routeName;
+}
+
+
+// ========================================
+// 📖 資料讀取函數
+// ========================================
+
+function getRoutesInfo(ss) {
+  var sheet = ss.getSheetByName('路線資訊');
+  if (!sheet) return {};
+
+  var data = sheet.getDataRange().getValues();
+  var routes = {};
+  var defaultImages = {
+    'R1': 'https://xizhi-tour.pages.dev/images/xizhi-location_17-1.jpg',
+    'R3': 'https://xizhi-tour.pages.dev/images/xizhi-location_17-1.jpg',
+    'R4': 'https://xizhi-tour.pages.dev/images/xizhi-location_17-1.jpg'
+  };
+
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var routeId = row[0];
+    if (routeId && HIDDEN_ROUTE_IDS.indexOf(routeId) === -1) {
+      routes[routeId] = {
+        title: row[1], desc: row[2],
+        spots: row[3] ? row[3].split(',').map(function (s) { return s.trim(); }) : [],
+        imageUrl: toAssetUrl(row[4] || defaultImages[routeId] || defaultImages['R1'])
+      };
+    }
+  }
+  return routes;
+}
+
+function getSpotsData(ss) {
+  var sheet = ss.getSheetByName('景點資料');
+  if (!sheet) return {};
+
+  var data = sheet.getDataRange().getValues();
+  var spots = {};
+
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var spotKey = row[0];
+    if (spotKey) {
+      var storyObj = parseStory(row[11]);
+      if (storyObj && storyObj.sections && Array.isArray(storyObj.sections)) {
+        storyObj.sections.forEach(function (sec) { if (sec.img) sec.img = toAssetUrl(sec.img); });
+      }
+      spots[spotKey] = {
+        id: row[1], route: row[2], title: row[3], img: toAssetUrl(row[4]),
+        desc: row[5], query: row[6], hasBeacon: row[7] === 'TRUE' || row[7] === true,
+        beaconTitle: (row[12] != null && String(row[12]).trim()) ? String(row[12]).trim() : '',
+        beaconSub: (row[13] != null && String(row[13]).trim()) ? String(row[13]).trim() : '',
+        quizQ: row[8], quizA: row[9],
+        quizOpts: row[10] ? row[10].split('|').map(function (s) { return s.trim(); }) : [],
+        story: storyObj
+      };
+    }
+  }
+  return spots;
+}
+
+function getFoodsData(ss) {
+  var sheet = ss.getSheetByName('美食資料');
+  if (!sheet) return {};
+
+  var data = sheet.getDataRange().getValues();
+  var foods = {};
+
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var spotKey = row[0];
+    if (spotKey) {
+      if (!foods[spotKey]) foods[spotKey] = [];
+      foods[spotKey].push({
+        name: row[1] || '', type: row[2] || '', desc: row[3] || '',
+        img: toAssetUrl(row[4] || ''), query: row[5] || ''
+      });
+    }
+  }
+  return foods;
+}
+
+function getEventsData(ss) {
+  var sheet = ss.getSheetByName('活動資料');
+  if (!sheet) return {};
+
+  var data = sheet.getDataRange().getValues();
+  var events = {};
+
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var eventId = row[0];
+    if (!eventId) continue;
+
+    var kVal = row.length > 10 ? row[10] : null;
+    var introVal = (kVal != null && String(kVal).trim() !== '') ? parseStory(String(kVal)) : null;
+    var galleryList = parseGallery(row[8]);
+    if (galleryList && galleryList.length) {
+      galleryList.forEach(function (g) { if (g && g.img) g.img = toAssetUrl(g.img); });
+    }
+
+    events[eventId] = {
+      id: eventId, title: row[1], date: row[2], location: row[3], query: row[4],
+      img: toAssetUrl(row[5]), desc: row[6],
+      tags: row[7] ? row[7].split('|') : [],
+      gallery: galleryList || [],
+      notices: row[9] ? row[9].split('|') : [],
+      intro: introVal
+    };
+  }
+  return events;
+}
+
+
+// ========================================
+// 🎨 Flex Message 生成
+// ========================================
+
+function generateRoutesCarousel(ss) {
+  var routes = getRoutesInfo(ss);
+  if (!routes || Object.keys(routes).length === 0) {
+    return { error: '找不到路線資訊' };
+  }
+
+  var bubbles = [];
+  var routeColors = { 'R1': '#967249', 'R3': '#E16B8C', 'R4': '#F6C555' };
+
+  for (var routeId in routes) {
+    var route = routes[routeId];
+    var title = route.title;
+    var desc = route.desc;
+    var imageUrl = route.imageUrl || 'https://xizhi-tour.pages.dev/images/xizhi-location_17-1.jpg';
+    var routeColor = routeColors[routeId] || '#967249';
+    var routeName = title.split('：')[0] || title.split(':')[0] || routeId;
+
+    bubbles.push({
+      type: "bubble",
+      size: "mega",
+      hero: {
+        type: "box",
+        layout: "vertical",
+        contents: [
+          { type: "image", url: imageUrl, size: "full", aspectMode: "cover", aspectRatio: "1:1", gravity: "center" },
+          {
+            type: "box", layout: "vertical",
+            contents: [
+              { type: "text", text: title, weight: "bold", size: "xl", color: "#FFFFFF", wrap: true },
+              { type: "text", text: desc, size: "sm", color: "#FFFFFFEE", wrap: true, margin: "sm" },
+              {
+                type: "box", layout: "horizontal", margin: "md",
+                contents: [
+                  { type: "button", style: "primary", height: "sm", color: routeColor,
+                    action: { type: "message", label: "選擇此路線", text: "查看路線：" + routeName } }
+                ]
+              }
+            ],
+            position: "absolute", offsetBottom: "0px", offsetStart: "0px", offsetEnd: "0px",
+            paddingAll: "15px", paddingTop: "100px",
+            background: { type: "linearGradient", angle: "180deg", startColor: "#00000000", endColor: "#333333DD" }
+          }
+        ],
+        paddingAll: "0px"
+      }
+    });
+  }
+
+  return { type: "flex", altText: "請選擇您的汐止探索路線", contents: { type: "carousel", contents: bubbles } };
+}
+
+function generateRouteSpotsList(ss, routeId) {
+  routeId = getRouteIdByName(routeId);
+  var routes = getRoutesInfo(ss);
+  var spots = getSpotsData(ss);
+
+  if (!routes[routeId]) return { error: '找不到路線：' + routeId };
+
+  var route = routes[routeId];
+  var routeSpots = route.spots.slice();
+  var routeColors = { 'R1': '#967249', 'R3': '#E16B8C', 'R4': '#F6C555' };
+  var routeColor = routeColors[routeId] || '#967249';
+  var passThroughColor = '#E0E0E0';
+
+  // v4.5：用 local Set 記錄哪些 key 是 passThrough，不修改共用 spots 物件
+  // 避免多路線共用時 isPassThrough 互相污染
+  var passThroughKeys = {};
+
+  if (routeId === 'R1') {
+    var oldStreetIdx = -1;
+    var jideIdx = -1;
+    for (var i = 0; i < routeSpots.length; i++) {
+      var s = spots[routeSpots[i]];
+      if (s && s.title === '汐止老街') oldStreetIdx = i;
+      if (s && s.title === '濟德宮') jideIdx = i;
+    }
+    if (oldStreetIdx >= 0 && jideIdx > oldStreetIdx) {
+      var hasZhongshun = routeSpots.some(function (k) { var sp = spots[k]; return sp && sp.title === '忠順廟'; });
+      if (!hasZhongshun) {
+        var fakeKey = '_zhongshunmiao_passthrough';
+        routeSpots.splice(oldStreetIdx + 1, 0, fakeKey);
+        // 只在 local spots 加入虛擬景點，不污染共用 spots 物件
+        spots = Object.assign({}, spots);
+        spots[fakeKey] = { title: '忠順廟', desc: '', img: '', query: '忠順廟 汐止', route: 'R1' };
+        passThroughKeys[fakeKey] = true;
+      }
+    }
+    for (var r1 = 0; r1 < routeSpots.length; r1++) {
+      var sp1 = spots[routeSpots[r1]];
+      if (sp1 && sp1.title === '忠順廟') passThroughKeys[routeSpots[r1]] = true;
+    }
+  }
+
+  if (routeId === 'R4') {
+    for (var j = 0; j < routeSpots.length; j++) {
+      var sp4 = spots[routeSpots[j]];
+      if (sp4 && String(sp4.title || '').trim() === '杜月笙墓園') {
+        passThroughKeys[routeSpots[j]] = true;
+      }
+    }
+  }
+
+  var spotContents = [];
+
+  routeSpots.forEach(function (spotKey, index) {
+    var spot = spots[spotKey];
+    if (!spot) return;
+
+    var isFirst = index === 0;
+    var isLast = index === routeSpots.length - 1;
+    var isPassThrough = passThroughKeys[spotKey] === true;
+    var circleColor = isPassThrough ? passThroughColor : routeColor;
+    var titleColor = isPassThrough ? passThroughColor : (isFirst || isLast ? "#333333" : "#555555");
+    var isDuTomb = (String(spot.title || '').trim() === '杜月笙墓園');
+    var displayTitle = isPassThrough
+      ? (isDuTomb ? (spot.title || '杜月笙墓園').trim() + '\n(可經過)' : spot.title + '(可經過)')
+      : spot.title;
+    var titleTextPayload = { type: "text", text: displayTitle, size: "md", color: titleColor, flex: 5, weight: isFirst || isLast ? "bold" : "regular" };
+    if (isPassThrough || isDuTomb) titleTextPayload.wrap = true;
+
+    spotContents.push({
+      type: "box", layout: "horizontal", spacing: "md", alignItems: "center",
+      contents: [
+        { type: "text", text: isFirst ? (index + 1) + ".起點" : (isLast ? (index + 1) + ".終點" : " "), size: "sm", color: "#888888", flex: 2, align: "end" },
+        { type: "box", layout: "vertical", width: "30px", alignItems: "center",
+          contents: [{ type: "box", layout: "vertical", width: "12px", height: "12px", cornerRadius: "12px", borderColor: circleColor, borderWidth: "2px", contents: [] }] },
+        titleTextPayload
+      ]
+    });
+
+    if (!isLast) {
+      var nextSpotKey = routeSpots[index + 1];
+      var lineIsGray = isPassThrough || passThroughKeys[nextSpotKey] === true;
+      var lineColor = lineIsGray ? passThroughColor : routeColor;
+
+      spotContents.push({
+        type: "box", layout: "horizontal",
+        contents: [
+          { type: "text", text: " ", flex: 2 },
+          { type: "box", layout: "vertical", width: "30px", alignItems: "center",
+            contents: [{ type: "box", layout: "vertical", width: "2px", height: "10px", backgroundColor: lineColor, contents: [] }] },
+          { type: "text", text: " ", flex: 5 }
+        ]
+      });
+    }
+  });
+
+  return {
+    type: "flex",
+    altText: route.title + "：" + routeSpots.length + "站路線導覽",
+    contents: {
+      type: "bubble", size: "kilo",
+      header: {
+        type: "box", layout: "vertical", backgroundColor: routeColor, paddingAll: "20px",
+        contents: [
+          { type: "text", text: route.title, weight: "bold", size: "xl", color: "#FFFFFF", align: "center" },
+          { type: "text", text: route.desc, size: "xs", color: "#EEEEEE", align: "center", margin: "sm" }
+        ]
+      },
+      body: { type: "box", layout: "vertical", contents: spotContents, paddingAll: "20px" },
+      footer: {
+        type: "box", layout: "vertical", paddingAll: "20px",
+        contents: [
+          { type: "button", style: "primary", color: routeColor, height: "sm",
+            action: { type: "message", label: "開始導覽", text: "開始導覽：" + route.title.split('：')[0] } }
+        ]
+      }
+    }
+  };
+}
+
+function generateSpotCards(ss, routeId) {
+  routeId = getRouteIdByName(routeId);
+  var routes = getRoutesInfo(ss);
+  var spots = getSpotsData(ss);
+
+  if (!routes[routeId]) return { error: '找不到路線：' + routeId };
+
+  var route = routes[routeId];
+  var routeSpots = route.spots || [];
+  var routeColors = { 'R1': '#967249', 'R3': '#E16B8C', 'R4': '#F6C555' };
+  var routeColor = routeColors[routeId] || '#967249';
+
+  var bubbles = [];
+
+  routeSpots.forEach(function (spotKey, index) {
+    var spot = spots[spotKey];
+    if (!spot) return;
+
+    bubbles.push({
+      type: "bubble", size: "kilo",
+      hero: {
+        type: "image",
+        url: spot.img || "https://via.placeholder.com/1024x1024.png?text=No+Image",
+        size: "full", aspectRatio: "20:13", aspectMode: "cover"
+      },
+      body: {
+        type: "box", layout: "vertical", paddingAll: "20px",
+        contents: [
+          { type: "text", text: (index + 1) + ". " + spot.title, weight: "bold", size: "xl", wrap: true },
+          { type: "text", text: spot.desc || "探索景點的故事...", size: "sm", color: "#666666", wrap: true, margin: "md", maxLines: 3 }
+        ]
+      },
+      footer: {
+        type: "box", layout: "vertical", paddingAll: "20px",
+        contents: [
+          { type: "button", style: "primary", color: routeColor, height: "sm",
+            action: { type: "uri", label: "景點介紹", uri: "https://xizhi-tour.pages.dev/?id=" + spotKey + "&route=" + routeId } }
+        ]
+      }
+    });
+  });
+
+  return { type: "flex", altText: route.title + "：景點導覽", contents: { type: "carousel", contents: bubbles } };
+}
+
+function generateEventsCarousel(ss) {
+  var eventsData = getEventsData(ss);
+  if (!eventsData || Object.keys(eventsData).length === 0) {
+    return { type: "text", text: "目前沒有活動資訊" };
+  }
+
+  var bubbles = [];
+  for (var eventId in eventsData) {
+    var event = eventsData[eventId];
+    var liffUrl = "https://liff.line.me/2008941841-8KQq29wn?id=" + eventId;
+
+    bubbles.push({
+      type: "bubble", size: "kilo",
+      hero: {
+        type: "image",
+        url: toAssetUrl(event.img) || "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800",
+        size: "full", aspectRatio: "20:13", aspectMode: "cover"
+      },
+      body: {
+        type: "box", layout: "vertical",
+        contents: [
+          { type: "text", text: event.title, weight: "bold", size: "lg", wrap: true, color: "#333333" },
+          { type: "box", layout: "baseline", margin: "md",
+            contents: [
+              { type: "icon", url: "https://cdn-icons-png.flaticon.com/512/747/747310.png", size: "sm" },
+              { type: "text", text: event.date || "日期未定", size: "sm", color: "#999999", margin: "md", flex: 0, wrap: true }
+            ] },
+          { type: "box", layout: "baseline", margin: "sm",
+            contents: [
+              { type: "icon", url: "https://cdn-icons-png.flaticon.com/512/684/684908.png", size: "sm" },
+              { type: "text", text: event.location || "地點未定", size: "sm", color: "#999999", margin: "md", flex: 0, wrap: true }
+            ] },
+          { type: "text", text: event.desc || "", size: "sm", color: "#666666", margin: "md", wrap: true, maxLines: 3 }
+        ]
+      },
+      footer: {
+        type: "box", layout: "vertical", spacing: "sm", flex: 0,
+        contents: [
+          { type: "button", style: "primary", height: "sm", color: "#EB7A77",
+            action: { type: "uri", label: "活動詳情", uri: liffUrl } }
+        ]
+      }
+    });
+  }
+
+  return { type: "flex", altText: "活動訊息", contents: { type: "carousel", contents: bubbles } };
+}
+
+function generateTransportCarousel() {
+  return {
+    type: "imagemap",
+    baseUrl: "https://xizhi-tour.pages.dev/transport",
+    altText: "汐止遊 交通小幫手",
+    baseSize: { width: 1040, height: 1040 },
+    actions: [
+      { type: "uri", linkUri: "https://www.google.com/maps/search/YouBike+%E6%B1%90%E6%AD%A2", area: { x: 0, y: 150, width: 520, height: 445 } },
+      { type: "uri", linkUri: "https://ebus.gov.taipei/", area: { x: 520, y: 150, width: 520, height: 445 } },
+      { type: "uri", linkUri: "https://tip.railway.gov.tw/tra-tip-web/tip/tip001/tip112/gobytime", area: { x: 0, y: 595, width: 520, height: 445 } },
+      { type: "uri", linkUri: "https://www.google.com/maps/search/?api=1&query=%E6%B1%90%E6%AD%A2+%E5%81%9C%E8%BB%8A%E5%A0%B4", area: { x: 520, y: 595, width: 520, height: 445 } }
+    ]
+  };
+}
+
+
+// ========================================
+// 🧪 測試函數
+// ========================================
+
+function testAPI() {
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  Logger.log(JSON.stringify({
+    routes: getRoutesInfo(ss),
+    spots: getSpotsData(ss),
+    foods: getFoodsData(ss),
+    events: getEventsData(ss)
+  }, null, 2));
+}
+
+function testFlexMessages() {
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  Logger.log('路線選單: ' + JSON.stringify(generateRoutesCarousel(ss)));
+  Logger.log('R1 景點列表: ' + JSON.stringify(generateRouteSpotsList(ss, 'R1')));
+  Logger.log('R1 景點圖卡: ' + JSON.stringify(generateSpotCards(ss, 'R1')));
+}
+
+function exportDataToJSON() {
+  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var data = {
+    routes: getRoutesInfo(ss),
+    spots: getSpotsData(ss),
+    foods: getFoodsData(ss),
+    events: getEventsData(ss),
+    lastUpdated: new Date().toISOString()
+  };
+  Logger.log(JSON.stringify(data, null, 2));
+  return JSON.stringify(data, null, 2);
+}
