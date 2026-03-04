@@ -677,10 +677,10 @@ function renderSpotPage(spotKey, urlRoute) {
     renderFoodSection(spotKey);
 
     if (data.hasBeacon) {
-        var beaconTitle = (data.beaconTitle && data.beaconTitle.trim()) ? data.beaconTitle.trim() : ('「' + (data.title || '此景點') + '」隱藏尋寶');
-        var beaconSub = (data.beaconSub && data.beaconSub.trim()) ? data.beaconSub.trim() : '點擊讀取隱藏訊息！';
-        document.getElementById('beacon-title').innerText = beaconTitle;
-        document.getElementById('beacon-sub').innerText = beaconSub;
+        // 橫幅只顯示短提示（標題 + 固定副標），完整 M/N 內容在點擊後於彈窗顯示
+        var bannerTitle = (data.beaconTitle && data.beaconTitle.trim()) ? data.beaconTitle.trim() : ('「' + (data.title || '此景點') + '」隱藏尋寶');
+        document.getElementById('beacon-title').innerText = bannerTitle;
+        document.getElementById('beacon-sub').innerText = '點擊讀取隱藏訊息！';
         setTimeout(function() {
             document.getElementById('beacon-banner').classList.add('show');
             setTimeout(function() { document.getElementById('beacon-banner').classList.remove('show'); }, 8000);
