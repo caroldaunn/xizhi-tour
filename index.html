@@ -677,9 +677,9 @@ function renderSpotPage(spotKey, urlRoute) {
     renderFoodSection(spotKey);
 
     if (data.hasBeacon) {
-        // 橫幅只顯示短提示（標題 + 固定副標），完整 M/N 內容在點擊後於彈窗顯示
-        var bannerTitle = (data.beaconTitle && data.beaconTitle.trim()) ? data.beaconTitle.trim() : ('「' + (data.title || '此景點') + '」隱藏尋寶');
-        document.getElementById('beacon-title').innerText = bannerTitle;
+        // 橫幅只顯示「景點名稱 隱藏訊息」，不顯示 M 欄標題；點擊後彈窗再顯示標題＋內文
+        var spotName = data.title || '此景點';
+        document.getElementById('beacon-title').innerText = spotName + ' 隱藏訊息';
         document.getElementById('beacon-sub').innerText = '點擊讀取隱藏訊息！';
         setTimeout(function() {
             document.getElementById('beacon-banner').classList.add('show');
