@@ -856,12 +856,7 @@ function checkQuiz(answerIdx) {
     if (answerIdx === correct) {
         var quizEl = document.getElementById('quiz-modal');
         if (quizEl) quizEl.style.display = 'none';
-        if (isTaskDone('quiz')) {
-            showStampModal("⭕ 答對了!");
-        } else {
-            showStampModal("⭕ 答對了!獲得【問答印章】");
-            collectAction('quiz');
-        }
+        if (!isTaskDone('quiz')) collectAction('quiz');
     } else {
         alert("❌ 答錯了,再試試!");
     }
