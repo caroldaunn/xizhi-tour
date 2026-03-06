@@ -851,9 +851,12 @@ function handleBeaconClick() {
     if (title || sub) {
         showBeaconMessageModal(title, sub);
     } else {
-        if (!isTaskDone('beacon')) { showStampModal("📡 獲得【尋寶印章】\n任務成功"); collectAction('beacon'); }
-        else { showStampModal("📡 隱藏訊息\n任務已完成"); }
+        doBeaconStamp();
     }
+}
+function doBeaconStamp() {
+    if (!isTaskDone('beacon')) { showStampModal("📡 獲得【尋寶印章】\n任務成功"); collectAction('beacon'); }
+    else { showStampModal("📡 隱藏訊息\n任務已完成"); }
 }
 function showBeaconMessageModal(title, sub) {
     var el = document.getElementById('beacon-msg-modal');
@@ -864,14 +867,12 @@ function showBeaconMessageModal(title, sub) {
     if (el) el.style.display = 'flex';
     setTimeout(function() {
         if (el) el.style.display = 'none';
-        if (!isTaskDone('beacon')) { showStampModal("📡 獲得【尋寶印章】\n任務成功"); collectAction('beacon'); }
-        else { showStampModal("📡 隱藏訊息\n任務已完成"); }
+        doBeaconStamp();
     }, 1500);
 }
 function confirmBeaconMessage() {
     closeModal('beacon-msg-modal', null);
-    if (!isTaskDone('beacon')) { showStampModal("📡 獲得【尋寶印章】\n任務成功"); collectAction('beacon'); }
-    else { showStampModal("📡 隱藏訊息\n任務已完成"); }
+    doBeaconStamp();
 }
 function openQuizModal() {
     var quizEl = document.getElementById('quiz-modal');
