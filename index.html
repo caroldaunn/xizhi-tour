@@ -212,7 +212,7 @@
                 </div>
             </div>
             <div id="memorial-box">
-                <div style="font-size:16px;font-weight:800;margin-bottom:5px;">完賽紀念照</div>
+                <div style="font-size:16px;font-weight:800;margin-bottom:5px;">任務達成紀念照</div>
                 <p style="font-size:13px;color:#666;margin-bottom:15px;">上傳自拍照,合成汐止達人相框!</p>
                 <div class="upload-btn-wrapper"><button class="btn-upload">選擇照片</button><input type="file" accept="image/*" onchange="handleImageUpload(event)"></div>
                 <canvas id="result-canvas"></canvas>
@@ -770,8 +770,10 @@ function toggleStory() {
     detail.classList.add('show'); btn.innerText = '▲ 收起故事'; storyExpanded = true;
     logEvent('story_expand', currentPageId || '');
     if (html) {
-        if (!isTaskDone('story')) { collectAction('story'); showStampModal("📖 獲得【故事印章】\n任務成功"); setTimeout(initTaskProgress, 300); }
-        else { showStampModal("📖 故事已閱讀\n任務已完成"); }
+        setTimeout(function() {
+            if (!isTaskDone('story')) { collectAction('story'); showStampModal("📖 獲得【故事印章】\n任務成功"); setTimeout(initTaskProgress, 300); }
+            else { showStampModal("📖 故事已閱讀\n任務已完成"); }
+        }, 1500);
     }
 }
 
