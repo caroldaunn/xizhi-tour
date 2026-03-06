@@ -862,6 +862,11 @@ function showBeaconMessageModal(title, sub) {
     if (titleEl) { titleEl.innerText = title || ''; titleEl.style.display = (title && title.trim()) ? 'block' : 'none'; }
     if (subEl) { subEl.innerText = sub || ''; subEl.style.display = (sub && sub.trim()) ? 'block' : 'none'; }
     if (el) el.style.display = 'flex';
+    setTimeout(function() {
+        if (el) el.style.display = 'none';
+        if (!isTaskDone('beacon')) { showStampModal("📡 獲得【尋寶印章】\n任務成功"); collectAction('beacon'); }
+        else { showStampModal("📡 隱藏訊息\n任務已完成"); }
+    }, 1500);
 }
 function confirmBeaconMessage() {
     closeModal('beacon-msg-modal', null);
@@ -915,7 +920,7 @@ function showStampModal(message) {
     stampModalAutoCloseTimer = setTimeout(function() {
         if (el) el.style.display = 'none';
         stampModalAutoCloseTimer = null;
-    }, 2000);
+    }, 1500);
 }
 function shareTo(platform) {
     var url = window.location.href;
