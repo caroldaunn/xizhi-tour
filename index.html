@@ -867,17 +867,12 @@ function showBeaconMessageModal(title, sub) {
     if (subEl) { subEl.innerText = sub || ''; subEl.style.display = (sub && sub.trim()) ? 'block' : 'none'; }
     if (el) el.style.display = 'flex';
     if (beaconMsgTimer) { clearTimeout(beaconMsgTimer); beaconMsgTimer = null; }
-    beaconMsgTimer = setTimeout(function() {
-        beaconMsgTimer = null;
-        if (el) el.style.display = 'none';
-        doBeaconStamp();
-    }, 1500);
 }
 function handleBeaconModalClose() {
     if (beaconMsgTimer) { clearTimeout(beaconMsgTimer); beaconMsgTimer = null; }
     var el = document.getElementById('beacon-msg-modal');
     if (el) el.style.display = 'none';
-    doBeaconStamp();
+    setTimeout(function() { doBeaconStamp(); }, 300);
 }
 function confirmBeaconMessage() {
     closeModal('beacon-msg-modal', null);
