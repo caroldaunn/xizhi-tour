@@ -782,7 +782,13 @@ function toggleEventIntro() {
     var btn = document.getElementById('event-intro-btn');
     if (!detail || !btn) return;
     if (eventIntroExpanded) { detail.classList.remove('show'); btn.innerText = '▼ 了解更多故事'; eventIntroExpanded = false; }
-    else { detail.classList.add('show'); btn.innerText = '▲ 收起故事'; eventIntroExpanded = true; logEvent('story_expand', currentPageId || ''); }
+    else {
+        detail.classList.add('show'); btn.innerText = '▲ 收起故事'; eventIntroExpanded = true; logEvent('story_expand', currentPageId || '');
+        setTimeout(function() {
+            if (!isTaskDone('story')) { collectAction('story'); showStampModal("📖 獲得【故事印章】\n任務成功"); setTimeout(initTaskProgress, 300); }
+            else { showStampModal("📖 故事已閱讀\n任務已完成"); }
+        }, 1500);
+    }
 }
 
 // v6.5: stamps 統一讀取，避免重複 JSON.parse
