@@ -230,7 +230,7 @@
         <span class="lightbox-close">✕</span>
         <img id="lightbox-img" src="" alt="">
     </div>
-    <div id="share-modal" class="modal-overlay" onclick="closeModal('share-modal',event)">
+    <div id="share-modal" class="modal-overlay" onclick="closeShareModal(event)">
         <div class="share-sheet">
             <div class="share-title">打卡或分享</div>
             <div class="share-grid">
@@ -927,18 +927,30 @@ function showStampModal(message) {
         stampModalAutoCloseTimer = null;
     }, 1500);
 }
+var shareDidAct = false;
 function shareTo(platform) {
     var url = window.location.href;
     var title = document.getElementById('spot-title').innerText;
     var text = '📸 我正在汐止打卡：' + title + '!快來一起探索～';
-    if (!isTaskDone('share')) { setTimeout(function() { showStampModal("📤 分享成功！\n任務成功"); collectAction('share'); }, 500); }
-    else { setTimeout(function() { showStampModal("📤 分享成功！\n任務已完成"); }, 500); }
+    shareDidAct = true;
     if (platform === 'line') window.location.href = 'https://line.me/R/msg/text/?' + encodeURIComponent(text + ' ' + url);
     else if (platform === 'fb') window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&quote=' + encodeURIComponent(text));
     else if (platform === 'ig') { if (navigator.clipboard) navigator.clipboard.writeText(text + ' ' + url).then(function() { alert("已複製文字!請打開 Instagram 貼上分享"); }); }
     else if (platform === 'copy') { if (navigator.clipboard) navigator.clipboard.writeText(url).then(function() { alert("連結已複製!"); }); }
     var shareModal = document.getElementById('share-modal');
     if (shareModal) shareModal.style.display = 'none';
+    if (!isTaskDone('share')) { showStampModal("📤 分享成功！\n任務成功"); collectAction('share'); }
+    else { showStampModal("📤 分享成功！\n任務已完成"); }
+}
+function closeShareModal(e) {
+    var el = document.getElementById('share-modal');
+    if (!e || e.target.id === 'share-modal') {
+        if (el) el.style.display = 'none';
+        if (!shareDidAct) {
+            shareDidAct = false;
+        }
+        shareDidAct = false;
+    }
 }
 
 var longPressTimer = null;
