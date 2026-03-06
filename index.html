@@ -101,7 +101,7 @@
         .quiz-btn { padding: 12px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 8px; font-size: 14px; cursor: pointer; }
         .close-modal { margin-top: 15px; color: #999; font-size: 12px; text-decoration: underline; cursor: pointer; }
         .stamp-modal-box { background: white; width: 85%; max-width: 320px; padding: 16px 24px; border-radius: 16px; text-align: center; align-self: center; }
-        .stamp-modal-msg { font-size: 16px; font-weight: bold; line-height: 1.5; margin-bottom: 0; }
+        .stamp-modal-msg { font-size: 16px; font-weight: bold; line-height: 1.5; margin-bottom: 0; white-space: pre-line; }
         .beacon-msg-modal-box { background: white; width: 90%; max-width: 340px; padding: 24px; border-radius: 16px; text-align: center; align-self: center; }
         .confirm-modal-box { background: white; width: 85%; max-width: 320px; padding: 24px; border-radius: 16px; text-align: center; align-self: center; }
         .confirm-modal-title { font-size: 16px; font-weight: bold; line-height: 1.5; margin-bottom: 20px; color: #333; }
@@ -769,7 +769,10 @@ function toggleStory() {
     detail.innerHTML = html ? html : '<p class="story-text">此景點暫無故事內容。</p>';
     detail.classList.add('show'); btn.innerText = '▲ 收起故事'; storyExpanded = true;
     logEvent('story_expand', currentPageId || '');
-    if (html && !isTaskDone('story')) { collectAction('story'); showStampModal("🎉 獲得【故事印章】"); setTimeout(initTaskProgress, 300); }
+    if (html) {
+        if (!isTaskDone('story')) { collectAction('story'); showStampModal("📖 獲得【故事印章】\n任務成功"); setTimeout(initTaskProgress, 300); }
+        else { showStampModal("📖 故事已閱讀\n任務已完成"); }
+    }
 }
 
 function toggleEventIntro() {
@@ -790,8 +793,14 @@ function collectAction(taskName) {
 }
 
 function handleClickWithTrack(taskName) {
-    collectAction(taskName);
-    if (taskName === 'map') logEvent('navigation_click', currentPageId || '');
+    if (taskName === 'map') {
+        if (!isTaskDone('map')) showStampModal('🗺️ 開啟地圖\n任務成功');
+        else showStampModal('🗺️ 開啟地圖\n任務已完成');
+        collectAction(taskName);
+        logEvent('navigation_click', currentPageId || '');
+    } else {
+        collectAction(taskName);
+    }
 }
 
 function isTaskDone(taskName) { return getStamps().indexOf(taskName) !== -1; }
@@ -842,8 +851,8 @@ function handleBeaconClick() {
     if (title || sub) {
         showBeaconMessageModal(title, sub);
     } else {
-        showStampModal("🎉 獲得【尋寶印章】");
-        collectAction('beacon');
+        if (!isTaskDone('beacon')) { showStampModal("📡 獲得【尋寶印章】\n任務成功"); collectAction('beacon'); }
+        else { showStampModal("📡 隱藏訊息\n任務已完成"); }
     }
 }
 function showBeaconMessageModal(title, sub) {
@@ -856,8 +865,8 @@ function showBeaconMessageModal(title, sub) {
 }
 function confirmBeaconMessage() {
     closeModal('beacon-msg-modal', null);
-    showStampModal("🎉 獲得【尋寶印章】");
-    collectAction('beacon');
+    if (!isTaskDone('beacon')) { showStampModal("📡 獲得【尋寶印章】\n任務成功"); collectAction('beacon'); }
+    else { showStampModal("📡 隱藏訊息\n任務已完成"); }
 }
 function openQuizModal() {
     var quizEl = document.getElementById('quiz-modal');
@@ -868,8 +877,8 @@ function checkQuiz(answerIdx) {
     if (answerIdx === correct) {
         var quizEl = document.getElementById('quiz-modal');
         if (quizEl) quizEl.style.display = 'none';
-        showStampModal("⭕ 答對了!");
-        if (!isTaskDone('quiz')) collectAction('quiz');
+        if (!isTaskDone('quiz')) { showStampModal("⭕ 答對了！\n任務成功"); collectAction('quiz'); }
+        else { showStampModal("⭕ 答對了！\n任務已完成"); }
     } else {
         var quizEl = document.getElementById('quiz-modal');
         if (quizEl) quizEl.style.display = 'none';
@@ -884,8 +893,8 @@ function addEventToCalendar() {
     if (titleEl) titleEl.innerText = '將「' + title + '」加入行事曆？';
     if (okBtn) okBtn.onclick = function() {
         closeModal('confirm-modal', null);
-        if (!isTaskDone('wish')) { collectAction('wish'); setTimeout(initTaskProgress, 300); }
-        showStampModal('✅ 已加入行事曆！');
+        if (!isTaskDone('wish')) { collectAction('wish'); setTimeout(initTaskProgress, 300); showStampModal('✅ 已加入行事曆！\n任務成功'); }
+        else { showStampModal('✅ 已加入行事曆！\n任務已完成'); }
     };
     if (modal) modal.style.display = 'flex';
 }
@@ -912,7 +921,8 @@ function shareTo(platform) {
     var url = window.location.href;
     var title = document.getElementById('spot-title').innerText;
     var text = '📸 我正在汐止打卡：' + title + '!快來一起探索～';
-    if (!isTaskDone('share')) { setTimeout(function() { showStampModal("分享成功!獲得【分享印章】"); collectAction('share'); }, 500); }
+    if (!isTaskDone('share')) { setTimeout(function() { showStampModal("📤 分享成功！\n任務成功"); collectAction('share'); }, 500); }
+    else { setTimeout(function() { showStampModal("📤 分享成功！\n任務已完成"); }, 500); }
     if (platform === 'line') window.location.href = 'https://line.me/R/msg/text/?' + encodeURIComponent(text + ' ' + url);
     else if (platform === 'fb') window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&quote=' + encodeURIComponent(text));
     else if (platform === 'ig') { if (navigator.clipboard) navigator.clipboard.writeText(text + ' ' + url).then(function() { alert("已複製文字!請打開 Instagram 貼上分享"); }); }
