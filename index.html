@@ -104,8 +104,7 @@
         .stamp-modal-msg { font-size: 16px; font-weight: bold; line-height: 1.5; margin-bottom: 0; white-space: pre-line; }
         @keyframes beaconSlideIn { from { transform: translateY(-40px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
         .beacon-msg-modal-box { background: white; width: 90%; max-width: 340px; border-radius: 20px; text-align: center; align-self: center; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.25); animation: beaconSlideIn 0.35s cubic-bezier(0.34,1.56,0.64,1); }
-        .beacon-msg-header { background: linear-gradient(135deg, #3a7bd5, #5b9bd5); padding: 20px 24px 16px; }
-        .beacon-msg-icon { font-size: 32px; margin-bottom: 6px; }
+        .beacon-msg-header { background: #967249; padding: 12px 20px; }
         .confirm-modal-box { background: white; width: 85%; max-width: 320px; padding: 24px; border-radius: 16px; text-align: center; align-self: center; }
         .confirm-modal-title { font-size: 16px; font-weight: bold; line-height: 1.5; margin-bottom: 20px; color: #333; }
         .confirm-modal-btns { display: flex; gap: 10px; justify-content: center; }
@@ -269,8 +268,7 @@
     </div>
     <div id="beacon-msg-modal" class="modal-overlay" style="display:none;" onclick="handleBeaconModalClose()">
         <div class="beacon-msg-modal-box" onclick="event.stopPropagation()">
-            <div class="beacon-msg-header">
-                <div class="beacon-msg-icon">📡</div>
+            <div class="beacon-msg-header" id="beacon-msg-header">
                 <div id="beacon-msg-title" class="beacon-msg-title"></div>
             </div>
             <div class="beacon-msg-body">
@@ -329,7 +327,7 @@ var MEMORIAL_FRAME = {
 
 var routesInfo = {}, foodsData = {}, spotsData = {}, eventsData = {};
 var currentData = null, isEventPage = false, storyExpanded = false, eventIntroExpanded = false;
-var currentPageId = '', spotEnterTime = 0, spotLeaveSentOnUnload = false;
+var currentPageId = '', spotEnterTime = 0, spotLeaveSentOnUnload = false, urlParams = null;
 var behaviorUserId = '', behaviorSessionId = '';
 var BEHAVIOR_LOG_ENV = 'test';
 
@@ -554,7 +552,7 @@ function showError(message) {
 // ========================================
 function renderContent() {
     try {
-        var urlParams = new URLSearchParams(window.location.search);
+        urlParams = new URLSearchParams(window.location.search);
         var pageId = urlParams.get('id') || 'spot1';
         var urlRoute = urlParams.get('route') || ''; // v6.5：從 URL 取路線，解決共用景點站次問題
         if (pageId.indexOf('E') === 0 && eventsData[pageId]) { isEventPage = true; renderEventPage(pageId); }
@@ -878,10 +876,14 @@ function doBeaconStamp() {
     else { showStampModal("📡 隱藏訊息\n任務已完成"); }
 }
 var beaconMsgTimer = null;
+var ROUTE_COLORS = { 'R1': '#967249', 'R3': '#E16B8C', 'R4': '#F6C555' };
 function showBeaconMessageModal(title, sub) {
     var el = document.getElementById('beacon-msg-modal');
     var titleEl = document.getElementById('beacon-msg-title');
     var subEl = document.getElementById('beacon-msg-sub');
+    var headerEl = document.getElementById('beacon-msg-header');
+    var routeColor = ROUTE_COLORS[urlParams ? urlParams.get('route') : ''] || '#967249';
+    if (headerEl) headerEl.style.background = routeColor;
     if (titleEl) { titleEl.innerText = title || ''; titleEl.style.display = (title && title.trim()) ? 'block' : 'none'; }
     if (subEl) { subEl.innerText = sub || ''; subEl.style.display = (sub && sub.trim()) ? 'block' : 'none'; }
     if (el) el.style.display = 'flex';
