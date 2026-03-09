@@ -702,10 +702,12 @@ function renderSpotPage(spotKey, urlRoute) {
         var bannerTitle = (data.beaconTitle && data.beaconTitle.trim()) ? data.beaconTitle.trim() : ('「' + (data.title || '此景點') + '」隱藏尋寶');
         document.getElementById('beacon-title').innerText = bannerTitle;
         document.getElementById('beacon-sub').innerText = '點擊讀取隱藏訊息！';
-        setTimeout(function() {
-            document.getElementById('beacon-banner').classList.add('show');
-            setTimeout(function() { document.getElementById('beacon-banner').classList.remove('show'); }, 8000);
-        }, 1000);
+        if (!isTaskDone('beacon')) {
+            setTimeout(function() {
+                document.getElementById('beacon-banner').classList.add('show');
+                setTimeout(function() { document.getElementById('beacon-banner').classList.remove('show'); }, 8000);
+            }, 1000);
+        }
     }
 
     initTaskProgress();
