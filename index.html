@@ -198,13 +198,12 @@
                 <a href="https://www.xizhi.ntpc.gov.tw/home.jsp?id=1ee324bfb5e44418" target="_blank" style="font-size: 14px; color: #3498db; text-decoration: none;">汐止社區巴士時刻表 查看 →</a>
             </div>
             <div id="game-section" class="game-section">
-                <div class="game-title">汐止達人挑戰 (進度: <span id="progress-text">0/6</span>)</div>
+                <div class="game-title">汐止達人挑戰 (進度: <span id="progress-text">0/5</span>)</div>
                 <div class="task-grid">
                     <div class="stamp-box"><div class="stamp" id="stamp-map">🗺️</div><div class="stamp-label">找路</div></div>
                     <div class="stamp-box"><div class="stamp" id="stamp-quiz">❓</div><div class="stamp-label">問答</div></div>
                     <div class="stamp-box"><div class="stamp" id="stamp-wish">📅</div><div class="stamp-label">活動</div></div>
                     <div class="stamp-box"><div class="stamp" id="stamp-story">📖</div><div class="stamp-label">故事</div></div>
-                    <div class="stamp-box"><div class="stamp" id="stamp-beacon">📡</div><div class="stamp-label">尋寶</div></div>
                     <div class="stamp-box"><div class="stamp" id="stamp-share">📤</div><div class="stamp-label">分享</div></div>
                 </div>
             </div>
@@ -318,7 +317,7 @@ var SHOW_SESSION_ID = false;
 // 📦 全域變數
 // ========================================
 var MY_LIFF_ID = "2008941841-8KQq29wn";
-var TASKS = ['map','quiz','wish','story','beacon','share'];
+var TASKS = ['map','quiz','wish','story','share'];
 var MEMORIAL_FRAME = {
     canvasSize: 800, bgColor: 'transparent', photoX: 10, photoY: 10,
     photoWidth: 760, photoHeight: 760, showText: false, photoFillMode: 'cover',
@@ -834,10 +833,10 @@ function initTaskProgress() {
     var wishBtn = document.getElementById('wish-btn'); if (wishBtn) wishBtn.style.display = 'none';
     var progressText = document.getElementById('progress-text');
     var progressBar = document.getElementById('progress-bar');
-    if (progressText) progressText.innerText = c.length + '/6';
-    if (progressBar) progressBar.style.width = (c.length / 6) * 100 + '%';
+    if (progressText) progressText.innerText = c.length + '/5';
+    if (progressBar) progressBar.style.width = (c.length / 5) * 100 + '%';
 
-    if (c.length >= 6) {
+    if (c.length >= 5) {
         var surveyBox = document.getElementById('survey-box');
         var memorialBox = document.getElementById('memorial-box');
         if (surveyBox) surveyBox.style.display = 'block';
@@ -869,13 +868,11 @@ function handleBeaconClick() {
     var sub = (currentData && currentData.beaconSub && currentData.beaconSub.trim()) ? currentData.beaconSub.trim() : '';
     if (title || sub) {
         showBeaconMessageModal(title, sub);
-    } else {
-        doBeaconStamp();
     }
+    // 不集章、不顯示任務提示
 }
 function doBeaconStamp() {
-    if (!isTaskDone('beacon')) { showStampModal("📡 獲得【尋寶印章】\n任務成功"); collectAction('beacon'); }
-    else { showStampModal("📡 隱藏訊息\n任務已完成"); }
+    // beacon 任務已移除，保留空函數供相容性
 }
 var beaconMsgTimer = null;
 var ROUTE_COLORS = { 'R1': '#967249', 'R3': '#E16B8C', 'R4': '#F6C555' };
@@ -895,11 +892,11 @@ function handleBeaconModalClose() {
     if (beaconMsgTimer) { clearTimeout(beaconMsgTimer); beaconMsgTimer = null; }
     var el = document.getElementById('beacon-msg-modal');
     if (el) el.style.display = 'none';
-    setTimeout(function() { doBeaconStamp(); }, 300);
+    // 不集章、不顯示任務提示
 }
 function confirmBeaconMessage() {
     closeModal('beacon-msg-modal', null);
-    doBeaconStamp();
+    // 不集章、不顯示任務提示
 }
 function openQuizModal() {
     var quizEl = document.getElementById('quiz-modal');
@@ -1053,4 +1050,3 @@ function closeLightbox() { document.getElementById('lightbox').style.display = '
 </script>
 </body>
 </html>
-
