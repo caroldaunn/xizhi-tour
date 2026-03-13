@@ -342,7 +342,7 @@ function logEvent(eventAction, eventValue, durationSec) {
         'event_action=' + encodeURIComponent(eventAction || ''),
         'event_value=' + encodeURIComponent(eventValue || ''),
         'duration_sec=' + (durationSec !== undefined && durationSec !== '' ? encodeURIComponent(String(durationSec)) : ''),
-        'env=' + encodeURIComponent(BEHAVIOR_LOG_ENV || 'test')
+        'env=' + encodeURIComponent(BEHAVIOR_LOG_ENV || 'open')
     ].join('&');
     var img = new Image();
     img.src = base + '?' + q;
@@ -362,7 +362,7 @@ function flushSpotLeaveOnLeave() {
         'event_action=spot_leave',
         'event_value=' + encodeURIComponent(currentPageId || ''),
         'duration_sec=' + encodeURIComponent(String(dur)),
-        'env=' + encodeURIComponent(BEHAVIOR_LOG_ENV || 'test')
+        'env=' + encodeURIComponent(BEHAVIOR_LOG_ENV || 'open')
     ].join('&');
     var url = base + '?' + q;
     if (typeof navigator.sendBeacon === 'function') {
@@ -1048,3 +1048,4 @@ function closeLightbox() { document.getElementById('lightbox').style.display = '
 </script>
 </body>
 </html>
+
