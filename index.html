@@ -842,9 +842,10 @@ function initTaskProgress() {
         if (memorialBox) memorialBox.style.display = 'block';
 
         // 🆕 v6.3：動態設定問卷連結，帶入 session_id
+        var _refValue = (behaviorSessionId || '') + (behaviorUserId ? '__' + behaviorUserId : '');
         var surveyLink = SURVEY_PARAM_NAME
-            ? SURVEY_BASE_URL + '?' + SURVEY_PARAM_NAME + '=' + encodeURIComponent(behaviorSessionId || '')
-            : SURVEY_BASE_URL + '?entry.' + SURVEY_ENTRY_ID + '=' + encodeURIComponent(behaviorSessionId || '');
+            ? SURVEY_BASE_URL + '?' + SURVEY_PARAM_NAME + '=' + encodeURIComponent(_refValue)
+            : SURVEY_BASE_URL + '?entry.' + SURVEY_ENTRY_ID + '=' + encodeURIComponent(_refValue);
         var surveyBtn = document.getElementById('survey-link');
         if (surveyBtn) { surveyBtn.href = surveyLink; surveyBtn.target = '_blank'; }
 
@@ -1048,4 +1049,3 @@ function closeLightbox() { document.getElementById('lightbox').style.display = '
 </script>
 </body>
 </html>
-
