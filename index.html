@@ -71,16 +71,16 @@
         .bg-bus { background: #779ae4; }
         .bg-parking { background: #81C7D4; }
         .bus-label { font-size: 12px; }
-        .game-section { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 55%, #0f3460 100%); border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 15px; color: white; }
-        .game-title { font-weight: 800; color: #ffd700; margin-bottom: 4px; font-size: 17px; letter-spacing: 0.5px; }
-        .game-subtitle { font-size: 12px; color: rgba(255,255,255,0.55); margin-bottom: 16px; }
+        .game-section { background: linear-gradient(135deg, #fff8f2 0%, #ffeedd 100%); border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 15px; border: 1px solid rgba(255,138,0,0.18); }
+        .game-title { font-weight: 800; color: #2c3e50; margin-bottom: 4px; font-size: 17px; letter-spacing: 0.5px; }
+        .game-subtitle { font-size: 12px; color: #888; margin-bottom: 16px; }
         .task-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
         .stamp-box { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-        .stamp { width: 52px; height: 52px; border-radius: 14px; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; font-size: 22px; border: 2px solid rgba(255,255,255,0.15); transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); }
-        .stamp.active { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border-color: transparent; box-shadow: 0 4px 18px rgba(240,147,251,0.45); transform: scale(1.08); }
-        .stamp-label { font-size: 10px; color: rgba(255,255,255,0.55); }
-        .game-progress-track { background: rgba(255,255,255,0.12); border-radius: 10px; height: 6px; overflow: hidden; margin-top: 2px; }
-        .game-progress-fill { height: 100%; background: linear-gradient(90deg, #f093fb, #f5576c); border-radius: 10px; transition: width 0.5s ease; width: 0%; }
+        .stamp { width: 52px; height: 52px; border-radius: 14px; background: rgba(255,138,0,0.07); color: #bbb; display: flex; align-items: center; justify-content: center; font-size: 22px; border: 2px solid rgba(255,138,0,0.2); transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+        .stamp.active { background: linear-gradient(135deg, #ff8a00 0%, #e52e71 100%); color: white; border-color: transparent; box-shadow: 0 4px 18px rgba(255,138,0,0.35); transform: scale(1.08); }
+        .stamp-label { font-size: 10px; color: #999; }
+        .game-progress-track { background: rgba(0,0,0,0.08); border-radius: 10px; height: 6px; overflow: hidden; margin-top: 2px; }
+        .game-progress-fill { height: 100%; background: linear-gradient(90deg, #ff8a00, #e52e71); border-radius: 10px; transition: width 0.5s ease; width: 0%; }
         #survey-box, #memorial-box { display: none; margin-top: 20px; }
         .survey-btn { display: block; background: linear-gradient(135deg, #ffd700 0%, #ff9500 100%); color: #1a1a2e; text-align: center; padding: 16px; border-radius: 14px; text-decoration: none; font-weight: 800; font-size: 16px; box-shadow: 0 4px 20px rgba(255,215,0,0.35); }
         .session-id-box { margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 8px; font-size: 12px; color: #666; }
@@ -204,7 +204,7 @@
             </div>
             <div id="game-section" class="game-section">
                 <div class="game-title">⚔️ 汐止達人挑戰</div>
-                <div class="game-subtitle">完成任務獲得印章 · 進度 <span id="progress-text">0</span>/4</div>
+                <div class="game-subtitle">進度 <span id="progress-text">0</span>/4</div>
                 <div class="task-grid">
                     <div class="stamp-box"><div class="stamp" id="stamp-map">🗺️</div><div class="stamp-label">找路</div></div>
                     <div class="stamp-box"><div class="stamp" id="stamp-quiz">❓</div><div class="stamp-label">問答</div></div>
